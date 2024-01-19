@@ -1,0 +1,36 @@
+*.bit
+vivado*.log
+vivado*.jou
+xsim*.log
+xsim*.jou
+xelab*.log
+xelab*.jou
+webtalk*.log
+webtalk*.jou
+vivado_pid*.str
+usage_statistics_webtalk.*ml
+.Xil/
+snapshot.sim
+sim.wdb
+
+# IP-related files
+*.mif
+*.veo
+*.vho
+
+# hidden files created by our Makefile system
+.bitstream-filename
+.boot.bif
+.constraint-files
+.debug-project/
+.implementation-source-files
+.ip-blocks
+.prj
+.set_testcase.v
+.simulation-source-files
+.step
+.synthesis-source-files
+.top-impl-module
+.top-level-module
+.top-level-testbench
+.top-synth-module
