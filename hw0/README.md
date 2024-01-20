@@ -30,7 +30,7 @@ When learning RV assembly, you may find this [RV interpreter website](https://ww
 
 ### Test your code
 
-The `make run` command will run your program under spike, displaying the input string beforehand and afterwards. This is the command we will use to test your code, so make sure it works correctly.
+The `make run` command will run your program under spike, displaying the input string beforehand and afterwards. This is the command we will use to test your code.
 
 You should also try other strings than the one we've provided to **make sure your program works for all of the printable ASCII characters** (decimal values 32-126).
 
