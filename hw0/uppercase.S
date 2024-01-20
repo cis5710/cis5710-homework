@@ -1,6 +1,11 @@
         .section .data
 input_string:   .asciz "Hello world!"
 
+        # tohost/fromhost are data locations used by Spike
+        .align 8
+tohost: .byte 0
+        .align 8
+fromhost: .byte 0
 
         
         .section .text
