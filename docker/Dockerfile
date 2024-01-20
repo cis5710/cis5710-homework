@@ -21,14 +21,15 @@ RUN tar xzf verible-v0.0-3483-ga4d61b11-linux-static-x86_64.tar.gz
 RUN cp /verible-v0.0-3483-ga4d61b11/bin/verible-* /usr/bin/
 RUN rm -rf /verible-v0.0-3483-ga4d61b11/
 
-# install spike RISC-V ISA simulator (very slow!)
-ADD https://github.com/riscv-software-src/riscv-isa-sim/archive/refs/tags/v1.1.0.tar.gz /
-RUN tar xzf v1.1.0.tar.gz
-RUN mkdir /riscv-isa-sim-1.1.0/build
-WORKDIR /riscv-isa-sim-1.1.0/build
-RUN ../configure --prefix=/usr --enable-optional-subprojects=no --with-isa=rv32im --with-target=riscv32-unknown-elf --with-varch=vlen:32,elen:32
-RUN make -j4 && make install
-RUN rm -rf /riscv-isa-sim-1.1.0/
+# install spike RISC-V ISA simulator
+ADD https://launchpad.net/~jaxvanyang/+archive/ubuntu/spike/+files/spike_1.1.0-3_amd64.deb /
+RUN dpkg -i /spike_1.1.0-3_amd64.deb
+
+# NB: couldn't get the PPA setup correctly, maybe because it's for Lunar, not Jammy?
+# tried to override in /etc/apt/sources.list with `deb [trusted=yes] https://ppa.launchpadcontent.net/jaxvanyang/spike/ubuntu lunar main` but that didn't work either
+#RUN add-apt-repository "ppa:jaxvanyang/spike"
+#RUN apt update # <-- fails here
+#RUN apt-get install --yes spike
 
 # Create a non-root user named `penn` with sudo privileges, and switch to them
 RUN useradd -m -s /bin/bash penn && echo 'penn ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/penn
