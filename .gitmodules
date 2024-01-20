@@ -1,3 +1,6 @@
 [submodule "riscv-tests"]
 	path = riscv-tests
 	url = https://github.com/cis5710/riscv-tests.git
+[submodule "solutions"]
+	path = solutions
+	url = git@github.com:cis5710/cis5710-homework-solutions.git
