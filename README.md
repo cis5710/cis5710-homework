@@ -46,17 +46,7 @@ You can then launch `gtkwave`, and open the `.vcd` file with `File => Open New W
 
 ### Windows
 
-Install the Windows version of Icarus Verilog from [here](http://bleyer.org/icarus/). Use the `iverilog-v11-20190809-x64_setup` version in particular. During installation, there are two important steps:
-
-1) Choose the **Full installation** option, which installs GTKWave and other code that `iverilog` needs.
-![icarus-full-installation](https://github.com/upenn-acg/cis501/raw/master/images/icarus-full-installation.png)
-
-2) Have your `PATH` updated to include the `iverilog.exe` and `gtkwave.exe` executables.
-   ![icarus-path](https://github.com/upenn-acg/cis501/raw/master/images/icarus-path.png)
-
-You can then open the `.vcd` file in GTKWave to view the signals in your design throughout the entire execution. To launch GTKWave, in our test installation nothing was added to the Start Menu, so there are two options:
-* navigate to the Icarus Verilog installation directory that you chose (`C:\iverilog` by default) and then to `gtkwave\bin\gtkwave.exe`. You can open a new `.vcd` file via `File => Open New Window` or `File => Open New Tab`.
-* in PowerShell, run `Start-Process -NoNewWindow gtkwave.exe SOMETHING.vcd`. Running `gtkwave.exe` instead runs it in the foreground which then blocks the PowerShell session.
+Download the Windows version of Gtkwave from [SourceForge](https://sourceforge.net/projects/gtkwave/files/): choose one of the win64 `.zip` files. After you unzip the archive, you can find `gtkwave.exe` inside its `bin` directory, and double-click to launch GtkWave from there. There is no need to install anything.
 
 ### General GtkWave tips
 
