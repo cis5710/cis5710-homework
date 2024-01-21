@@ -1,4 +1,4 @@
-This repository contains the homework assignments for [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/). Below we describe some of the important computing tools you'll need to use this semester.
+This repository contains the documentation and starter code for the homework assignments in [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/). Below we describe some of the important computing tools you'll need to use this semester.
 
 # Docker
 
@@ -19,6 +19,56 @@ docker run -it cis5710/hw-base:latest /bin/bash
 You should also configure Docker to [share a directory with your host machine](https://www.digitalocean.com/community/tutorials/how-to-share-data-between-the-docker-container-and-the-host) so that your files are saved when the container is terminated. We may need to make updates to the container image throughout the semester, so you will want to be able to restart your container (to obtain those updates) without losing your work.
 
 If you'd like to install the tools locally instead, you can follow our [Dockerfile](docker/Dockerfile) for guidance.
+
+# Git
+  
+We'll use git to distribute the code and instructions for the labs. Here's our recommended git setup so that you can have a private repo you can share with your group partner, and that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. We'll use github in these instructions, but you can adapt these to other hosting situations as well.
+
+### Setup an SSH key
+
+Don't type in your password every time you push/pull from your repo. [Setup an SSH key on your github account](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key) to enjoy security _and_ more usability!
+
+### Setup your repo
+
+First, one group member creates a new, empty private repo. **Do not initialize** the repo with a README, a `.gitignore` file, or a license.
+
+Then, run the following commands on the command-line (e.g., on biglab or inside your Docker container). Substitute your GH username and the name of the repo you created for `YOURUSERNAME` and `YOURREPO`, respectively.
+
+First, clone your empty repo (via SSH so that you use the SSH keys you setup previously):
+```
+git clone git@github.com:YOURUSERNAME/YOURREPO.git
+cd YOURREPO
+```
+Then, add a connection called `upstream` to the upstream CIS 5710 repo and get the changes from `upstream`:
+```
+git remote add upstream https://github.com/cis5710/cis5710-homework.git
+git fetch upstream
+```
+Now, merge those changes with the `main` branch in your repo:
+```
+git merge upstream/main
+```
+Then, push those changes back to your private Github repo:
+```
+git push
+```
+Finally, you must initialize the git submodules that this repo uses, with:
+```
+git submodule update --init --recursive riscv-tests/
+```
+
+> You may also have noticed the *solutions* submodule. This is a private repo so you'll get an error if you try to update it, either directly or by trying to update all submodules.
+
+You now have a private repo that is linked with the upstream CIS 5710 repo. Next, [grant your group partner access](https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/inviting-collaborators-to-a-personal-repository) and then you're ready to go!
+
+### Pulling changes from upstream
+
+To get the latest changes from the upstream CIS 5710 repo, run:
+```
+git fetch upstream
+git merge upstream/main
+```
+You shouldn't need to update submodules, as we don't anticipate those changing much.
 
 # VSCode
 
