@@ -4,9 +4,17 @@ In this assignment, you will write a simple program in RISC-V (RV) assembly to f
 
 This [table of ASCII character codes](https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html) will be useful.
 
+### Setup
+
+For this and later assignments you will work in
+the course [Docker
+container](https://github.com/cis5710/cis5710-homework/blob/main/README.md#docker). After you get the container running, clone your repo by following [the git setup instructions](https://github.com/cis5710/cis5710-homework/blob/main/README.md#git).
+
+Note that this is an **individual lab**, so you should complete it on your own.
+
 ### Build your code
 
-The `make build` command will assemble your `uppercase.S` file into a RV executable, which can then be run.
+From inside the `hw0` directory, the `make build` command will assemble your `uppercase.S` file into a RV executable, which can then be run.
 
 ### Run your code
 
