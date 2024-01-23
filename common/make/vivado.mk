@@ -82,9 +82,9 @@ endif
 
 test:
 	@echo Run tests via:
-	@echo "     pytest testbench.py"
+	@echo "     pytest-3 testbench.py"
 	@echo You can also filter the tests you run via:
-	@echo "     pytest testbench.py --tests TEST1,TEST2,..."
+	@echo "     pytest-3 testbench.py --tests TEST1,TEST2,..."
 
 # investigate design via GUI debugger
 # ifdef NEEDS_TEST_CASE
