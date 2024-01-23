@@ -11,4 +11,4 @@ start:
 	spike -p1 -m0:0x1000,0x1000:0x1000,0x2000:0x1000,0x10000:0x1000 --isa=rv32im -d uppercase.bin
 
 run:
-	echo -e "str 0 2000\n rs 1000\n str 0 2000\n quit" | spike -p1 -m0:0x1000,0x1000:0x1000,0x2000:0x1000,0x10000:0x1000 --isa=rv32im -d --debug-cmd=/dev/stdin uppercase.bin
+	echo "str 0 2000\n rs 1000\n str 0 2000\n quit" | spike -p1 -m0:0x1000,0x1000:0x1000,0x2000:0x1000,0x10000:0x1000 --isa=rv32im -d --debug-cmd=/dev/stdin uppercase.bin
