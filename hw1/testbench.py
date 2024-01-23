@@ -32,35 +32,36 @@ def runCocotbTests(pytestconfig):
         pass
 
     pointsEarned = 0
-    for top_module in tests_to_run:
-        runr = get_runner(sim)
-        runr.build(
-            verilog_sources=verilog_sources,
-            vhdl_sources=[],
-            hdl_toplevel=top_module,
-            includes=[proj_path],
-            build_dir=SIM_BUILD_DIR,
-            always=True,
-            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
-        ),
+    try:
+        for top_module in tests_to_run:
+            runr = get_runner(sim)
+            runr.build(
+                verilog_sources=verilog_sources,
+                vhdl_sources=[],
+                hdl_toplevel=top_module,
+                includes=[proj_path],
+                build_dir=SIM_BUILD_DIR,
+                always=True,
+                build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
+            ),
 
-        results_file = runr.test(
-            seed=12345,
-            waves=True,
-            hdl_toplevel=top_module, 
-            test_module="testbench",
-            testcase="test_"+top_module,
-        )
-        total_failed = get_results(results_file)
-        # 1 point per test
-        pointsEarned += total_failed[0] - total_failed[1]
+            results_file = runr.test(
+                seed=12345,
+                waves=True,
+                hdl_toplevel=top_module, 
+                test_module="testbench",
+                testcase="test_"+top_module,
+            )
+            total_failed = get_results(results_file)
+            # 1 point per test
+            pointsEarned += total_failed[0] - total_failed[1]
+            pass
+    finally:
+        points = { 'pointsEarned': pointsEarned, 'pointsPossible': len(all_tests) }
+        with open('points.json', 'w') as f:
+            json.dump(points, f, indent=2)
+            pass
         pass
-
-    points = { 'pointsEarned': pointsEarned, 'pointsPossible': len(all_tests) }
-    with open('points.json', 'w') as f:
-        json.dump(points, f, indent=2)
-        pass
-    pass
 
 
 if __name__ == "__main__":
