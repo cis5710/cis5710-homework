@@ -1,3 +1,7 @@
+# Verilator build directory
+sim_build/
+
+# things created by Vivado
 *.bit
 vivado*.log
 vivado*.jou
