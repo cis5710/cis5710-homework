@@ -44,7 +44,7 @@ FROM base as full
 # install Yosys OSS CAD Suite
 RUN mkdir /tools
 ADD https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-20/oss-cad-suite-linux-x64-20240120.tgz /
-RUN xzf oss-cad-suite-linux-x64-20240120.tgz -C /tools/
+RUN tar xzf oss-cad-suite-linux-x64-20240120.tgz -C /tools/
 RUN rm /oss-cad-suite-linux-x64-20240120.tgz
 
 # Create a non-root user named `penn` with sudo privileges, and switch to them
