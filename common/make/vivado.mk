@@ -56,43 +56,48 @@ endif
 	echo -n "synthesis" > .step
 	$(time) vivado -mode batch -source $(TCL_DIR)/build.tcl
 
-# run all tests
-ifdef NEEDS_TEST_CASE
-vtest: $(SYNTH_SOURCES) $(TESTBENCH) .set_testcase.v
-else
-vtest: $(SYNTH_SOURCES) $(TESTBENCH)
-endif
-ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
-endif
-	rm -rf xsim.dir/
-	echo -n verilog mylib $^ > .prj
-	xelab $(XELAB_FLAGS) --debug off --prj .prj --snapshot snapshot.sim --lib mylib mylib.$(TOP_TESTBENCH_MODULE)
-	xsim snapshot.sim --runall --stats -wdb sim.wdb
+# DEPRECATED: run tests with Vivado's xsim
+# ifdef NEEDS_TEST_CASE
+# vtest: $(SYNTH_SOURCES) $(TESTBENCH) .set_testcase.v
+# else
+# vtest: $(SYNTH_SOURCES) $(TESTBENCH)
+# endif
+# ifndef XILINX_VIVADO
+# 	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+# endif
+# 	rm -rf xsim.dir/
+# 	echo -n verilog mylib $^ > .prj
+# 	xelab $(XELAB_FLAGS) --debug off --prj .prj --snapshot snapshot.sim --lib mylib mylib.$(TOP_TESTBENCH_MODULE)
+# 	xsim snapshot.sim --runall --stats -wdb sim.wdb
 
-# run tests with Icarus Verilog simulator
-ifdef NEEDS_TEST_CASE
-test: $(SYNTH_SOURCES) $(TESTBENCH) .set_testcase.v
-else
-test: $(SYNTH_SOURCES) $(TESTBENCH)
-endif
-	@which iverilog || (echo "ERROR: can't find the 'iverilog' program, you need to update your PATH variable. If you're on biglab, run 'export PATH=$PATH:/home1/c/cis571/tools/bin/' and see https://opensource.com/article/17/6/set-path-linux for how to avoid doing this each time you login." && exit 1)
-	iverilog -Wall -Iinclude -s $(TOP_TESTBENCH_MODULE) -o a.out $^
-	./a.out
+# DEPRECATED: run tests with Icarus Verilog simulator
+# ifdef NEEDS_TEST_CASE
+# test: $(SYNTH_SOURCES) $(TESTBENCH) .set_testcase.v
+# else
+# test: $(SYNTH_SOURCES) $(TESTBENCH)
+# endif
+# 	@which iverilog || (echo "ERROR: can't find the 'iverilog' program, you need to update your PATH variable. If you're on biglab, run 'export PATH=$PATH:/home1/c/cis571/tools/bin/' and see https://opensource.com/article/17/6/set-path-linux for how to avoid doing this each time you login." && exit 1)
+# 	iverilog -Wall -Iinclude -s $(TOP_TESTBENCH_MODULE) -o a.out $^
+# 	./a.out
 
+test:
+	@echo Run tests via:
+	@echo "     pytest testbench.py"
+	@echo You can also filter the tests you run via:
+	@echo "     pytest testbench.py --tests TEST1,TEST2,..."
 
 # investigate design via GUI debugger
-ifdef NEEDS_TEST_CASE
-debug: setup-files .set_testcase.v
-else
-debug: setup-files
-endif
-ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
-endif
-	rm -rf .debug-project
-#	echo -n " .set_testcase.v" >> .synthesis-source-files
-	vivado -mode batch -source $(TCL_DIR)/debug.tcl
+# ifdef NEEDS_TEST_CASE
+# debug: setup-files .set_testcase.v
+# else
+# debug: setup-files
+# endif
+# ifndef XILINX_VIVADO
+# 	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+# endif
+# 	rm -rf .debug-project
+# #	echo -n " .set_testcase.v" >> .synthesis-source-files
+# 	vivado -mode batch -source $(TCL_DIR)/debug.tcl
 
 # run synthesis & implementation to generate a bitstream
 impl: setup-files $(IMPL_SOURCES)
