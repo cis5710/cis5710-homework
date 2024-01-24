@@ -27,7 +27,7 @@ After fixing `fulladder`, you can move on to `fulladder2` and finally `rca4`. Th
 
 When a test fails, it tells you that something is wrong, but it doesn't explain why. Careful testing of each module can be helpful in limiting the amount of code you need to examine: if we had only given tests for the `rca4` module, and it fails a test, you don't immediately know whether the bug is in `rca4` itself or in `fulladder2`, `fulladder`, or `halfadder`. But if you start at the bottom of the module hierarchy and work up, you can shorten your debugging journey.
 
-A good place to start when you have a failing test case is to look at the testbench code to understand the test that failed. The `pytest-3` output will tell you which assert inside `testbench.py` failed, and by looking at the `testbench.py` code you can see what was being tested. Once you see which signal has the wrong value, you should try to trace "backwards" and see where the bad value came from. To better understand what is going on, dig into the waveforms.
+A good place to start when you have a failing test case is to look at the testbench code to understand the test that failed. The `pytest-3` output will tell you which assert inside `testbench.py` failed, and by looking at the `testbench.py` code you can see what was being tested. Once you see which hardware signal has the wrong value, you should try to trace "backwards" in the SystemVerilog code and see why the bad value is there. To better understand what is going on, dig into the waveforms! They really make it faster to perform this backwards tracing to hone in on the root cause of the bug.
 
 > cocotb puts waveforms for a failing test in the `sim_build/dump.fst` file.
 
