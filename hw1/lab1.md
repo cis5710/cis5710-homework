@@ -17,10 +17,9 @@ The provided `testbench.py` file tests all possible inputs for each of the
 modules in `rca.sv` - it is a very thorough testbench, made possible because the
 DUTs are quite simple. 
 
-Run the tests by `cd`-ing into the `hw1` directory (where this file is) 
-and running the command `pytest testbench.py --tests halfadder`. The `--tests` flag can be used to filter which tests are run; we start with the `halfadder` since that's the simplest module in `rca.sv` and it doesn't instantiate any other modules, but other modules instantiate it. The tests should pass, indicating that the halfadder is good to go :-).
+Run the tests by `cd`-ing into the `hw1` directory (where this file is) and running the command `pytest-3 testbench.py --tests halfadder`. The `--tests` flag can be used to filter which tests are run; we start with the `halfadder` since that's the simplest module in `rca.sv` and it doesn't instantiate any other modules, but other modules instantiate it. The `pytest-3` command will compile your design and then run the tests on it with the Verilator simulator. The tests should pass, indicating that the halfadder is good to go :-).
 
-Next, run the fulladder tests with `pytest testbench.py --tests fulladder`. Unfortunately, the code will fail to compile. The compiler error can help guide you to what is wrong with the code.
+Next, run the fulladder tests with `pytest-3 testbench.py --tests fulladder`. Unfortunately, the code will fail to compile. The compiler error can help guide you to what is wrong with the code.
 
 ## The rest of the tests
 
@@ -28,7 +27,7 @@ After fixing `fulladder`, you can move on to `fulladder2` and finally `rca4`. Th
 
 When a test fails, it tells you that something is wrong, but it doesn't explain why. Careful testing of each module can be helpful in limiting the amount of code you need to examine: if we had only given tests for the `rca4` module, and it fails a test, you don't immediately know whether the bug is in `rca4` itself or in `fulladder2`, `fulladder`, or `halfadder`. But if you start at the bottom of the module hierarchy and work up, you can shorten your debugging journey.
 
-A good place to start when you have a failing test case is to look at the testbench code to understand the test that failed. The `pytest` output will tell you which assert inside `testbench.py` failed, and by looking at the `testbench.py` code you can see what was being tested. Once you see which signal has the wrong value, you should try to trace "backwards" and see where the bad value came from. To better understand what is going on, dig into the waveforms.
+A good place to start when you have a failing test case is to look at the testbench code to understand the test that failed. The `pytest-3` output will tell you which assert inside `testbench.py` failed, and by looking at the `testbench.py` code you can see what was being tested. Once you see which signal has the wrong value, you should try to trace "backwards" and see where the bad value came from. To better understand what is going on, dig into the waveforms.
 
 > cocotb puts waveforms for a failing test in the `sim_build/dump.fst` file.
 
