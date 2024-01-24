@@ -19,9 +19,9 @@ def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
                 linenum = 1 + len([i for i in newlineIndices if i < obj['start']])
                 pass
             if text is None:
-                print(f'[precheck] ERROR: found illegal code "{tag}" at line {linenum}')
+                print(f'[codecheck] ERROR: found illegal code "{tag}" at line {linenum}')
             else:
-                print(f'[precheck] ERROR: found illegal code "{text}" at line {linenum}')
+                print(f'[codecheck] ERROR: found illegal code "{text}" at line {linenum}')
                 pass
             pass
 
@@ -64,6 +64,8 @@ def runCodecheck(objectIsLegal):
             traverseSyntaxTree(syntaxTree, newlineIndices, objectIsLegal)
             if FOUND_ILLEGAL_CODE:
                 sys.exit(1)
+            else:
+                print("[codecheck] codecheck ok")
                 pass
             pass
         pass
