@@ -17,7 +17,7 @@ The provided `testbench.py` file tests all possible inputs for each of the
 modules in `rca.sv` - it is a very thorough testbench, made possible because the
 DUTs are quite simple. 
 
-Run the tests by `cd`-ing into the `hw1` directory (where this file is) and running the command `pytest-3 testbench.py --tests halfadder`. The `--tests` flag can be used to filter which tests are run; we start with the `halfadder` since that's the simplest module in `rca.sv` and it doesn't instantiate any other modules, but other modules instantiate it. The `pytest-3` command will compile your design and then run the tests on it with the Verilator simulator. The tests should pass, indicating that the halfadder is good to go :-).
+Run the tests by `cd`-ing into the `hw1` directory (where this file is) and running the command `pytest-3 testbench.py --tests halfadder`. The `--tests` flag can be used to filter which tests are run; we start with the `halfadder` since that's the simplest module in `rca.sv` and it doesn't instantiate any other modules, but other modules instantiate it. The `pytest-3` command will compile your design and then run the tests on it with the [Verilator](http://verilator.org) simulator. The tests should pass, indicating that the halfadder is good to go :-).
 
 Next, run the fulladder tests with `pytest-3 testbench.py --tests fulladder`. Unfortunately, the code will fail to compile. The compiler error can help guide you to what is wrong with the code.
 
