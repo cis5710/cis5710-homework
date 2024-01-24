@@ -1,4 +1,4 @@
-# HW1: Verilog Debugging
+# HW1: SystemVerilog Debugging
 
 This homework will introduce you to the process of building, testing and debugging SystemVerilog code.
 
