@@ -45,7 +45,7 @@ are too heavyweight to run with the time/memory limitations in place on eniac, a
 
 ### Generating a bitstream
 
-After you get your code on biglab, change to the `hw1` directory and run the command `make impl` to generate a `.bit` bitstream file. This will run the *implementation* step of the FPGA design flow, mapping your design onto the ZedBoard's hardware. It will take a few minutes. 
+After you get your code on biglab, change to the `hw1` directory and run the command `make impl` to generate a `.bit` bitstream file. This will run the *synthesis* and *implementation* steps of the FPGA design flow, mapping your design onto the ZedBoard's hardware. It will take a few minutes.
 
 When implementation completes, it should create a bitstream file `output/rca4.bit`.
 
