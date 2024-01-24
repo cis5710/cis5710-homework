@@ -42,11 +42,10 @@ time=time -f "Vivado took %E m:s and %M KB"
 # if invoked with no explicit target, print out a help message
 .DEFAULT: help
 help:
-	@echo -e "Valid targets are: check synth test debug impl zip program boot clean"
+	@echo -e "Valid targets are: codecheck synth test debug impl zip program boot clean"
 
-check: $(SYNTH_SOURCES)
-	@echo -e "Writing check output to check.log..."
-	/home1/c/cis571/tools/yosys -p "check; hierarchy -check; flatten; check -assert" $^ | tee check.log
+codecheck: $(SYNTH_SOURCES)
+	python3 codecheck.py $(SYNTH_SOURCES)
 
 # run synthesis to identify code errors/warnings
 synth: setup-files $(SYNTH_SOURCES)
