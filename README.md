@@ -98,6 +98,15 @@ We recommend you use the [homebrew package manager](https://brew.sh):
 brew cask install gtkwave
 ```
 
+Note: If running a new version of homebrew, you may get the following error:
+```
+Error: `brew cask` is no longer a `brew` command. Use `brew <command> --cask` instead.
+```
+Change your command to the following: 
+```
+brew install gtkwave --cask
+```
+
 You can then launch `gtkwave`, and open the `.vcd` file with `File => Open New Window` or `File => Open New Tab`. Running `open SOMETHING.vcd` also opens gtkwave automatically, as does double-clicking the `.vcd` file in Finder.
 
 ### Windows
