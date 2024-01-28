@@ -13,7 +13,7 @@ ZIP_FILE=rca.zip
 # implementation files
 IMPL_SOURCES=$(SYNTH_SOURCES)
 TOP_IMPL_MODULE=rca4
-CONSTRAINTS=lab1.xdc 
+CONSTRAINTS=hw1.xdc 
 BITSTREAM_FILENAME=rca4.bit
 
 include ../common/make/vivado.mk
