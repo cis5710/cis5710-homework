@@ -1,0 +1,7 @@
+Draw a detailed schematic (by hand or computerized) of your hardware design for the divider (described [in the HW2A instructions](hw2a.md)). You should include signal names, module names, port names and bus widths. You can leave a module as a black box to simplify things, but then you should show elsewhere on the schematic what that black box does. Simple modules (muxes, shifters, logical operators, registers) can be drawn as in the lecture slides and don't need further elaboration. For the `divider_unsigned` module, you don't need to draw all 32 instances of the `divu_1iter` module, but should show **the first two and the last one** to demonstrate that you know how to wire them together.
+
+See also [the example schematic for HW1](../hw1/hw1-schematic.pdf). Grading of the schematics will be on a full-credit/no-credit basis. We won't rigorously examine the correctness of your design, but instead aim to give you quick feedback about obvious flaws. Still, it behooves you to invest time in your schematic to catch bugs up-front, instead of looking at waveforms or code.
+
+**Please make sure your PDFs are rotated correctly, and are not insanely huge resolution!** We will take points off for these since they make grading more difficult.
+
+When your schematic is complete, you can translate it directly into SystemVerilog. We encourage you to keep your schematic up-to-date as your design evolves, as it will help ensure your design works as required.

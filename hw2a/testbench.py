@@ -20,47 +20,31 @@ def runCocotbTests(pytestconfig):
     assert hdl_toplevel_lang == "verilog"
     verilog_sources = [proj_path / "divider_unsigned.sv" ]
 
-    # by default, run all tests
-    all_tests = ["divider_unsigned", "divu_1iter"]
-    tests_to_run = all_tests
-
-    if pytestconfig.option.tests != "":
-        tests_to_run = []
-        # filter the tests to run
-        tests_requested = pytestconfig.option.tests.split(",")
-        for tr in tests_requested:
-            assert tr in all_tests, f'Invalid test "{tr}" requested, expecting a comma-separated list from {all_tests}'
-            tests_to_run.append(tr)
-            pass
-        pass
-
     pointsEarned = 0
     try:
-        for top_module in tests_to_run:
-            runr = get_runner(sim)
-            runr.build(
-                verilog_sources=verilog_sources,
-                vhdl_sources=[],
-                hdl_toplevel=top_module,
-                includes=[proj_path],
-                build_dir=SIM_BUILD_DIR,
-                always=True,
-                build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
-            ),
+        runr = get_runner(sim)
+        runr.build(
+            verilog_sources=verilog_sources,
+            vhdl_sources=[],
+            hdl_toplevel="divider_unsigned",
+            includes=[proj_path],
+            build_dir=SIM_BUILD_DIR,
+            always=True,
+            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
+        ),
 
-            results_file = runr.test(
-                seed=12345,
-                waves=True,
-                hdl_toplevel=top_module, 
-                test_module="testbench",
-                testcase="test_"+top_module,
-            )
-            total_failed = get_results(results_file)
-            # 1 point per test
-            pointsEarned += total_failed[0] - total_failed[1]
-            pass
+        results_file = runr.test(
+            seed=12345,
+            waves=True,
+            hdl_toplevel="divider_unsigned", 
+            test_module="testbench",
+            testcase=pytestconfig.option.tests,
+        )
+        total_failed = get_results(results_file)
+        # 1 point per test
+        pointsEarned += total_failed[0] - total_failed[1]
     finally:
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': len(all_tests) }
+        points = { 'pointsEarned': pointsEarned, 'pointsPossible': 5 }
         with open('points.json', 'w') as f:
             json.dump(points, f, indent=2)
             pass
@@ -77,8 +61,44 @@ if __name__ == "__main__":
 #########################
 
 @cocotb.test()
-async def test_divider_unsigned(dut):
-    for i in range(100):
+async def test_simple0(dut):
+    await Timer(1, "ns")
+    dut.i_dividend.value = 4
+    dut.i_divisor.value = 2
+    await Timer(1, "ns")
+    assert 2 == dut.o_quotient.value
+    assert 0 == dut.o_remainder.value
+
+@cocotb.test()
+async def test_simple1(dut):
+    await Timer(1, "ns")
+    dut.i_dividend.value = 4
+    dut.i_divisor.value = 4
+    await Timer(1, "ns")
+    assert 1 == dut.o_quotient.value
+    assert 0 == dut.o_remainder.value
+
+@cocotb.test()
+async def test_simple2(dut):
+    await Timer(1, "ns")
+    dut.i_dividend.value = 10
+    dut.i_divisor.value = 4
+    await Timer(1, "ns")
+    assert 2 == dut.o_quotient.value
+    assert 2 == dut.o_remainder.value
+
+@cocotb.test()
+async def test_simple3(dut):
+    await Timer(1, "ns")
+    dut.i_dividend.value = 2
+    dut.i_divisor.value = 4
+    await Timer(1, "ns")
+    assert 0 == dut.o_quotient.value
+    assert 2 == dut.o_remainder.value
+
+@cocotb.test()
+async def test_random1k(dut):
+    for i in range(1000):
         await Timer(1, "ns")
         dividend = random.randint(0,2**32)
         divisor = random.randint(1,2**32) # NB: no divide-by-zero
@@ -91,40 +111,6 @@ async def test_divider_unsigned(dut):
 
         msg = f'expected {dividend} / {divisor} = {exp_quotient} rem {exp_remainder}\n'
         msg += f'but was quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        assert exp_quotient == dut.o_quotient.value, msg
-        assert exp_remainder == dut.o_remainder.value, msg
-        pass
-    pass
-
-
-@cocotb.test()
-async def test_divu_1iter(dut):
-    for i in range(100):
-        await Timer(1, "ns")
-        dividend = random.randint(0,2**31)
-        divisor = random.randint(1,2**31) # NB: no divide-by-zero
-        remainder = random.randint(0,2**31)
-        quotient = random.randint(0,2**31)
-        dut.i_dividend.value = dividend
-        dut.i_divisor.value = divisor
-        dut.i_remainder.value = remainder
-        dut.i_quotient.value = quotient
-        await Timer(1, "ns")
-
-        # compute expected values
-        exp_remainder = (remainder << 1) | ((dividend >> 31) & 0x1)
-        exp_quotient = quotient << 1
-        if exp_remainder >= divisor:
-            exp_quotient = (quotient << 1) | 0x1
-            exp_remainder = exp_remainder - divisor
-            pass
-        exp_dividend = dividend << 1
-
-        # check against actual values
-        msg = f'input {dividend} / {divisor} rem={remainder} quotient={quotient}\n'
-        msg += f'expected dividend={exp_dividend} quot={exp_quotient} rem={exp_remainder}\n'
-        msg += f'but was dividend={dut.o_dividend.value} quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        assert exp_dividend == dut.o_dividend.value, msg
         assert exp_quotient == dut.o_quotient.value, msg
         assert exp_remainder == dut.o_remainder.value, msg
         pass
