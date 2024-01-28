@@ -4,13 +4,18 @@
 
 import json, sys, subprocess
 
+# objectIsLegal() returns a tuple.
+# First element is True if this object describes a legal code construct, False if an illegal one. 
+# Second element is True if we should continue to iterate into descendent objects, False if we should not.
+
 FOUND_ILLEGAL_CODE = False
 
 def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
     global FOUND_ILLEGAL_CODE
     if isinstance(obj, dict):
 
-        if not objectIsLegal(obj):
+        legalConstruct,descendInto = objectIsLegal(obj)
+        if not legalConstruct:
             FOUND_ILLEGAL_CODE = True
             tag = obj['tag']
             text = obj.get('text', None)
@@ -24,6 +29,8 @@ def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
                 print(f'[codecheck] ERROR: found illegal code "{text}" at line {linenum}')
                 pass
             pass
+        if not descendInto:
+            return
 
         for key, value in obj.items():
             traverseSyntaxTree(value, newlineIndices, objectIsLegal, f"{parent_key}.{key}" if parent_key else key)

@@ -1,5 +1,5 @@
 # source verilog files
-SYNTH_SOURCES=divider.sv
+SYNTH_SOURCES=divider_unsigned.sv
 TOP_SYNTH_MODULE=divider
 
 # testbench files

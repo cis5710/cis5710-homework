@@ -10,14 +10,16 @@ sys.path.append(str(p))
 import main_codecheck
 
 def objectIsLegal(obj):
-    "Return true if this object describes a legal code construct, False if an illegal one."
     
     if 'tag' not in obj:
-        return True
+        return (True,True)
     tag = obj['tag']
     text = obj.get('text', None)
+    if tag == "kTimescaleDirective":
+        # ignore "/" symbol inside `timescale
+        return (True,False)
     if (tag == "SystemTFIdentifier" and text == "$fopen") or tag == "/":
-        return False
-    return True
+        return (False,True)
+    return (True,True)
 
 main_codecheck.runCodecheck(objectIsLegal)
