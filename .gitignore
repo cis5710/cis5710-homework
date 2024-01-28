@@ -1,3 +1,6 @@
+# generated for the autograder
+points.json
+
 # Verilator build directory
 sim_build/
 
