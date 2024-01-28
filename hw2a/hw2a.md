@@ -41,11 +41,11 @@ Your circuit will compute the quotient and remainder in the same way, but in a
 single cycle using combinational logic only.
 
 
-## Corner case: dividing by 0
+## Corner case: divide-by-zero
 
 A divisor of 0 is a special case. You do not need to handle this case in your
-modules. In a later homework, you will need to handle division-by-zero and
-overflow per the RV ISA specification.
+modules. In a later homework, you will need to handle this and other corner
+cases per the RV ISA specification.
 
 ## Disallowed Verilog Operators
 
