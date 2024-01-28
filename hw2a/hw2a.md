@@ -17,10 +17,6 @@ int divide(int dividend, int divisor) {
     int quotient = 0;
     int remainder = 0;
 
-    if (divisor == 0) {
-        return 0;
-    }
-
     for (int i = 0; i < 32; i++) {
         remainder = (remainder << 1) | ((dividend >> 31) & 0x1);
         if (remainder < divisor) {
