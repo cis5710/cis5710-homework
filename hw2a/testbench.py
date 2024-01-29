@@ -19,6 +19,7 @@ def runCocotbTests(pytestconfig):
     proj_path = Path(__file__).resolve().parent
     assert hdl_toplevel_lang == "verilog"
     verilog_sources = [proj_path / "divider_unsigned.sv" ]
+    toplevel_module = "divider_unsigned"
 
     pointsEarned = 0
     try:
@@ -26,7 +27,7 @@ def runCocotbTests(pytestconfig):
         runr.build(
             verilog_sources=verilog_sources,
             vhdl_sources=[],
-            hdl_toplevel="divider_unsigned",
+            hdl_toplevel=toplevel_module,
             includes=[proj_path],
             build_dir=SIM_BUILD_DIR,
             always=True,
@@ -36,8 +37,8 @@ def runCocotbTests(pytestconfig):
         results_file = runr.test(
             seed=12345,
             waves=True,
-            hdl_toplevel="divider_unsigned", 
-            test_module="testbench",
+            hdl_toplevel=toplevel_module,
+            test_module=Path(__file__).stem, # use tests from this file
             testcase=pytestconfig.option.tests,
         )
         total_failed = get_results(results_file)
