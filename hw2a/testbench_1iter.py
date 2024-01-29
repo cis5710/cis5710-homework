@@ -81,10 +81,10 @@ async def test_rem_gte_divisor(dut):
 async def test_random1k(dut):
     for i in range(1000):
         await Timer(1, "ns")
-        dividend = random.randint(0,2**31)
-        divisor = random.randint(1,2**31) # NB: no divide-by-zero
-        remainder = random.randint(0,2**31)
-        quotient = random.randint(0,2**31)
+        dividend = random.randrange(0,2**31)
+        divisor = random.randrange(1,2**31) # NB: no divide-by-zero
+        remainder = random.randrange(0,2**31)
+        quotient = random.randrange(0,2**31)
         dut.i_dividend.value = dividend
         dut.i_divisor.value = divisor
         dut.i_remainder.value = remainder

@@ -101,8 +101,8 @@ async def test_simple3(dut):
 async def test_random1k(dut):
     for i in range(1000):
         await Timer(1, "ns")
-        dividend = random.randint(0,2**32)
-        divisor = random.randint(1,2**32) # NB: no divide-by-zero
+        dividend = random.randrange(0,2**32)
+        divisor = random.randrange(1,2**32) # NB: no divide-by-zero
         dut.i_dividend.value = dividend
         dut.i_divisor.value = divisor
         await Timer(1, "ns")
