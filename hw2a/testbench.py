@@ -22,6 +22,7 @@ def runCocotbTests(pytestconfig):
     toplevel_module = "divider_unsigned"
 
     pointsEarned = 0
+    pointsPossible = 0
     try:
         runr = get_runner(sim)
         runr.build(
@@ -30,22 +31,23 @@ def runCocotbTests(pytestconfig):
             hdl_toplevel=toplevel_module,
             includes=[proj_path],
             build_dir=SIM_BUILD_DIR,
-            always=True,
+            always=True, # always build the code
             build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
         ),
 
-        results_file = runr.test(
+        runr.test(
             seed=12345,
             waves=True,
             hdl_toplevel=toplevel_module,
             test_module=Path(__file__).stem, # use tests from this file
             testcase=pytestconfig.option.tests,
         )
-        total_failed = get_results(results_file)
+    finally:
+        total_failed = get_results(Path(SIM_BUILD_DIR,'runCocotbTests.results.xml'))
         # 1 point per test
         pointsEarned += total_failed[0] - total_failed[1]
-    finally:
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': 5 }
+        pointsPossible = total_failed[0]     
+        points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
         with open('points.json', 'w') as f:
             json.dump(points, f, indent=2)
             pass
