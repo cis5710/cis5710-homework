@@ -27,7 +27,7 @@ Once you have the `gp4` module working, you can move on to the `gp8` module whic
 
 ## cla module
 
-Finally, you will build the 32-bit adder module `cla`. Use the `gp1`, `gp8` and `gp4` modules to build your CLA tree and to compute the final sum. Our `cla` solution is about 30 lines of code.
+Finally, you will build the 32-bit adder module `cla`. Use the `gp1`, `gp4` and `gp8` modules to build your CLA tree and to compute the final sum. Our `cla` solution is about 30 lines of code.
 
 You can test your `cla` module via `pytest-3 testbench.py`. This is the set of tests that the autograder will run; it does not test your `gp4`/`gp8` modules by themselves.
 
