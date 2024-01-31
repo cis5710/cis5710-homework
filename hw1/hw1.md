@@ -44,7 +44,7 @@ are too heavyweight to run with the time/memory limitations in place on eniac, a
 
 ### Generating a bitstream
 
-After you get your code on biglab, run the command `/home1/c/cis5710/tools/cis5710-update-path.sh` to update your `$PATH` variable to find the Vivado tools. Then, change to the `hw1` directory and run the command `make impl` to generate a `.bit` bitstream file. This will run the *synthesis* and *implementation* steps of the FPGA design flow, mapping your design onto the ZedBoard's hardware. It will take a few minutes.
+After you get your code on biglab, run the command `source /home1/c/cis5710/tools/cis5710-update-path.sh` to update your `$PATH` variable to find the Vivado tools. Then, change to the `hw1` directory and run the command `make impl` to generate a `.bit` bitstream file. This will run the *synthesis* and *implementation* steps of the FPGA design flow, mapping your design onto the ZedBoard's hardware. It will take a few minutes.
 
 When implementation completes, it should create a bitstream file `output/rca4.bit`.
 
