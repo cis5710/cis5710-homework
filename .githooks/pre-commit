@@ -1,0 +1,4 @@
+#!/bin/bash
+
+FORBIDDEN='THIS IS SOLUTION CODE'
+git diff --cached --name-only | xargs grep --with-filename -n "$FORBIDDEN" && echo "COMMIT REJECTED Found '$FORBIDDEN' in files to be committed." && exit 1
