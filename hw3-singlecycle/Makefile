@@ -1,19 +1,23 @@
-# source verilog files
+# synthesis
+
 SYNTH_SOURCES=DatapathSingleCycle.sv
 TOP_SYNTH_MODULE=RiscvProcessor
 
-# testbench files
-TESTBENCH=dummy.sv
-TOP_TESTBENCH_MODULE=dummy
+ZIP_SOURCES=DatapathSingleCycle.sv ../hw2a/divider_unsigned.sv ../hw2b/cla.sv \
+	vivado_output/singlecycle.bit vivado_output/post_route_power_report.txt \
+	vivado_output/post_route_timing_summary_report.txt vivado_output/post_route_utilization_report.txt
+ZIP_FILE=single.zip
 
-# zip file that gets uploaded
-#ZIP_SOURCES=rca.sv output/rca4.bit
-#ZIP_FILE=rca.zip
+# testbench
 
-# implementation files
-#IMPL_SOURCES=$(SYNTH_SOURCES)
-#TOP_IMPL_MODULE=rca4
-#CONSTRAINTS=lab1.xdc 
-#BITSTREAM_FILENAME=rca4.bit
+#TESTBENCH=dummy.v
+#TOP_TESTBENCH_MODULE=dummy
+
+# implementation
+
+IMPL_SOURCES=$(SYNTH_SOURCES) system/mmcm.v system/RiscvSystem.sv
+TOP_IMPL_MODULE=RiscvSystem
+CONSTRAINTS=system/hw3-singlecycle.xdc
+BITSTREAM_FILENAME=singlecycle.bit
 
 include ../common/make/vivado.mk
