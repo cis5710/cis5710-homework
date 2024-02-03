@@ -1,4 +1,4 @@
-set outputDir ./output
+set outputDir ./vivado_output
 file mkdir $outputDir
 
 # read the contents of a file and return it as a string

@@ -12,15 +12,15 @@ __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
 
-# variables that should be defined for all labs
-$(call check_defined, SYNTH_SOURCES TOP_SYNTH_MODULE TESTBENCH TOP_TESTBENCH_MODULE, Each lab Makefile should define this)
+# variables that should be defined for all homeworks
+$(call check_defined, SYNTH_SOURCES TOP_SYNTH_MODULE, Each homework Makefile should define this)
 
 ifdef TOP_IMPL_MODULE
-$(call check_defined, IMPL_SOURCES TOP_IMPL_MODULE BITSTREAM_FILENAME CONSTRAINTS, Each implementation lab Makefile should define this)
+$(call check_defined, IMPL_SOURCES TOP_IMPL_MODULE BITSTREAM_FILENAME CONSTRAINTS, Each implementation homework Makefile should define this)
 endif
 
 ifdef ZIP_SOURCES
-$(call check_defined, ZIP_SOURCES ZIP_FILE, Each lab Makefile where a zip file is submitted should define this)
+$(call check_defined, ZIP_SOURCES ZIP_FILE, Each homework Makefile where a zip file is submitted should define this)
 endif
 
 ifndef CIS371_AUTOGRADER
@@ -33,16 +33,17 @@ COMMON_DIR=../common
 TCL_DIR=$(COMMON_DIR)/tcl
 SDBOOT_DIR=$(COMMON_DIR)/sdcard-boot
 SDBOOT_BIF=.boot.bif
+PATH_UPDATE_SOURCE_FILE=~cis5710/tools/cis5710-update-path.sh
 
 time=time -f "Vivado took %E m:s and %M KB"
 
 # NB: the .set_testcase.v target does create a file .set_testcase.v, but we want it to run every time so we declare it phony
-.PHONY: .set_testcase.v debug program pennsim boot clean extraclean
+.PHONY: .set_testcase.v debug codecheck program pennsim boot clean extraclean
 
 # if invoked with no explicit target, print out a help message
 .DEFAULT: help
 help:
-	@echo -e "Valid targets are: codecheck synth test debug impl zip program boot clean"
+	@echo -e "Valid targets are: codecheck synth impl zip program boot clean"
 
 codecheck: $(SYNTH_SOURCES)
 	python3 codecheck.py $(SYNTH_SOURCES)
@@ -50,7 +51,7 @@ codecheck: $(SYNTH_SOURCES)
 # run synthesis to identify code errors/warnings
 synth: setup-files $(SYNTH_SOURCES)
 ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 endif
 	echo -n "synthesis" > .step
 	$(time) vivado -mode batch -source $(TCL_DIR)/build.tcl
@@ -62,7 +63,7 @@ endif
 # vtest: $(SYNTH_SOURCES) $(TESTBENCH)
 # endif
 # ifndef XILINX_VIVADO
-# 	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+# 	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 # endif
 # 	rm -rf xsim.dir/
 # 	echo -n verilog mylib $^ > .prj
@@ -85,14 +86,14 @@ test:
 	@echo You can also filter the tests you run via:
 	@echo "     pytest-3 testbench.py --tests TEST1,TEST2,..."
 
-# investigate design via GUI debugger
+# investigate design via Vivado GUI debugger
 # ifdef NEEDS_TEST_CASE
 # debug: setup-files .set_testcase.v
 # else
 # debug: setup-files
 # endif
 # ifndef XILINX_VIVADO
-# 	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+# 	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 # endif
 # 	rm -rf .debug-project
 # #	echo -n " .set_testcase.v" >> .synthesis-source-files
@@ -101,7 +102,7 @@ test:
 # run synthesis & implementation to generate a bitstream
 impl: setup-files $(IMPL_SOURCES)
 ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 endif
 	echo -n "implementation" > .step
 	$(time) vivado -mode batch -source $(TCL_DIR)/build.tcl
@@ -109,10 +110,10 @@ endif
 # program the device with user-specified bitstream
 program:
 ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 endif
-	@echo -n "Specify .bit file to use to program FPGA, then press <ENTER> [leave blank for output/$(BITSTREAM_FILENAME)]: "
-	@read bitfile && if [ -z "$$bitfile" ]; then export BITSTREAM_FILE="output/$(BITSTREAM_FILENAME)" ; else export BITSTREAM_FILE=$$bitfile; fi && echo $$BITSTREAM_FILE && $(time) vivado -mode batch -notrace -source $(TCL_DIR)/program.tcl
+	@echo -n "Specify .bit file to use to program FPGA, then press <ENTER> [leave blank for vivado_output/$(BITSTREAM_FILENAME)]: "
+	@read bitfile && if [ -z "$$bitfile" ]; then export BITSTREAM_FILE="vivado_output/$(BITSTREAM_FILENAME)" ; else export BITSTREAM_FILE=$$bitfile; fi && echo $$BITSTREAM_FILE && $(time) vivado -mode batch -notrace -source $(TCL_DIR)/program.tcl
 
 # create a zip archive of source code, bitstream, and power/performance/area reports. We filter out warnings because for the ALU-only version of the processor labs we pull in a bitstream, even though the bitstream is only for the full version of the lab
 zip: $(ZIP_SOURCES)
@@ -152,18 +153,14 @@ endif
 endif
 endif
 
-pennsim:
-	rm -f test_data/lab[345]-demo.hex
-	java -jar $(COMMON_DIR)/pennsim/PennSim.jar -t -s $(PENNSIM_SCRIPT)
-
 # make BOOT.BIN image for programming FPGA from an SD card
-boot: output/$(BITSTREAM_FILENAME) $(SDBOOT_DIR)/zynq_fsbl_0.elf
+boot: vivado_output/$(BITSTREAM_FILENAME) $(SDBOOT_DIR)/zynq_fsbl_0.elf
 ifndef XILINX_VIVADO
-	$(error ERROR cannot find Vivado, run "source /home1/c/cis371/software/Vivado/2017.4/settings64.sh")
+	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
 endif
 	echo "the_ROM_image:{[bootloader]"$(SDBOOT_DIR)/zynq_fsbl_0.elf > $(SDBOOT_BIF)
-	echo output/$(BITSTREAM_FILENAME)"}" >> $(SDBOOT_BIF)
-	bootgen -image $(SDBOOT_BIF) -arch zynq -o output/BOOT.BIN
+	echo vivado_output/$(BITSTREAM_FILENAME)"}" >> $(SDBOOT_BIF)
+	bootgen -image $(SDBOOT_BIF) -arch zynq -o vivado_output/BOOT.BIN
 
 # remove Vivado logs and our hidden file
 clean:
@@ -171,6 +168,6 @@ clean:
 	rm -f .synthesis-source-files .simulation-source-files .implementation-source-files .ip-blocks .top-synth-module .top-impl-module .top-level-testbench .set_testcase.v .constraint-files .bitstream-filename .prj $(SDBOOT_BIF)
 	rm -rf xsim.dir/ .Xil/ xelab.pb 
 
-# clean, then remove output/ directory and all .vcd dumps: use with caution!
+# clean, then remove vivado_output/ directory and all .vcd dumps: use with caution!
 extraclean: clean
-	rm -rf output/ *.vcd
+	rm -rf vivado_output/ *.vcd
