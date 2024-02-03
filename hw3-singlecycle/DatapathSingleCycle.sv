@@ -146,6 +146,8 @@ module DatapathSingleCycle (
   wire insn_ecall = insn_opcode == OpEnviron && insn[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
+  // synthesis translate_off
+  // this code is only for simulation, not synthesis
   `include "RvDisassembler.sv"
   string disasm_string;
   always_comb begin
@@ -157,6 +159,7 @@ module DatapathSingleCycle (
   for (i = 0; i < 32; i = i + 1) begin : gen_disasm
     assign disasm_wire[(((i+1))*8)-1:((i)*8)] = disasm_string[31-i];
   end
+  // synthesis translate_on
 
   // program counter
   logic [`REG_SIZE] pcNext, pcCurrent;
