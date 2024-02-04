@@ -24,6 +24,8 @@ If you'd like to install the tools locally instead, you can follow our [Dockerfi
   
 We'll use git to distribute the code and instructions for the labs. Here's our recommended git setup so that you can have a private repo you can share with your group partner, and that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. We'll use github in these instructions, but you can adapt these to other hosting situations as well.
 
+> **Do not fork this repo** on GitHub unless you are submitting a Pull Request to fix something here. For doing your homework, you should start from a new private GitHub repo instead (see below).
+
 ### Setup an SSH key
 
 Don't type in your password every time you push/pull from your repo. [Setup an SSH key on your github account](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key) to enjoy security _and_ more usability!
