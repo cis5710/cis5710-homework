@@ -367,7 +367,7 @@ async def riscvTest(dut, binaryPath=None):
 
 # NB: this test is only for HW3B
 @cocotb.test()
-async def storeLoad(dut):
+async def testStoreLoad(dut):
     "Check that a load can read a previously-stored value."
     if 'RVTEST_ALUBR' in os.environ:
         return
