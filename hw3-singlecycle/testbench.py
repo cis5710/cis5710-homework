@@ -29,6 +29,7 @@ ASSEMBLER = 'riscv64-unknown-elf-as'
 READELF = 'riscv64-unknown-elf-readelf'
 
 RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
+RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
 TIMEOUT_CYCLES = 1_000
 
@@ -37,7 +38,7 @@ def getSectionInfo(binaryPath):
      a key for each section name. The values are also dicts containing information (offset, size, etc) for that section."""
     bp = Path(binaryPath)
     assert bp.exists(), bp
-    cmd = [READELF,'--sections',bp]
+    cmd = [READELF,'--wide','--sections',bp]
     process = subprocess.run(cmd, capture_output=True, check=False, text=True)
     if process.returncode != 0:
         print(f"Error: {process.stderr}")
@@ -102,46 +103,29 @@ def asm(dut, assemblyCode):
     loadBinaryIntoMemory(dut, TEMP_MACHINE_CODE_FILE)
 
 def loadBinaryIntoMemory(dut, binaryPath):
-    """Read the given binary's .text and .data sections, and load them into memory at the appropriate addresses."""
+    """Read the given binary's sections, and load them into memory at the appropriate addresses."""
+    
     sectionInfo = getSectionInfo(binaryPath)
+    dut._log.info(sectionInfo)
+    sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
 
-    # load .text or .text.init section
-    textKey = '.text'
-    if '.text' in sectionInfo:
-        pass
-    else:
-        assert '.text.init' in sectionInfo, sectionInfo
-        textKey = '.text.init'
-        pass
-    offset = sectionInfo[textKey]['offset']
-    length = sectionInfo[textKey]['size']
-    words = extractDataFromBinary(binaryPath, offset, length)
-    memBaseAddr = sectionInfo[textKey]['address']
-    if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
-        memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
-        pass
-    memBaseAddr >>= 2 # convert to word address
-    dut._log.info(f"loading {len(words)} words into memory starting at 0x{memBaseAddr:x}")
-    for i in range(len(words)):
-        dut.mem.mem[memBaseAddr + i].value = words[i]
-        pass
-
-    # load .data section (if it exists)
-    if '.data' in sectionInfo:
-        offset = sectionInfo['.data']['offset']
-        length = sectionInfo['.data']['size']
-
-        words = extractDataFromBinary(binaryPath, offset, length)
-        memBaseAddr = sectionInfo['.data']['address']
+    for sectionName in sectionsToLoad:
+        if sectionName not in sectionInfo:
+            continue
+        offset = sectionInfo[sectionName]['offset']
+        length = sectionInfo[sectionName]['size']
+        words = extractDataFromBinary(binaryPath, offset, length + (length % 4))
+        memBaseAddr = sectionInfo[sectionName]['address']
         if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
             memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
             pass
         memBaseAddr >>= 2 # convert to word address
-        dut._log.info(f"loading {len(words)} words into memory starting at 0x{memBaseAddr:x}")
+        dut._log.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
         for i in range(len(words)):
             dut.mem.mem[memBaseAddr + i].value = words[i]
             pass
         pass
+    pass
 
 
 def oneTimeSetup():
@@ -380,6 +364,32 @@ async def testStoreLoad(dut):
 
     await ClockCycles(dut.clock_proc, 4)
     assert dut.datapath.rf.reg_outs[2].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+
+@cocotb.test()
+async def dhrystone(dut):
+    "Run dhrystone benchmark from riscv-tests"
+    if 'RVTEST_ALUBR' in os.environ:
+        return
+    dsBinary = RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
+    assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
+    loadBinaryIntoMemory(dut, dsBinary)
+    await preTestSetup(dut)
+
+    dut._log.info(f'Running Dhrystone benchmark...')
+    for cycles in range(210_000):
+        await RisingEdge(dut.clock_proc)
+        if cycles > 0 and 0 == cycles % 10_000:
+            dut._log.info(f'ran {int(cycles/1000)}k cycles...')
+            pass
+        if dut.halt.value == 1:
+            # there are 22 output checks, each sets 1 bit
+            expectedValue = (1<<22) - 1
+            assert expectedValue == dut.datapath.rf.reg_outs[5].value.integer
+            latency_millis = (cycles / 5_000_000) * 1000
+            dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 5MHz clock')
+            return
+        pass
+    raise SimTimeoutError()
 
 RV_TEST_BINARIES = [
     RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
