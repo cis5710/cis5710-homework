@@ -153,18 +153,32 @@ def oneTimeSetup():
     assert RISCV_TESTS_PATH.relative_to('..').exists(), f"Couldn't read riscv-tests from {RISCV_TESTS_PATH}"
     pass
 
+async def memClock(dut):
+    # pre-construct triggers for performance
+    high_time = Timer(2, units="ns")
+    low_time = Timer(2, units="ns")
+    await Timer(1, units="ns") # phase shift by 90°
+    while True:
+        dut.clock_mem.value = 1
+        await high_time
+        dut.clock_mem.value = 0
+        await low_time
+        pass
+    pass
+
 async def preTestSetup(dut):
     """Setup the DUT. MUST be called at the start of EACH test."""
-    # Create a 2ns period clock on port clk
-    clock = Clock(dut.clk, 2, units="ns")
-    # Start the clock. Start it low to avoid issues on the first RisingEdge
-    cocotb.start_soon(clock.start(start_high=False))
+    # Create processor clock
+    proc_clock = Clock(dut.clock_proc, 4, units="ns")
+    # Start the clocks
+    cocotb.start_soon(proc_clock.start(start_high=True))
+    cocotb.start_soon(memClock(dut))
     # wait for first rising edge
-    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clock_proc)
 
-    # raise `rst` signal for 2 cycles
+    # raise `rst` signal for one rising edge
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 2)
+    await ClockCycles(dut.clock_proc, 2)
     # lower `rst` signal
     dut.rst.value = 0
     # design should be reset now
@@ -232,7 +246,7 @@ async def testLui(dut):
     asm(dut, 'lui x1,0x12345')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 2)
+    await ClockCycles(dut.clock_proc, 2)
     assert dut.datapath.rf.reg_outs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
@@ -241,7 +255,7 @@ async def testAddi(dut):
     asm(dut, 'addi x1,x0,9')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 2)
+    await ClockCycles(dut.clock_proc, 2)
     assert dut.datapath.rf.reg_outs[1].value == 9, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
@@ -252,22 +266,22 @@ async def testLuiAddi(dut):
         addi x1,x1,0x678''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 3)
+    await ClockCycles(dut.clock_proc, 3)
     assert dut.datapath.rf.reg_outs[1].value == 0x12345678, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testAddiAll(dut):
     "Check all immediate values for addi x1,x0,IMM"
     code = ""
-    for imm in range(-2048,2047):
+    for imm in range(-2048,2048):
         code += f'addi x1,x0,{imm}\n'
         pass
     asm(dut, code)
     await preTestSetup(dut)
-    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clock_proc)
 
     for imm in range(-2048,2047):
-        await RisingEdge(dut.clk)
+        await RisingEdge(dut.clock_proc)
         expected = imm & 0xFFFFFFFF # convert to unsigned, to match cocotb
         assert expected == dut.datapath.rf.reg_outs[1].value.integer, f'failed at cycle {dut.datapath.cycles_current.value.integer} with imm = {imm}'
         pass
@@ -283,7 +297,7 @@ async def testBneNotTaken(dut):
         target: lui x0,0''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 4)
+    await ClockCycles(dut.clock_proc, 4)
     assert dut.datapath.rf.reg_outs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
@@ -297,7 +311,7 @@ async def testBeqNotTaken(dut):
         target: lui x0,0''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 4)
+    await ClockCycles(dut.clock_proc, 4)
     assert dut.datapath.rf.reg_outs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
@@ -311,7 +325,7 @@ async def testBneTaken(dut):
         target: lui x0,0''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 4)
+    await ClockCycles(dut.clock_proc, 3)
     assert dut.datapath.rf.reg_outs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
@@ -323,7 +337,7 @@ async def testEcall(dut):
         ecall''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 2) # check for halt *during* ecall, not afterwards
+    await ClockCycles(dut.clock_proc, 2) # check for halt *during* ecall, not afterwards
     assert dut.datapath.halt.value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
@@ -341,7 +355,7 @@ async def riscvTest(dut, binaryPath=None):
 
     dut._log.info(f'Running RISC-V test at {binaryPath}')
     for cycles in range(TIMEOUT_CYCLES):
-        await RisingEdge(dut.clk)
+        await RisingEdge(dut.clock_proc)
         if dut.halt.value == 1:
             # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
             assert 93 == dut.datapath.rf.reg_outs[17].value.integer # magic value from pass/fail functions
@@ -364,7 +378,7 @@ async def storeLoad(dut):
         ''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 4)
+    await ClockCycles(dut.clock_proc, 4)
     assert dut.datapath.rf.reg_outs[2].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 RV_TEST_BINARIES = [
