@@ -92,7 +92,7 @@ def asm(dut, assemblyCode):
         pass
 
     # Use subprocess to run the assembler command
-    command = [ASSEMBLER, "-march=rv32i", "-o", TEMP_MACHINE_CODE_FILE]
+    command = [ASSEMBLER, "-march=rv32im", "-o", TEMP_MACHINE_CODE_FILE]
     process = subprocess.run(command, input=assemblyCode, capture_output=True, text=True, check=False)
     if process.returncode != 0:
         dut._log.error(f"Error: {process.stderr}")
