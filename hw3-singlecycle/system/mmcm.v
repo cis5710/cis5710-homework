@@ -94,7 +94,7 @@ wire clk_in2_clk_wiz_0;
 
   wire        clk_proc_clk_wiz_0;
   wire        clk_mem_clk_wiz_0;
-  wire        clk_out3_clk_wiz_0;
+  wire        clk_oled_clk_wiz_0;
   wire        clk_out4_clk_wiz_0;
   wire        clk_out5_clk_wiz_0;
   wire        clk_out6_clk_wiz_0;
@@ -126,20 +126,30 @@ wire clk_in2_clk_wiz_0;
   (* ASYNC_REG = "TRUE" *)
   reg  [7 :0] seq_reg2 = 0;
 
+  // TODO: adjust your clock frequency here as needed. 
+  // CLOCK_DIVIDER must be in the range [1,128] and a multiple of 0.125. We use a macro to 
+  // ensure that the processor and memory clocks are adjusted together.
+  // End frequency is ((100 MHz / DIVCLK_DIVIDE) * CLKFBOUT_MULT_F) / CLOCK_DIVIDER
+  // 
+  // While DIVCLK_DIVIDE and CLKFBOUT_MULT_F can also be adjusted, there are also internal constraints
+  // on their values so not all sets of values are permitted. E.g., the total range of supported clock 
+  // frequencies for our ZedBoard is [4.6875,800] MHz.
+  `define CLOCK_DIVIDER 128
+
   MMCME2_ADV
   #(.BANDWIDTH            ("OPTIMIZED"),
     .CLKOUT4_CASCADE      ("FALSE"),
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
-    .DIVCLK_DIVIDE        (5),
-    .CLKFBOUT_MULT_F      (32.000),
+    .DIVCLK_DIVIDE        (5),      // must be in [1,106]
+    .CLKFBOUT_MULT_F      (32.000), // must be in [2,64]
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (128.000),
+    .CLKOUT0_DIVIDE_F     (`CLOCK_DIVIDER),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKOUT1_DIVIDE       (128),
+    .CLKOUT1_DIVIDE       (`CLOCK_DIVIDER),
     .CLKOUT1_PHASE        (90.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
