@@ -27,6 +27,7 @@ set_part xc7z020clg484-1
 # only add IP blocks if there are any
 if { [string length [get_file_contents .ip-blocks]] > 0 } {
     read_ip [get_file_contents .ip-blocks]
+    upgrade_ip [get_ips]
 
     # generate synthesis targets for IP blocks, so they will get synthesized by synth_design below
     if { [llength [get_ips]] > 0 } {
