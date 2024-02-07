@@ -71,6 +71,16 @@
 set_property PACKAGE_PIN Y9 [get_ports {CLOCK_100MHz}];
 
 # ----------------------------------------------------------------------------
+# OLED Display - Bank 13
+# ---------------------------------------------------------------------------- 
+set_property PACKAGE_PIN U10  [get_ports {OLED_DC}];  # "OLED-DC"
+set_property PACKAGE_PIN U9   [get_ports {OLED_RES}];  # "OLED-RES"
+set_property PACKAGE_PIN AB12 [get_ports {OLED_SCLK}];  # "OLED-SCLK"
+set_property PACKAGE_PIN AA12 [get_ports {OLED_SDIN}];  # "OLED-SDIN"
+set_property PACKAGE_PIN U11  [get_ports {OLED_VBAT}];  # "OLED-VBAT"
+set_property PACKAGE_PIN U12  [get_ports {OLED_VDD}];  # "OLED-VDD"
+
+# ----------------------------------------------------------------------------
 # User LEDs - Bank 33
 # ----------------------------------------------------------------------------
 set_property PACKAGE_PIN U14 [get_ports {LED[7]}]
@@ -149,6 +159,14 @@ set_property IOSTANDARD LVCMOS18 [get_ports {BTN_C}];
 #set_property IOSTANDARD LVCMOS33 [get_ports {SWITCH[*]}];
 #set_property IOSTANDARD LVCMOS25 [get_ports {SWITCH[*]}];
 set_property IOSTANDARD LVCMOS18 [get_ports {SWITCH[*]}];
+
+# Note that the bank voltage for IO Bank 13 is fixed to 3.3V on ZedBoard. 
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_DC}];
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_RES}];
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_SCLK}];
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_SDIN}];
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_VBAT}];
+set_property IOSTANDARD LVCMOS33 [get_ports {OLED_VDD}];
 
 # Note that the voltages for the LEDs, clock, and VGA signals are fixed to 3.3V
 set_property IOSTANDARD LVCMOS33 [get_ports {LED[*]}];
