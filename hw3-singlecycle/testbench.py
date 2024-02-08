@@ -1,7 +1,6 @@
 import cocotb
 import json
 import os
-import re
 import shutil
 import subprocess
 
@@ -12,6 +11,12 @@ from cocotb.result import SimTimeoutError
 from cocotb.runner import get_runner, get_results
 from cocotb.triggers import RisingEdge, ClockCycles
 from cocotb.triggers import Timer
+
+import sys
+
+p = Path.cwd() / '..' / 'common' / 'python'
+sys.path.append(str(p))
+import riscv_binary_utils
 
 # directory where our simulator will compile our tests + code
 SIM_BUILD_DIR = "sim_build"
@@ -32,57 +37,6 @@ RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
 RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
 TIMEOUT_CYCLES = 1_000
-
-def getSectionInfo(binaryPath):
-    """Returns information about the sections in the binary given at `binaryPath`. Returns a dictionary with
-     a key for each section name. The values are also dicts containing information (offset, size, etc) for that section."""
-    bp = Path(binaryPath)
-    assert bp.exists(), bp
-    cmd = [READELF,'--wide','--sections',bp]
-    process = subprocess.run(cmd, capture_output=True, check=False, text=True)
-    if process.returncode != 0:
-        print(f"Error: {process.stderr}")
-        process.check_returncode() # throws
-        pass
-
-    section_headers = {}
-    header_pattern = re.compile(r'\[\s*(\d+)\]\s+([.]\S+)\s+(\S*)\s+([0-9a-fA-F]+)\s+([0-9a-fA-F]+)\s+([0-9a-fA-F]+)\s+(\S*)')
-
-    for line in process.stdout.splitlines():
-        match = header_pattern.search(line)
-        if match:
-            index, name, type_, addr, offset, size, es = match.groups()
-            section_headers[name] = {
-                'name': name,
-                'type': type_,
-                'address': int(addr, 16),
-                'offset': int(offset, 16),
-                'size': int(size, 16),
-                'ES': int(es, 16),
-                #'flags': flags,
-                #'Lk': int(lk),
-                #'Inf': int(inf),
-                #'Al': int(al)
-            }
-            pass
-        pass
-
-    return section_headers
-
-def extractDataFromBinary(binaryPath, offset, length):
-    """read the given chunk of the binary, returning a list of ints (4B words)"""
-    assert 0 == length % 4, f"can only read multiples of 4B words, but section length is {length} bytes"
-
-    with open(binaryPath, 'rb') as file:
-        # Seek to the start of the .text section
-        file.seek(offset)
-        # read the bytes, one 4B word at a time
-        words = []
-        for _ in range(int(length / 4)):
-            insnBytes = file.read(4)
-            words.append(int.from_bytes(insnBytes, 'little'))
-            pass
-        return words
 
 def asm(dut, assemblyCode):
     """Assembles the given RISC-V code, returning the machine code as a list of numbers"""
@@ -105,8 +59,8 @@ def asm(dut, assemblyCode):
 def loadBinaryIntoMemory(dut, binaryPath):
     """Read the given binary's sections, and load them into memory at the appropriate addresses."""
     
-    sectionInfo = getSectionInfo(binaryPath)
-    dut._log.info(sectionInfo)
+    sectionInfo = riscv_binary_utils.getSectionInfo(binaryPath)
+    #dut._log.info(sectionInfo)
     sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
 
     for sectionName in sectionsToLoad:
@@ -114,7 +68,7 @@ def loadBinaryIntoMemory(dut, binaryPath):
             continue
         offset = sectionInfo[sectionName]['offset']
         length = sectionInfo[sectionName]['size']
-        words = extractDataFromBinary(binaryPath, offset, length + (length % 4))
+        words = riscv_binary_utils.extractDataFromBinary(binaryPath, offset, length + (length % 4))
         memBaseAddr = sectionInfo[sectionName]['address']
         if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
             memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
@@ -222,7 +176,6 @@ if __name__ == "__main__":
 ########################
 ## TEST CASES GO HERE ##
 ########################
-
 
 @cocotb.test()
 async def testLui(dut):
