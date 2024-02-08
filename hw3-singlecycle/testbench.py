@@ -184,7 +184,7 @@ async def testLui(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 2)
-    assert dut.datapath.rf.reg_outs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testAddi(dut):
@@ -193,7 +193,7 @@ async def testAddi(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 2)
-    assert dut.datapath.rf.reg_outs[1].value == 9, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 9, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testLuiAddi(dut):
@@ -204,7 +204,7 @@ async def testLuiAddi(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 3)
-    assert dut.datapath.rf.reg_outs[1].value == 0x12345678, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x12345678, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testAddiAll(dut):
@@ -220,7 +220,7 @@ async def testAddiAll(dut):
     for imm in range(-2048,2047):
         await RisingEdge(dut.clock_proc)
         expected = imm & 0xFFFFFFFF # convert to unsigned, to match cocotb
-        assert expected == dut.datapath.rf.reg_outs[1].value.integer, f'failed at cycle {dut.datapath.cycles_current.value.integer} with imm = {imm}'
+        assert expected == dut.datapath.rf.regs[1].value.integer, f'failed at cycle {dut.datapath.cycles_current.value.integer} with imm = {imm}'
         pass
     pass
 
@@ -235,7 +235,7 @@ async def testBneNotTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
-    assert dut.datapath.rf.reg_outs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test()
@@ -249,7 +249,7 @@ async def testBeqNotTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
-    assert dut.datapath.rf.reg_outs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test()
@@ -263,7 +263,7 @@ async def testBneTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 3)
-    assert dut.datapath.rf.reg_outs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test()
@@ -295,8 +295,8 @@ async def riscvTest(dut, binaryPath=None):
         await RisingEdge(dut.clock_proc)
         if dut.halt.value == 1:
             # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
-            assert 93 == dut.datapath.rf.reg_outs[17].value.integer # magic value from pass/fail functions
-            resultCode = dut.datapath.rf.reg_outs[10].value.integer
+            assert 93 == dut.datapath.rf.regs[17].value.integer # magic value from pass/fail functions
+            resultCode = dut.datapath.rf.regs[10].value.integer
             assert 0 == resultCode, f'failed test {resultCode >> 1} at cycle {dut.datapath.cycles_current.value.integer}'
             return
         pass
@@ -316,7 +316,7 @@ async def testStoreLoad(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
-    assert dut.datapath.rf.reg_outs[2].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[2].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def dhrystone(dut):
@@ -337,7 +337,7 @@ async def dhrystone(dut):
         if dut.halt.value == 1:
             # there are 22 output checks, each sets 1 bit
             expectedValue = (1<<22) - 1
-            assert expectedValue == dut.datapath.rf.reg_outs[5].value.integer
+            assert expectedValue == dut.datapath.rf.regs[5].value.integer
             latency_millis = (cycles / 5_000_000) * 1000
             dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 5MHz clock')
             return

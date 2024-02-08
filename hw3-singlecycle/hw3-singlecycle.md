@@ -1,11 +1,10 @@
 # Homework 3: Single-cycle Datapath
 
-`DatapathSingleCycle.sv` has your starter code, including the memory, the program counter, and signals useful for decoding rv32im instructions. This homework has two milestones, described next.
+`DatapathSingleCycle.sv` has your starter code, including the memory, the program counter, and signals useful for decoding rv32im instructions. This homework builds upon previous assignments, and you will need to **copy your divider and CLA .sv files** into this directory so that they can be used in your processor.
 
-We have recently updated the `riscv-tests` submodule with the binaries needed for testing your processor. Be sure you get those changes by running (from the root directory of your git repo) the command:
-```
-git submodule update --recursive riscv-tests/
-```
+> We have recently updated the `riscv-tests` submodule with the binaries needed for testing your processor. Be sure you get those changes by running (from the root directory of your git repo) the command: `git submodule update --recursive riscv-tests/`
+
+This homework has two milestones, described next.
 
 ## HW3A: ALU & Branch Instructions
 
@@ -34,7 +33,7 @@ The assembly code for each RV test is available to help you understand what each
 
 In this second milestone, you will need to support the remaining rv32im instructions. The memory instructions, with multi-byte loads and stores, will likely be where you spend the most time.
 
-You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest-3 testbench.py` to run all of the RV tests against your processor.
+You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest-3 testbench.py` to run all of the RV tests against your processor. This will also run the larger [Dhrystone benchmark](https://en.wikipedia.org/wiki/Dhrystone) ([source code here](https://github.com/cis5710/riscv-tests/tree/master/benchmarks/dhrystone)) which runs about 190k instructions through your processor, and will allow us to make performance comparisons across the processors we build.
 
 All told, your implementation should need around 300-400 lines of code.
 
@@ -46,13 +45,53 @@ You cannot use the `-`, `/` or `%` operators in your code.
 
 You can edit the `testOneRiscvTest` test in `testbench.py` to run any single RV test, which will result in much simpler waveforms.
 
-In GtkWave, use the `disasm_wire` signal (be sure to change the Data Format of `ASCII`) to view the assembly code for the current instruction. This, along with the PC and `cycles_current` value, can help you track what your processor is doing. This disassembler has not been extensively tested, however, so it may contain bugs.
+In GtkWave, use the `disasm_wire` signal (be sure to change the Data Format to `ASCII`) to view the assembly code for the current instruction. This, along with the PC and `cycles_current` value, can help you track what your processor is doing. This disassembler has not been extensively tested, however, so it may contain bugs. PRs welcome!
 
-The tests in `testbench.py` are arranged in the order in which we recommend you add instructions, as sometimes a test depends on instructions from earlier tests, e.g., the `fence_i` test has self-modifying code and requires working load and store instructions. Always re-run old tests to make sure that your additions have not broken anything.
+The tests in `testbench.py` are arranged in the order in which we recommend you work on implementing instructions, as sometimes a test depends on instructions from earlier tests, e.g., the store tests use load instructions to verify that the stores updated memory properly. Always re-run old tests to make sure that your changes have not broken anything.
 
 
+## Check timing closure
 
-## Submitting
+For this homework, in addition to the usual testing in simulation, you will also run the Vivado toolchain on your code to translate it into an FPGA bitstream. You don't need to actually load your bitstream onto an FPGA, but you should verify that your design has reached *timing closure*, which means that the logic you've designed can be run safely at the clock speed you specify. The clock speed for HW3 is currently set at 5MHz, which is sufficient for our solution but YMMV.
+
+To verify timing closure, run `make impl`.m
+
+> This command will only work on biglab.seas.upenn.edu, which is where Vivado is installed. Run the command `source /home1/c/cis5710/tools/cis5710-update-path.sh` to add Vivado to your path. See the [HW1 demo instructions](../hw1/hw1.md#optional-zedboard-demo) for more details.
+
+After `make impl` completes (which will take 5-10 minutes), examine the `vivado_output/post_route_timing_summary_report.txt` file that is generated as part of the implementation process. Look for the *Design Timing Summary* section of the report that looks like this:
+```
+------------------------------------------------------------------------------------------------
+| Design Timing Summary
+| ---------------------
+------------------------------------------------------------------------------------------------
+
+    WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints
+    -------      -------  ---------------------  -------------------
+     87.841        0.000                      0                  569
+
+
+All user specified timing constraints are met.
+```
+
+The WNS (Worst case Negative Slack) is the key metric, which describes how long before the clock edge the signal(s) on the critical path were stable. If WNS is a positive value, then timing closure has been achieved. If it is negative then **timing closure has not been achieved**, and you ideally would run with a slower clock. Unfortunately, our 5 MHz clock is already very close to the minimum frequency that the ZedBoard can generate with our current clocking mechanism. If your design does not meet timing, go ahead and **submit it anyway**. Your score is based solely on the functional tests, not on timing.
+
+We next discuss how to adjust the clock frequency, which will be useful in future homework assignments.
+
+### Buying yourself some time
+
+To change the clock frequency, edit the file `hw3-singlecycle/system/mmcm.v` following the instructions at line 129. You can use the slack reported by Vivado to guide your decision about a new frequency to choose. E.g., if your design has a slack of -2ns, then your clock period needs to be at least 2ns longer. [This online calculator](https://www.sensorsone.com/period-to-frequency-calculator/) is handy for translating a clock period into a frequency.
+
+Re-run `make impl` and see if you achieve timing closure with the slower clock. Overall, it pays to go with a slower clock than absolutely necessary. There are many ways to ask Vivado to try harder to achieve timing closure, though this will lengthen compilation times, so we won't cover them here.
+
+### Reporting timing results
+
+Your timing results (and metrics for area and power) are automatically included in the .zip file you submit via Canvas. We'll use this to look at resource consumption across all the designs in the class.
+
+
+## Optional ZedBoard Demo
 
 TBD
 
+## Submitting
+
+For both HW3A and HW3B, run `make zip` and submit the `single.zip` file on Gradescope.
