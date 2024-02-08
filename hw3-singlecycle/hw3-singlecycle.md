@@ -52,9 +52,9 @@ The tests in `testbench.py` are arranged in the order in which we recommend you 
 
 ## Check timing closure
 
-For this homework, in addition to the usual testing in simulation, you will also run the Vivado toolchain on your code to translate it into an FPGA bitstream. You don't need to actually load your bitstream onto an FPGA, but you should verify that your design has reached *timing closure*, which means that the logic you've designed can be run safely at the clock speed you specify. The clock speed for HW3 is currently set at 5MHz, which is sufficient for our solution but YMMV.
+For this homework, in addition to the usual testing in simulation, you will also run the Vivado toolchain on your code to translate it into an FPGA bitstream. You don't need to actually load your bitstream onto an FPGA, but you should see if your design has reached *timing closure*, which means that the logic you've designed can be run safely at the clock speed you specify. The clock speed for HW3 is currently set at 5MHz, which is sufficient for our solution but YMMV.
 
-To verify timing closure, run `make impl`.m
+To verify timing closure, run `make impl`.
 
 > This command will only work on biglab.seas.upenn.edu, which is where Vivado is installed. Run the command `source /home1/c/cis5710/tools/cis5710-update-path.sh` to add Vivado to your path. See the [HW1 demo instructions](../hw1/hw1.md#optional-zedboard-demo) for more details.
 
@@ -73,7 +73,7 @@ After `make impl` completes (which will take 5-10 minutes), examine the `vivado_
 All user specified timing constraints are met.
 ```
 
-The WNS (Worst case Negative Slack) is the key metric, which describes how long before the clock edge the signal(s) on the critical path were stable. If WNS is a positive value, then timing closure has been achieved. If it is negative then **timing closure has not been achieved**, and you ideally would run with a slower clock. Unfortunately, our 5 MHz clock is already very close to the minimum frequency that the ZedBoard can generate with our current clocking mechanism. If your design does not meet timing, go ahead and **submit it anyway**. Your score is based solely on the functional tests, not on timing.
+The WNS (Worst case Negative Slack) is the key metric, which describes how long before the clock edge the signal(s) on the critical path were stable. If WNS is a positive value, then timing closure has been achieved. If it is negative then **timing closure has not been achieved**, and you ideally would run with a slower clock. Unfortunately, our 5 MHz clock is already very close to the minimum frequency that the ZedBoard can generate. If your design does not meet timing, go ahead and **submit it anyway**. Your score is based solely on the functional tests, not on timing.
 
 We next discuss how to adjust the clock frequency, which will be useful in future homework assignments.
 
