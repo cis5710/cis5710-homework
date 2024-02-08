@@ -8,6 +8,7 @@ module OledDevice(
     // general ports
     input wire rst,
     input wire clock_mem,
+    input wire oled_power_button,
     // whether the OLED display is on or not
     output logic oled_on,
 
@@ -34,7 +35,7 @@ module OledDevice(
         $readmemh("oled_initial_contents.hex", mem, 0);
     end
 
-    // use same clock edge as the memory
+    // use same clock edge as the data memory
     always @(negedge clock_mem) begin
         if (rst) begin
         end else begin
@@ -45,6 +46,10 @@ module OledDevice(
             load_data <= mem[addr[5:4]][addr[3:0]];
         end
     end
+
+wire oled_rst;
+debouncer #(.COUNT_MAX(8191), .COUNT_WIDTH(13)) db_oled_power_button
+(.clk(OLED_CONTROL_CLK), .A(oled_power_button), .B(oled_rst));
 
 //state machine codes
    localparam Idle       = 0;
@@ -114,7 +119,7 @@ module OledDevice(
    always@(posedge OLED_CONTROL_CLK)
      case (state)
        Idle: begin
-          if (rst == 1'b1 && init_ready == 1'b1) begin
+          if (oled_rst == 1'b1 && init_ready == 1'b1) begin
              disp_on_start <= 1'b1;
              state <= Init;
           end
@@ -123,11 +128,11 @@ module OledDevice(
        end
        Init: begin
           disp_on_start <= 1'b0;
-          if (rst == 1'b0 && init_done == 1'b1)
+          if (oled_rst == 1'b0 && init_done == 1'b1)
             state <= Active;
        end
        Active: begin // hold until ready, then accept input
-          if (rst && disp_off_ready) begin
+          if (oled_rst && disp_off_ready) begin
              disp_off_start <= 1'b1;
              state <= Done;
           end else if (once == 0 && write_ready) begin
@@ -166,7 +171,7 @@ module OledDevice(
        end
        Done: begin
           disp_off_start <= 1'b0;
-          if (rst == 1'b0 && init_ready == 1'b1)
+          if (oled_rst == 1'b0 && init_ready == 1'b1)
             state <= Idle;
        end
        default: state <= Idle;

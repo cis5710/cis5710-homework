@@ -1,6 +1,6 @@
 `timescale 1ns / 1ns
 
-module RiscvSystem(/* Clock */
+module RiscvSystem(// input clock
                   input wire        CLOCK_100MHz,
 
                   // LEDs, buttons, switches
@@ -21,16 +21,13 @@ module RiscvSystem(/* Clock */
                   output wire       OLED_VDD
     );
 
-   // CLOCK MANAGEMENT
    wire          clocks_ok;
    wire          clock_processor; // processor clock
    wire clock_mem;
 
   wire RESET_SWITCH;
-  // NB: ZedBoard switches are active-high
-  //debouncer #(.COUNT_MAX(65535), .COUNT_WIDTH(16)) db_reset_switch
-  //  (.clk(clock_processor), .A(SWITCH[0]), .B(RESET_SWITCH));
 
+  // NB: ZedBoard switches are active-high
   // TODO: should really debounce this first...
   assign RESET_SWITCH = ~SWITCH[0];
 
@@ -46,7 +43,7 @@ module RiscvSystem(/* Clock */
     .clk_in1(CLOCK_100MHz)
   );
 
-  wire global_reset = ~clocks_ok | RESET_SWITCH;
+  wire global_reset = RESET_SWITCH;
 
   wire [`REG_SIZE] pc_to_imem, insn_from_imem, addr_from_proc,
     load_data_from_dmem, store_data_from_proc;
@@ -57,7 +54,7 @@ module RiscvSystem(/* Clock */
   wire oled_on;
 
   localparam int MmapMemoryStart = 32'd0;
-  localparam int MmapOledStart = 32'h1000_0000;
+  localparam int MmapOledStart = 32'h2000_0000;
 
   // memory mapped devices
   logic [`REG_SIZE] load_data_to_proc;
@@ -82,6 +79,7 @@ module RiscvSystem(/* Clock */
     // shared ports
     .rst(global_reset),
     .clock_mem(clock_mem),
+    .oled_power_button(BTN_L),
     .oled_on(oled_on),
 
     // ports for the memory-mapped interface
@@ -128,7 +126,7 @@ module RiscvSystem(/* Clock */
 
   // wire up LEDs
   assign LED[0] = global_reset;
-  assign LED[1] = ~global_reset;
+  assign LED[1] = clocks_ok;
   assign LED[2] = datapath_halted;
   assign LED[3] = oled_on;
 
