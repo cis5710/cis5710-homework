@@ -22,7 +22,7 @@ We recommend that you move through the tests in `testbench.py` in order, from `t
 RVTEST_ALUBR=1 pytest-3 testbench.py
 ```
 
-> If you're curious about these test names, `rv32` means these are tests for the 32-bit RV ISA. `u` means they are for userspace instructions, as opposed to the *privileged* instructions an OS would use. `i` is the base integer instruction set. `-p-` indicates that the system supports only physical (not virtual) memory, and the suffix is the opcode being tested (e.g., `lui`), though other instructions are also used as part of the test as well.
+> If you're curious about these test names, `rv32` means these are tests for the 32-bit RV ISA. `u` means they are for userspace instructions, as opposed to the *privileged* instructions an OS would use. `i` is the base integer instruction set. `-p-` indicates that the system supports only physical (not virtual) memory, and the suffix is the primary opcode being tested (e.g., `lui`), though other instructions are also used as part of the test as well.
 
 You will need to use your CLA adder from HW2B to implement the `addi`, `add` and `sub` instructions. In other situations in which you need to add things (e.g., incrementing the PC or computing branch targets), you can use the SystemVerilog `+` operator.
 
