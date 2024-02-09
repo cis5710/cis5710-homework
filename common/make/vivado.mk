@@ -117,7 +117,7 @@ endif
 
 # create a zip archive of source code, bitstream, and power/performance/area reports. We filter out warnings because for the ALU-only version of the processor labs we pull in a bitstream, even though the bitstream is only for the full version of the lab
 zip: $(ZIP_SOURCES)
-	zip $(ZIP_FILE) $(ZIP_SOURCES) | grep -v warning
+	zip -j $(ZIP_FILE) $(ZIP_SOURCES) | grep -v warning
 
 # place arguments to Tcl debug/synthesis/implementation scripts into hidden files
 setup-files:
