@@ -303,11 +303,9 @@ async def riscvTest(dut, binaryPath=None):
     raise SimTimeoutError()
 
 # NB: this test is only for HW3B
-@cocotb.test()
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testStoreLoad(dut):
     "Check that a load can read a previously-stored value."
-    if 'RVTEST_ALUBR' in os.environ:
-        return
     asm(dut, '''
         lui x1,0x12345
         sw x1,32(x0) # store x1 to address [32]. NB: code starts at address 0, don't overwrite it!
@@ -318,11 +316,11 @@ async def testStoreLoad(dut):
     await ClockCycles(dut.clock_proc, 4)
     assert dut.datapath.rf.regs[2].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
-@cocotb.test()
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def dhrystone(dut):
     "Run dhrystone benchmark from riscv-tests"
-    if 'RVTEST_ALUBR' in os.environ:
-        return
+    #if 'RVTEST_ALUBR' in os.environ:
+    #    return
     dsBinary = RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
     assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
     loadBinaryIntoMemory(dut, dsBinary)
