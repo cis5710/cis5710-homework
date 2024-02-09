@@ -10,7 +10,7 @@ This homework has two milestones, described next.
 
 ## HW3A: ALU & Branch Instructions
 
-You should start by completing your register file in the `RegFile` module. We have provided a set of register file tests that you can run via `pytest-3 testbench_regfile.py`.
+You should start by completing your register file in the `RegFile` module. We have provided a set of register file tests that you can run via `pytest-3 -s testbench_regfile.py`.
 
 Once your register file is working, you can start implementing your processor. For this milestone, your processor must support ALU instructions (`lui` through `and` on our [ISA sheet](../riscv isa reference sheet.pdf)), branches (`beq` through `bgeu`) and the `ecall` instruction.
 
@@ -21,7 +21,7 @@ You should start with `lui`, which loads an immediate into the upper bits of a r
 We recommend that you move through the tests in `testbench.py` in order, from `testLui` to `testEcall`. Once those pass, you are ready to start running assembly tests from the [official RISC-V test suite](https://github.com/riscv-software-src/riscv-tests). The tests are listed at the bottom of `testbench.py`. You should start with `rv32ui-p-simple` and work your way down. The autograder will run the tests up through `rv32ui-p-bne`. To run the same tests that the autograder will, use the command:
 
 ```
-RVTEST_ALUBR=1 pytest-3 testbench.py
+RVTEST_ALUBR=1 pytest-3 -s testbench.py
 ```
 
 > If you're curious about these test names, `rv32` means these are tests for the 32-bit RV ISA. `u` means they are for userspace instructions, as opposed to the *privileged* instructions an OS would use. `i` is the base integer instruction set. `-p-` indicates that the system supports only physical (not virtual) memory, and the suffix is the primary opcode being tested (e.g., `lui`), though other instructions are also used as part of the test as well.
@@ -35,7 +35,7 @@ The assembly code for each RV test is available to help you understand what each
 
 In this second milestone, you will need to support the remaining rv32im instructions. The memory instructions, with multi-byte loads and stores, will likely be where you spend the most time.
 
-You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest-3 testbench.py` to run all of the RV tests against your processor. This will also run the larger [Dhrystone benchmark](https://en.wikipedia.org/wiki/Dhrystone) ([source code here](https://github.com/cis5710/riscv-tests/tree/master/benchmarks/dhrystone)) which runs about 190k instructions through your processor, and will allow us to make performance comparisons across the processors we build.
+You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest-3 -s testbench.py` to run all of the RV tests against your processor. This will also run the larger [Dhrystone benchmark](https://en.wikipedia.org/wiki/Dhrystone) ([source code here](https://github.com/cis5710/riscv-tests/tree/master/benchmarks/dhrystone)) which runs about 190k instructions through your processor, and will allow us to make performance comparisons across the processors we build.
 
 All told, your implementation should need around 300-400 lines of code.
 
