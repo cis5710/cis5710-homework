@@ -1,4 +1,4 @@
-Draw a detailed schematic (by hand or computerized) of your hardware design for the [gp4 CLA module](hw2b.md). You don't need to draw a CLA schematic; the schematic in the lecture slides is pretty detailed already.
+Draw a detailed schematic (by hand or computerized) of your hardware design for the [gp4 CLA module](hw2b.md). You don't need to draw a CLA schematic or one for `gp8`; those are similar to the lecture slides and to `gp4`, respectively.
 
 You should include signal names, module names, port names and bus widths. You can leave a module as a black box to simplify things, but then you should show elsewhere on the schematic what that black box does.
 
