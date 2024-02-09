@@ -70,7 +70,9 @@ To get the latest changes from the upstream CIS 5710 repo, run:
 git fetch upstream
 git merge upstream/main
 ```
-You shouldn't need to update submodules, as we don't anticipate those changing much.
+
+You can also pull in submodule changes via `git submodule update --recursive riscv-tests/`, though that should be only rarely needed.
+
 
 # VSCode
 
