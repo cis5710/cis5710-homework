@@ -64,7 +64,7 @@ We have provided tests for both the `divu_1iter` and `divider_unsigned`
 modules. You can run the `divu_1iter` tests via:
 
 ```
-pytest-3 testbench_1iter.py
+pytest-3 -s testbench_1iter.py
 ```
 
 There are only a couple simple tests provided, so you may find it useful to use
@@ -74,7 +74,7 @@ Later, when you have the `divu_1iter` module working you can run the
 `divider_unsigned` tests with:
 
 ```
-pytest-3 testbench.py
+pytest-3 -s testbench.py
 ```
 
 Note that the autograder only runs these latter `divider_unsigned` tests, so
