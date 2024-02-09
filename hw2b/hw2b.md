@@ -21,7 +21,7 @@ assign or_reduction = (| w[2:0]);
 assign or_reduction = (w[2] | w[1] | w[0]); // equivalent to code above
 ```
 
-You can run `gp4` tests via `pytest-3 testbench_gp4.py`, though their coverage is low so we encourage you to add other test cases as well.
+You can run `gp4` tests via `pytest-3 -s testbench_gp4.py`, though their coverage is low so we encourage you to add other test cases as well.
 
 Once you have the `gp4` module working, you can move on to the `gp8` module which will form the base of your CLA hierarchy. The `gp8` logic is a generalization of `gp4` to a larger window size. Though it is harder, you may consider implementing a parameterized `gpn` module that computes generate/propagate/carry-out over an N-bit window. You can then instantiate this appropriately for both `gp4` and `gp8`.
 
@@ -29,7 +29,7 @@ Once you have the `gp4` module working, you can move on to the `gp8` module whic
 
 Finally, you will build the 32-bit adder module `cla`. Use the `gp1`, `gp4` and `gp8` modules to build your CLA tree and to compute the final sum. Our `cla` solution is about 30 lines of code.
 
-You can test your `cla` module via `pytest-3 testbench.py`. This is the set of tests that the autograder will run; it does not test your `gp4`/`gp8` modules by themselves.
+You can test your `cla` module via `pytest-3 -s testbench.py`. This is the set of tests that the autograder will run; it does not test your `gp4`/`gp8` modules by themselves.
 
 ## Submitting your code
 
