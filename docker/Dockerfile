@@ -5,7 +5,7 @@ FROM gradescope/autograder-base:ubuntu-22.04-jdk17 as base
 # Use the build argument in your Dockerfile
 #LABEL build_type=base
 
-RUN apt-get update && apt-get install --yes sudo git
+RUN apt-get update && apt-get install --yes sudo git zip
 RUN apt-get install --yes python3-venv python3-pytest
 RUN apt-get install --yes gcc-riscv64-unknown-elf device-tree-compiler
 RUN pip install cocotb cocotb-bus

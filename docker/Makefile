@@ -1,4 +1,4 @@
-VERSION=v1
+VERSION=v2
 
 build:
 	docker build --target base -t cis5710/hw-base:latest .
