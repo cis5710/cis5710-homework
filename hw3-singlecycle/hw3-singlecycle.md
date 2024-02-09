@@ -4,6 +4,8 @@
 
 > We have recently updated the `riscv-tests` submodule with the binaries needed for testing your processor. Be sure you get those changes by running (from the root directory of your git repo) the command: `git submodule update --recursive riscv-tests/`
 
+> We have also recently updated our Docker image to add the `zip` utility, which is needed for submitting this homework. Be sure to pull this latest image, and restart your container using it.
+
 This homework has two milestones, described next.
 
 ## HW3A: ALU & Branch Instructions
