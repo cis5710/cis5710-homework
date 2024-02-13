@@ -12,7 +12,11 @@ This homework has two milestones, described next.
 
 You should start by completing your register file in the `RegFile` module. We have provided a set of register file tests that you can run via `pytest-3 -s testbench_regfile.py`.
 
-Once your register file is working, you can start implementing your processor. For this milestone, your processor must support ALU instructions (`lui` through `and` on our [ISA sheet](../riscv isa reference sheet.pdf)), branches (`beq` through `bgeu`) and the `ecall` instruction.
+Once your register file is working, you can start implementing your processor. 
+
+> **The instance of the RegFile module inside your processor must be named `rf` for the tests to work**.
+
+For this milestone, your processor must support ALU instructions (`lui` through `and` on our [ISA sheet](../riscv isa reference sheet.pdf)), branches (`beq` through `bgeu`) and the `ecall` instruction.
 
 > For our purposes, `ecall` just needs to set the `halt` output of the processor to 1
 
