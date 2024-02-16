@@ -345,9 +345,8 @@ async def dhrystone(dut):
 RV_TEST_BINARIES = [
     RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
     RISCV_TESTS_PATH / 'rv32ui-p-lui',
-    RISCV_TESTS_PATH / 'rv32ui-p-auipc',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-and', # 4
+    RISCV_TESTS_PATH / 'rv32ui-p-and', # 3
     RISCV_TESTS_PATH / 'rv32ui-p-or',
     RISCV_TESTS_PATH / 'rv32ui-p-xor',
     RISCV_TESTS_PATH / 'rv32ui-p-sll',
@@ -357,7 +356,7 @@ RV_TEST_BINARIES = [
     RISCV_TESTS_PATH / 'rv32ui-p-add',
     RISCV_TESTS_PATH / 'rv32ui-p-sub',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-andi', # 13
+    RISCV_TESTS_PATH / 'rv32ui-p-andi', # 12
     RISCV_TESTS_PATH / 'rv32ui-p-ori',
     RISCV_TESTS_PATH / 'rv32ui-p-slli',
     RISCV_TESTS_PATH / 'rv32ui-p-srai',
@@ -368,15 +367,16 @@ RV_TEST_BINARIES = [
     RISCV_TESTS_PATH / 'rv32ui-p-sltu',
     RISCV_TESTS_PATH / 'rv32ui-p-addi',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-beq', # 23
+    RISCV_TESTS_PATH / 'rv32ui-p-beq', # 22
     RISCV_TESTS_PATH / 'rv32ui-p-bge',
     RISCV_TESTS_PATH / 'rv32ui-p-bgeu',
     RISCV_TESTS_PATH / 'rv32ui-p-blt',
     RISCV_TESTS_PATH / 'rv32ui-p-bltu',
     RISCV_TESTS_PATH / 'rv32ui-p-bne',
 
-    RISCV_TESTS_PATH / 'rv32ui-p-jal', # 29
+    RISCV_TESTS_PATH / 'rv32ui-p-jal', # 28
     RISCV_TESTS_PATH / 'rv32ui-p-jalr',
+    RISCV_TESTS_PATH / 'rv32ui-p-auipc', # needs JAL
 
     RISCV_TESTS_PATH / 'rv32ui-p-lb', # 31
     RISCV_TESTS_PATH / 'rv32ui-p-lbu',
