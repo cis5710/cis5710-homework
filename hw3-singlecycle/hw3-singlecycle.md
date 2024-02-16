@@ -100,4 +100,4 @@ TBD
 
 ## Submitting
 
-For both HW3A and HW3B, run `make zip` and submit the `single.zip` file on Gradescope.
+For both HW3A and HW3B, run `make impl` and `make zip` (both on biglab.seas, not inside the docker container) and submit the `single.zip` file on Gradescope.
