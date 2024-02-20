@@ -49,7 +49,7 @@ You cannot use the `-`, `/` or `%` operators in your code.
 
 ## Testing and Debugging Tips
 
-You can edit the `testOneRiscvTest` test in `testbench.py` to run any single RV test, which will result in much simpler waveforms.
+You can edit the `testOneRiscvTest` test in `testbench.py` to run any single RV test. You can then run just this test via `pytest-3 -s testbench.py --tests testOneRiscvTest`. This should result in simpler waveforms. You can also specify a comma-separated list of tests to the `--tests` flag.
 
 In GtkWave, use the `disasm_wire` signal (be sure to change the Data Format to `ASCII`) to view the assembly code for the current instruction. This, along with the PC and `cycles_current` value, can help you track what your processor is doing. This disassembler has not been extensively tested, however, so it may contain bugs. PRs welcome!
 
