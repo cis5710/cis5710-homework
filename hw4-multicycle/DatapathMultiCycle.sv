@@ -27,7 +27,7 @@ module RegFile (
     input logic rst
 );
 
-  // TODO: copy your HW3A code here
+  // TODO: copy your HW3B code here
 
 endmodule
 
