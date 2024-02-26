@@ -19,5 +19,5 @@ elif "ns" in args:
     print(f"frequency is {f:0.3f} MHz")
     pass
 else:
-    print(f'Clock frequency <-> clock period converter. Usage: X mhz, or Y ns')
+    print(f'Clock frequency <-> clock period converter. Usage: {sys.argv[0]} X mhz or Y ns')
     pass
