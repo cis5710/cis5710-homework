@@ -12,8 +12,6 @@
 `include "../hw2b/cla.sv"
 `endif
 
-`include "divider_unsigned_pipelined.sv"
-
 module RegFile (
     input logic [4:0] rd,
     input logic [`REG_SIZE] rd_data,

@@ -129,10 +129,9 @@ def runCocotbTests(pytestconfig):
     sim = os.getenv("SIM", "verilator")
     proj_path = Path(__file__).resolve().parent
     assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [proj_path / "DatapathMultiCycle.sv" ]
+    verilog_sources = [ proj_path / "divider_unsigned_pipelined.sv", proj_path / "DatapathMultiCycle.sv" ]
     toplevel_module = "RiscvProcessor"
 
-    pointsEarned = 0
     try:
         runr = get_runner(sim)
         runr.build(
@@ -157,11 +156,17 @@ def runCocotbTests(pytestconfig):
             testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
         )
     finally:
-        div_total_failed = get_results(Path(SIM_BUILD_DIR,'runCocotbTests.divider_pipelined.results.xml'))
-        proc_total_failed = get_results(Path(SIM_BUILD_DIR,'runCocotbTests.multicycle_datapath.results.xml'))
-        # 1 point per test
-        pointsEarned += (div_total_failed[0] - div_total_failed[1]) + (proc_total_failed[0] - proc_total_failed[1])
-        pointsPossible = div_total_failed[0] + proc_total_failed[0]
+        pointsEarned = 0
+        pointsPossible = 0
+        div_path = Path(SIM_BUILD_DIR,'runCocotbTests.divider_pipelined.results.xml')
+        proc_path = Path(SIM_BUILD_DIR,'runCocotbTests.multicycle_datapath.results.xml')
+        if div_path.exists() and proc_path.exists():
+            div_total_failed = get_results(div_path)
+            proc_total_failed = get_results(proc_path)
+            # 1 point per test
+            pointsEarned += (div_total_failed[0] - div_total_failed[1]) + (proc_total_failed[0] - proc_total_failed[1])
+            pointsPossible = div_total_failed[0] + proc_total_failed[0]
+            pass
         points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
         with open('points.json', 'w') as f:
             json.dump(points, f, indent=2)
