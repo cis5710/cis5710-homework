@@ -258,8 +258,8 @@ async def dhrystone(dut):
             # there are 22 output checks, each sets 1 bit
             expectedValue = (1<<22) - 1
             assert expectedValue == dut.datapath.rf.regs[5].value.integer
-            latency_millis = (cycles / 5_000_000) * 1000
-            dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 5MHz clock')
+            latency_millis = (cycles / 50_000_000) * 1000
+            dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 50MHz clock')
             return
         pass
     raise SimTimeoutError()
