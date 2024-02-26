@@ -83,7 +83,7 @@ We next discuss how to adjust the clock frequency, which will be useful in futur
 
 ### Buying yourself some time
 
-To change the clock frequency, edit the file `hw3-singlecycle/system/mmcm.v` following the instructions at line 129. You can use the slack reported by Vivado to guide your decision about a new frequency to choose. E.g., if your design has a slack of -2ns, then your clock period needs to be at least 2ns longer. [This online calculator](https://www.sensorsone.com/period-to-frequency-calculator/) is handy for translating a clock period into a frequency.
+To change the clock frequency, edit the file `hw3-singlecycle/system/mmcm.v` following the instructions at line 129. You can use the slack reported by Vivado to guide your decision about a new frequency to choose. E.g., if your design has a slack of -2ns, then your clock period needs to be at least 2ns longer. The [clock-calc.py script](../common/python/clock-calc.py) is handy for translating between clock period and frequency.
 
 Re-run `make impl` and see if you achieve timing closure with the slower clock. Overall, it pays to go with a slower clock than absolutely necessary. There are many ways to ask Vivado to try harder to achieve timing closure, though this will lengthen compilation times, so we won't cover them here.
 
