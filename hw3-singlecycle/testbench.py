@@ -326,7 +326,7 @@ async def dhrystone(dut):
     loadBinaryIntoMemory(dut, dsBinary)
     await preTestSetup(dut)
 
-    dut._log.info(f'Running Dhrystone benchmark...')
+    dut._log.info(f'Running Dhrystone benchmark (takes 193k cycles)...')
     for cycles in range(210_000):
         await RisingEdge(dut.clock_proc)
         if cycles > 0 and 0 == cycles % 10_000:
