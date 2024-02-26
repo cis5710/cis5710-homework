@@ -82,8 +82,8 @@
 //`define CLOCK_35_MHZ
 //`define CLOCK_40_MHZ
 //`define CLOCK_45_MHZ
-//`define CLOCK_50_MHZ
-`define CLOCK_55_MHZ
+`define CLOCK_50_MHZ
+//`define CLOCK_55_MHZ
 //`define CLOCK_60_MHZ
 //`define CLOCK_65_MHZ
 //`define CLOCK_70_MHZ
