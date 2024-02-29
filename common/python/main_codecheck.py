@@ -55,7 +55,11 @@ def runCodecheck(objectIsLegal):
     for f in sys.argv[1:]:
         parsedFile = f'.{f}.parsed.json'
         parsedSortedFile = f'.{f}.parsed.sorted.json'
-        subprocess.run(['bash','-c',f'verible-verilog-syntax --export_json --printtree {f} > {parsedFile}'], check=True)
+        try:
+            subprocess.run(['bash','-c',f'verible-verilog-syntax --export_json --printtree {f} > {parsedFile}'], check=True)
+        except subprocess.CalledProcessError as e:
+            subprocess.run(['bash','-c',f'verible-verilog-syntax {f}'], check=True)
+            pass
 
         # compute the index of each newline, to convert character offsets to line numbers
         newlineIndices = []
