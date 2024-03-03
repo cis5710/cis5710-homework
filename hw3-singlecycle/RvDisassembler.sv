@@ -61,15 +61,15 @@ function automatic string rv_disasm (input bit [31:0] instruction);
         7'd19: begin
             case (funct3)
                 3'd0: da_str = $sformatf("ADDI x%0d, x%0d, %0d", rd, rs1, imm_i);
-                3'd1: da_str = $sformatf("SLLI x%0d, x%0d, %0d", rd, rs1, imm_i);
+                3'd1: da_str = $sformatf("SLLI x%0d, x%0d, %0d", rd, rs1, imm_i[4:0]);
                 3'd2: da_str = $sformatf("SLTI x%0d, x%0d, %0d", rd, rs1, imm_i);
                 3'd3: da_str = $sformatf("SLTIU x%0d, x%0d, %0d", rd, rs1, imm_i);
                 3'd4: da_str = $sformatf("XORI x%0d, x%0d, %0d", rd, rs1, imm_i);
                 3'd5: begin
                     if (funct7[5] == 0)
-                        da_str = $sformatf("SRLI x%0d, x%0d, %0d", rd, rs1, imm_i);
+                        da_str = $sformatf("SRLI x%0d, x%0d, %0d", rd, rs1, imm_i[4:0]);
                     else if (funct7 == 7'b0100000)
-                        da_str = $sformatf("SRAI x%0d, x%0d, %0d", rd, rs1, imm_i);
+                        da_str = $sformatf("SRAI x%0d, x%0d, %0d", rd, rs1, imm_i[4:0]);
                     else
                         da_str = "Unknown I-type instruction";
                 end
@@ -90,8 +90,8 @@ function automatic string rv_disasm (input bit [31:0] instruction);
         end
 
         // U-type instructions
-        7'd55: da_str = $sformatf("LUI x%0d, %0d", rd, imm_u);
-        7'd23: da_str = $sformatf("AUIPC x%0d, %0d", rd, imm_u);
+        7'd55: da_str = $sformatf("LUI x%0d, %0x", rd, imm_u);
+        7'd23: da_str = $sformatf("AUIPC x%0d, 0x%0x", rd, imm_u);
 
         // J-type instructions
         7'd111: begin
