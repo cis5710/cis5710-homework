@@ -232,6 +232,23 @@ async def test2Divu(dut):
     assert dut.datapath.rf.regs[3].value == 4, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
+async def testDivuEtAl(dut):
+    "Run back-to-back divu insns"
+    asm(dut, '''
+        li x16,16
+        li x2,2
+        divu x8,x16,x2
+        addi x9,x8,1''')
+    await preTestSetup(dut)
+
+    # Since divu takes 2 cycles, li,li,divu takes 4 cycles to complete
+    # and result is available in the 5th cycle.
+    await ClockCycles(dut.clock_proc, 5)
+    assert dut.datapath.rf.regs[8].value == 8, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    await ClockCycles(dut.clock_proc, 1) # wait one more cycle for addi's result
+    assert dut.datapath.rf.regs[9].value == 9, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+
+@cocotb.test()
 async def testEcall(dut):
     "ecall insn causes processor to halt"
     asm(dut, '''
@@ -246,8 +263,6 @@ async def testEcall(dut):
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def dhrystone(dut):
     "Run dhrystone benchmark from riscv-tests"
-    #if 'RVTEST_ALUBR' in os.environ:
-    #    return
     dsBinary = RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
     assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
     loadBinaryIntoMemory(dut, dsBinary)
