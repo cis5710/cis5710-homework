@@ -90,7 +90,7 @@ function automatic string rv_disasm (input bit [31:0] instruction);
         end
 
         // U-type instructions
-        7'd55: da_str = $sformatf("LUI x%0d, %0x", rd, imm_u);
+        7'd55: da_str = $sformatf("LUI x%0d, 0x%0x", rd, imm_u);
         7'd23: da_str = $sformatf("AUIPC x%0d, 0x%0x", rd, imm_u);
 
         // J-type instructions
