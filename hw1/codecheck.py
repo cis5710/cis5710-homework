@@ -9,7 +9,7 @@ p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import main_codecheck
 
-def objectIsLegal(obj):
+def objectIsLegal(filename, obj):
     """Returns a tuple. First parameter is True if this object describes a legal code construct, False if an illegal one. 
 Second parameter is True if we should continue to iterate into descendent objects, False if we should not."""
     
@@ -21,4 +21,4 @@ Second parameter is True if we should continue to iterate into descendent object
         return (False,True)
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal)
+main_codecheck.runCodecheck(objectIsLegal, ['rca.sv'])

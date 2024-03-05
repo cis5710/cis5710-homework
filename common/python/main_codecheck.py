@@ -10,11 +10,11 @@ import json, sys, subprocess
 
 FOUND_ILLEGAL_CODE = False
 
-def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
+def traverseSyntaxTree(filename, obj, newlineIndices, objectIsLegal, parent_key=''):
     global FOUND_ILLEGAL_CODE
     if isinstance(obj, dict):
 
-        legalConstruct,descendInto = objectIsLegal(obj)
+        legalConstruct,descendInto = objectIsLegal(filename, obj)
         if not legalConstruct:
             FOUND_ILLEGAL_CODE = True
             tag = obj['tag']
@@ -24,20 +24,20 @@ def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
                 linenum = 1 + len([i for i in newlineIndices if i < obj['start']])
                 pass
             if text is None:
-                print(f'[codecheck] ERROR: found illegal code "{tag}" at line {linenum}')
+                print(f'[codecheck] ERROR: found illegal code "{tag}" at line {linenum} of {filename}')
             else:
-                print(f'[codecheck] ERROR: found illegal code "{text}" at line {linenum}')
+                print(f'[codecheck] ERROR: found illegal code "{text}" at line {linenum} of {filename}')
                 pass
             pass
         if not descendInto:
             return
 
         for key, value in obj.items():
-            traverseSyntaxTree(value, newlineIndices, objectIsLegal, f"{parent_key}.{key}" if parent_key else key)
+            traverseSyntaxTree(filename, value, newlineIndices, objectIsLegal, f"{parent_key}.{key}" if parent_key else key)
             pass
     elif isinstance(obj, list):
         for i, item in enumerate(obj):
-            traverseSyntaxTree(item, newlineIndices, objectIsLegal, f"{parent_key}[{i}]")
+            traverseSyntaxTree(filename, item, newlineIndices, objectIsLegal, f"{parent_key}[{i}]")
             pass
     else:
         #print(f"{parent_key}: {obj}")
@@ -47,23 +47,23 @@ def traverseSyntaxTree(obj, newlineIndices, objectIsLegal, parent_key=''):
 # def custom_sort(obj):
 #     return sorted(obj.items(), key=lambda x: x[0], reverse=True)
 
-def runCodecheck(objectIsLegal):
-    if 1 == len(sys.argv):
-        print(f'usage: {sys.argv[0]} FILES...')
+def runCodecheck(objectIsLegal, filesToCheck):
+    if len(sys.argv) > 1:
+        print(f'usage: {sys.argv[0]}')
         sys.exit(1)
 
-    for f in sys.argv[1:]:
-        parsedFile = f'.{f}.parsed.json'
-        parsedSortedFile = f'.{f}.parsed.sorted.json'
+    for filename in filesToCheck:
+        parsedFile = f'.{filename}.parsed.json'
+        parsedSortedFile = f'.{filename}.parsed.sorted.json'
         try:
-            subprocess.run(['bash','-c',f'verible-verilog-syntax --export_json --printtree {f} > {parsedFile}'], check=True)
+            subprocess.run(['bash','-c',f'verible-verilog-syntax --export_json --printtree {filename} > {parsedFile}'], check=True)
         except subprocess.CalledProcessError as e:
-            subprocess.run(['bash','-c',f'verible-verilog-syntax {f}'], check=True)
+            subprocess.run(['bash','-c',f'verible-verilog-syntax {filename}'], check=True)
             pass
 
         # compute the index of each newline, to convert character offsets to line numbers
         newlineIndices = []
-        with open(f) as svf:
+        with open(filename) as svf:
             newlineIndices = [index for index, char in enumerate(svf.read()) if char == '\n']
 
         with open(parsedFile) as jf:
@@ -72,7 +72,7 @@ def runCodecheck(objectIsLegal):
             #     json.dump(syntaxTree, json_file, indent=2, sort_keys=True, default=custom_sort)
             #     pass
 
-            traverseSyntaxTree(syntaxTree, newlineIndices, objectIsLegal)
+            traverseSyntaxTree(filename, syntaxTree, newlineIndices, objectIsLegal)
             if FOUND_ILLEGAL_CODE:
                 sys.exit(1)
             else:

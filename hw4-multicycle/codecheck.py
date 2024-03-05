@@ -9,7 +9,7 @@ p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import main_codecheck
 
-def objectIsLegal(obj):
+def objectIsLegal(filename, obj):
     
     if 'tag' not in obj:
         return (True,True)
@@ -20,6 +20,8 @@ def objectIsLegal(obj):
     text = obj.get('text', None)
     if (tag == "SystemTFIdentifier" and text == "$fopen") or tag in "/%":
         return (False,True)
+    if filename == 'DatapathMultiCycle.sv' and tag in "-":
+        return (False,True)
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal)
+main_codecheck.runCodecheck(objectIsLegal, ['DatapathMultiCycle.sv','divider_unsigned_pipelined.sv'])

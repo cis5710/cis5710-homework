@@ -45,8 +45,8 @@ time=time -f "Vivado took %E m:s and %M KB"
 help:
 	@echo -e "Valid targets are: codecheck synth impl zip program boot clean"
 
-codecheck: $(SYNTH_SOURCES)
-	python3 codecheck.py $(SYNTH_SOURCES)
+codecheck:
+	python3 codecheck.py
 
 # run synthesis to identify code errors/warnings
 synth: setup-files $(SYNTH_SOURCES)

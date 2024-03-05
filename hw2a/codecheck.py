@@ -9,7 +9,7 @@ p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import main_codecheck
 
-def objectIsLegal(obj):
+def objectIsLegal(filename, obj):
     
     if 'tag' not in obj:
         return (True,True)
@@ -22,4 +22,4 @@ def objectIsLegal(obj):
         return (False,True)
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal)
+main_codecheck.runCodecheck(objectIsLegal, ['divider_unsigned.sv'])
