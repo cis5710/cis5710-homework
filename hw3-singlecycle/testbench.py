@@ -271,11 +271,14 @@ async def testEcall(dut):
     "ecall insn causes processor to halt"
     asm(dut, '''
         lui x1,0x12345
-        ecall''')
+        ecall
+        lui x1,0xABCDE''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clock_proc, 2) # check for halt *during* ecall, not afterwards
+    await ClockCycles(dut.clock_proc, 2) # check for halt *during* ecall
     assert dut.datapath.halt.value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    await ClockCycles(dut.clock_proc, 1) # ensure halt goes back down after ecall is done
+    assert dut.datapath.halt.value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test()
