@@ -1,6 +1,6 @@
 # synthesis
 
-SYNTH_SOURCES=DatapathMultiCycle.sv divider_unsigned_pipelined.sv
+SYNTH_SOURCES=DatapathMultiCycle.sv
 TOP_SYNTH_MODULE=RiscvProcessor
 
 ZIP_SOURCES=DatapathMultiCycle.sv divider_unsigned_pipelined.sv ../hw2b/cla.sv \

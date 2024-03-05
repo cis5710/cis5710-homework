@@ -129,7 +129,7 @@ def runCocotbTests(pytestconfig):
     sim = os.getenv("SIM", "verilator")
     proj_path = Path(__file__).resolve().parent
     assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [ proj_path / "divider_unsigned_pipelined.sv", proj_path / "DatapathMultiCycle.sv" ]
+    verilog_sources = [ proj_path / "DatapathMultiCycle.sv" ]
     toplevel_module = "RiscvProcessor"
 
     try:
