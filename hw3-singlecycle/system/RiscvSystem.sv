@@ -1,4 +1,5 @@
 `timescale 1ns / 1ns
+`default_nettype none
 
 module RiscvSystem(// input clock
                   input wire        CLOCK_100MHz,
@@ -113,7 +114,7 @@ module RiscvSystem(// input clock
   );
 
   DatapathSingleCycle datapath (
-      .clk(clock_proc),
+      .clk(clock_processor),
       .rst(global_reset),
       .pc_to_imem(pc_to_imem),
       .insn_from_imem(insn_from_imem),

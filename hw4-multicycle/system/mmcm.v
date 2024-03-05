@@ -1,3 +1,4 @@
+`default_nettype none
 
 // file: clk_wiz_0.v
 // (c) Copyright 2017-2018, 2023 Advanced Micro Devices, Inc. All rights reserved.
@@ -71,7 +72,7 @@
 //`define CLOCK_10_MHZ
 //`define CLOCK_11_MHZ
 //`define CLOCK_12_MHZ
-//`define CLOCK_13_MHZ
+`define CLOCK_13_MHZ
 //`define CLOCK_14_MHZ
 //`define CLOCK_15_MHZ
 //`define CLOCK_16_MHZ
@@ -82,7 +83,7 @@
 //`define CLOCK_35_MHZ
 //`define CLOCK_40_MHZ
 //`define CLOCK_45_MHZ
-`define CLOCK_50_MHZ
+//`define CLOCK_50_MHZ
 //`define CLOCK_55_MHZ
 //`define CLOCK_60_MHZ
 //`define CLOCK_65_MHZ
@@ -99,12 +100,12 @@ module clk_wiz_0_clk_wiz
 
  (// Clock in ports
   // Clock out ports
-  output        clk_proc,
-  output        clk_mem,
+  output wire       clk_proc,
+  output wire       clk_mem,
   // Status and control signals
-  input         reset,
-  output        locked,
-  input         clk_in1
+  input wire        reset,
+  output wire       locked,
+  input wire        clk_in1
  );
   // Input buffering
   //------------------------------------
@@ -165,8 +166,8 @@ wire clk_in2_clk_wiz_0;
   `define DIVCLK_DIVIDE 5
   `define CLKOUT_DIVIDE_F 128
   `elsif CLOCK_5_5_MHZ
-  `define CLKFBOUT_MULT_F 1.000
-  `define DIVCLK_DIVIDE 6.875
+  `define CLKFBOUT_MULT_F 6.875
+  `define DIVCLK_DIVIDE 1
   `define CLKOUT_DIVIDE_F 125
   `elsif CLOCK_6_MHZ
   `define CLKFBOUT_MULT_F 7.500
@@ -400,6 +401,7 @@ wire clk_in2_clk_wiz_0;
     .CE  (seq_reg1[7]),
     .I   (clk_proc_clk_wiz_0));
 
+  wire clk_proc_clk_wiz_0_en_clk;
   BUFH clkout1_buf_en
    (.O   (clk_proc_clk_wiz_0_en_clk),
     .I   (clk_proc_clk_wiz_0));
@@ -419,6 +421,7 @@ wire clk_in2_clk_wiz_0;
     .CE  (seq_reg2[7]),
     .I   (clk_mem_clk_wiz_0));
  
+  wire clk_mem_clk_wiz_0_en_clk;
   BUFH clkout2_buf_en
    (.O   (clk_mem_clk_wiz_0_en_clk),
     .I   (clk_mem_clk_wiz_0));

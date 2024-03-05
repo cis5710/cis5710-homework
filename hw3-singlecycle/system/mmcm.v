@@ -1,3 +1,4 @@
+`default_nettype none
 
 // file: clk_wiz_0.v
 // (c) Copyright 2017-2018, 2023 Advanced Micro Devices, Inc. All rights reserved.
@@ -50,29 +51,61 @@
 // None
 //
 //----------------------------------------------------------------------------
-//  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
-//   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
-//----------------------------------------------------------------------------
-// clk_proc___5.00000______0.000______50.0______631.442____346.848
-// _clk_mem___5.00000_____90.000______50.0______631.442____346.848
-//
-//----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
 //----------------------------------------------------------------------------
 // __primary_________100.000____________0.010
 
 `timescale 1ps/1ps
 
+
+// TODO: set your desired clock frequency here. ONLY ONE should be defined at a time.
+//`define CLOCK_5_MHZ
+`define CLOCK_5_5_MHZ
+//`define CLOCK_6_MHZ
+//`define CLOCK_6_5_MHZ
+//`define CLOCK_7_MHZ
+//`define CLOCK_7_5_MHZ
+//`define CLOCK_8_MHZ
+//`define CLOCK_8_5_MHZ
+//`define CLOCK_9_MHZ
+//`define CLOCK_9_5_MHZ
+//`define CLOCK_10_MHZ
+//`define CLOCK_11_MHZ
+//`define CLOCK_12_MHZ
+//`define CLOCK_13_MHZ
+//`define CLOCK_14_MHZ
+//`define CLOCK_15_MHZ
+//`define CLOCK_16_MHZ
+//`define CLOCK_20_MHZ
+//`define CLOCK_25_MHZ
+//`define CLOCK_30_MHZ
+//`define CLOCK_32_MHZ
+//`define CLOCK_35_MHZ
+//`define CLOCK_40_MHZ
+//`define CLOCK_45_MHZ
+//`define CLOCK_50_MHZ
+//`define CLOCK_55_MHZ
+//`define CLOCK_60_MHZ
+//`define CLOCK_65_MHZ
+//`define CLOCK_70_MHZ
+//`define CLOCK_75_MHZ
+//`define CLOCK_80_MHZ
+//`define CLOCK_85_MHZ
+//`define CLOCK_90_MHZ
+//`define CLOCK_95_MHZ
+//`define CLOCK_100_MHZ
+//`define CLOCK_105_MHZ
+
 module clk_wiz_0_clk_wiz 
 
  (// Clock in ports
   // Clock out ports
-  output        clk_proc,
-  output        clk_mem,
+  output wire       clk_proc,
+  output wire       clk_mem,
   // Status and control signals
-  input         reset,
-  output        locked,
-  input         clk_in1
+  input wire        reset,
+  output wire       locked,
+  input wire        clk_in1
  );
   // Input buffering
   //------------------------------------
@@ -126,30 +159,180 @@ wire clk_in2_clk_wiz_0;
   (* ASYNC_REG = "TRUE" *)
   reg  [7 :0] seq_reg2 = 0;
 
-  // TODO: adjust your clock frequency here as needed. 
-  // CLOCK_DIVIDER must be in the range [1,128] and a multiple of 0.125. We use a macro to 
-  // ensure that the processor and memory clocks are adjusted together.
-  // End frequency is ((100 MHz / DIVCLK_DIVIDE) * CLKFBOUT_MULT_F) / CLOCK_DIVIDER
-  // 
-  // While DIVCLK_DIVIDE and CLKFBOUT_MULT_F can also be adjusted, there are also internal constraints
-  // on their values so not all sets of values are permitted. E.g., the total range of supported clock 
-  // frequencies for our ZedBoard is [4.6875,800] MHz.
-  `define CLOCK_DIVIDER 128
+  // Translate desired clock frequency into mmcm parameters for our ZedBoard. 
+  // These values were extracted from the Vivado Clocking Wizard.
+  `ifdef CLOCK_5_MHZ
+  `define CLKFBOUT_MULT_F 32.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 128
+  `elsif CLOCK_5_5_MHZ
+  `define CLKFBOUT_MULT_F 6.875
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 125
+  `elsif CLOCK_6_MHZ
+  `define CLKFBOUT_MULT_F 7.500
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 125
+  `elsif CLOCK_6_5_MHZ
+  `define CLKFBOUT_MULT_F 8.125
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 125
+  `elsif CLOCK_7_MHZ
+  `define CLKFBOUT_MULT_F 8.750
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 125
+  `elsif CLOCK_7_5_MHZ
+  `define CLKFBOUT_MULT_F 48.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 128
+  `elsif CLOCK_8_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 125
+  `elsif CLOCK_8_5_MHZ
+  `define CLKFBOUT_MULT_F 51.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 120
+  `elsif CLOCK_9_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 110
+  `elsif CLOCK_9_5_MHZ
+  `define CLKFBOUT_MULT_F 49.875
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 105
+  `elsif CLOCK_10_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 100
+  `elsif CLOCK_11_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 90
+  `elsif CLOCK_12_MHZ
+  `define CLKFBOUT_MULT_F 51.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 85
+  `elsif CLOCK_13_MHZ
+  `define CLKFBOUT_MULT_F 9.750
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 75
+  `elsif CLOCK_14_MHZ
+  `define CLKFBOUT_MULT_F 49.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 70
+  `elsif CLOCK_15_MHZ
+  `define CLKFBOUT_MULT_F 50.250
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 67
+  `elsif CLOCK_16_MHZ
+  `define CLKFBOUT_MULT_F 48.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 60
+  `elsif CLOCK_20_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 50
+  `elsif CLOCK_25_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 40
+  `elsif CLOCK_30_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 33
+  `elsif CLOCK_32_MHZ
+  `define CLKFBOUT_MULT_F 48.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 30
+  `elsif CLOCK_35_MHZ
+  `define CLKFBOUT_MULT_F 50.750
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 29
+  `elsif CLOCK_40_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 25
+  `elsif CLOCK_45_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 22
+  `elsif CLOCK_50_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 20
+  `elsif CLOCK_55_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 18
+  `elsif CLOCK_60_MHZ
+  `define CLKFBOUT_MULT_F 51.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 17
+  `elsif CLOCK_65_MHZ
+  `define CLKFBOUT_MULT_F 9.750
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 15
+  `elsif CLOCK_70_MHZ
+  `define CLKFBOUT_MULT_F 49.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 14
+  `elsif CLOCK_75_MHZ
+  `define CLKFBOUT_MULT_F 9.750
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 13
+  `elsif CLOCK_80_MHZ
+  `define CLKFBOUT_MULT_F 48.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 12
+  `elsif CLOCK_85_MHZ
+  `define CLKFBOUT_MULT_F 51.000
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 12
+  `elsif CLOCK_90_MHZ
+  `define CLKFBOUT_MULT_F 49.500
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 11
+  `elsif CLOCK_95_MHZ
+  `define CLKFBOUT_MULT_F 52.250
+  `define DIVCLK_DIVIDE 5
+  `define CLKOUT_DIVIDE_F 11
+  `elsif CLOCK_100_MHZ
+  `define CLKFBOUT_MULT_F 10.000
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 10
+  `elsif CLOCK_105_MHZ
+  `define CLKFBOUT_MULT_F 10.500
+  `define DIVCLK_DIVIDE 1
+  `define CLKOUT_DIVIDE_F 10
+
+  // template for additional frequencies
+  `elsif CLOCK_?_MHZ
+  `define CLKFBOUT_MULT_F ?.000
+  `define DIVCLK_DIVIDE ?
+  `define CLKOUT_DIVIDE_F ?
+
+  // if no frequency was specified, trigger a compiler error
+  `else
+  `define CLKFBOUT_MULT_F must_specify_a_clock_frequency
+  `define DIVCLK_DIVIDE must_specify_a_clock_frequency
+  `define CLKOUT_DIVIDE_F must_specify_a_clock_frequency
+  `endif
 
   MMCME2_ADV
   #(.BANDWIDTH            ("OPTIMIZED"),
     .CLKOUT4_CASCADE      ("FALSE"),
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
-    .DIVCLK_DIVIDE        (5),      // must be in [1,106]
-    .CLKFBOUT_MULT_F      (32.000), // must be in [2,64]
+    .DIVCLK_DIVIDE        (`DIVCLK_DIVIDE),
+    .CLKFBOUT_MULT_F      (`CLKFBOUT_MULT_F),
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (`CLOCK_DIVIDER),
+    .CLKOUT0_DIVIDE_F     (`CLKOUT_DIVIDE_F),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKOUT1_DIVIDE       (`CLOCK_DIVIDER),
+    .CLKOUT1_DIVIDE       (`CLKOUT_DIVIDE_F),
     .CLKOUT1_PHASE        (90.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
@@ -218,6 +401,7 @@ wire clk_in2_clk_wiz_0;
     .CE  (seq_reg1[7]),
     .I   (clk_proc_clk_wiz_0));
 
+  wire clk_proc_clk_wiz_0_en_clk;
   BUFH clkout1_buf_en
    (.O   (clk_proc_clk_wiz_0_en_clk),
     .I   (clk_proc_clk_wiz_0));
@@ -237,6 +421,7 @@ wire clk_in2_clk_wiz_0;
     .CE  (seq_reg2[7]),
     .I   (clk_mem_clk_wiz_0));
  
+  wire clk_mem_clk_wiz_0_en_clk;
   BUFH clkout2_buf_en
    (.O   (clk_mem_clk_wiz_0_en_clk),
     .I   (clk_mem_clk_wiz_0));
