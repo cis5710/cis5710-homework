@@ -8,6 +8,7 @@ from cocotb.triggers import RisingEdge, ClockCycles
 # directory where our simulator will compile our tests + code
 SIM_BUILD_DIR = "sim_build"
 
+DIVIDER_STAGES = 2
 
 def runCocotbTests(pytestconfig):
     """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
@@ -27,6 +28,7 @@ def runCocotbTests(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
+        parameters={'STAGES':DIVIDER_STAGES},
         includes=[proj_path],
         build_dir=SIM_BUILD_DIR,
         always=True, # always build the code
@@ -70,15 +72,13 @@ if __name__ == "__main__":
 ## TEST CASES ARE HERE ##
 #########################
 
-STAGES = 2
-
 @cocotb.test()
 async def test0(dut):
     await preTestSetup(dut)
     dut.i_dividend.value = 4
     dut.i_divisor.value = 2
 
-    await ClockCycles(dut.clk, STAGES)
+    await ClockCycles(dut.clk, DIVIDER_STAGES)
     assert 2 == dut.o_quotient.value
     assert 0 == dut.o_remainder.value
 
@@ -88,7 +88,7 @@ async def test1(dut):
     dut.i_dividend.value = 12
     dut.i_divisor.value = 3
 
-    await ClockCycles(dut.clk, STAGES)
+    await ClockCycles(dut.clk, DIVIDER_STAGES)
     assert 4 == dut.o_quotient.value
     assert 0 == dut.o_remainder.value
 
@@ -101,13 +101,15 @@ async def test_2consecutive(dut):
     dut.i_dividend.value = 12
     dut.i_divisor.value = 3
 
-    await ClockCycles(dut.clk, STAGES-1)
+    await ClockCycles(dut.clk, DIVIDER_STAGES-1)
     assert 2 == dut.o_quotient.value
     assert 0 == dut.o_remainder.value
     await ClockCycles(dut.clk, 1)
     assert 4 == dut.o_quotient.value
     assert 0 == dut.o_remainder.value
 
+# Test helper that launches a new division every `stages` cycles, and expects
+# each quotient/remainder `stages` cycles later.
 async def test_divider(dut, trials, stages, even):
     MAX = 2**32
     for _ in range(trials):
@@ -137,10 +139,10 @@ async def test_kconsecutive(dut):
     await preTestSetup(dut)
 
     trials = 20
-    cocotb.start_soon(test_divider(dut,trials,STAGES,True))
-    for _ in range(1,STAGES):
+    cocotb.start_soon(test_divider(dut,trials,DIVIDER_STAGES,True))
+    for _ in range(1,DIVIDER_STAGES):
         await ClockCycles(dut.clk, 1)
-        await cocotb.start(test_divider(dut,trials,STAGES,False))
+        await cocotb.start(test_divider(dut,trials,DIVIDER_STAGES,False))
         pass
-    await ClockCycles(dut.clk, STAGES * trials)
+    await ClockCycles(dut.clk, DIVIDER_STAGES * trials)
     pass
