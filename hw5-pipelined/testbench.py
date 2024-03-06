@@ -51,7 +51,8 @@ def asm(dut, assemblyCode):
         pass
 
     # Use subprocess to run the assembler command
-    command = [ASSEMBLER, "-march=rv32imzifencei", "-o", TEMP_MACHINE_CODE_FILE]
+    #command = [ASSEMBLER, "-march=rv32imzifencei", "-o", TEMP_MACHINE_CODE_FILE]
+    command = [ASSEMBLER, "-march=rv32im", "-o", TEMP_MACHINE_CODE_FILE]
     process = subprocess.run(command, input=assemblyCode, capture_output=True, text=True, check=False)
     if process.returncode != 0:
         dut._log.error(f"Error: {process.stderr}")
@@ -430,13 +431,13 @@ async def testWMAddress(dut):
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
-async def testFencei(dut):
-    "Test fence.i insn"
+async def testFence(dut):
+    "Test fence insn"
     asm(dut, '''
         li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
         # addi part of li goes here
         sw x2,16(x0) # overwrite lui below
-        fence.i # should stall until sw reaches Writeback
+        fence # should stall until sw reaches Writeback
         lui x1,0x12345
         ''')
     await preTestSetup(dut)
@@ -503,6 +504,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
 
     trace = []
     if tracingMode == 'compare':
+        # use ../ since we run from the sim_build directory
         with open(f'../trace-{binaryPath.name}.json', 'r', encoding='utf-8') as f:
             trace = json.load(f)
             pass
@@ -605,6 +607,7 @@ async def dhrystone(dut, tracingMode=TRACING_MODE):
 
     trace = []
     if tracingMode == 'compare':
+        # use ../ since we run from the sim_build directory
         with open(f'../trace-{dsBinary.name}.json', 'r', encoding='utf-8') as f:
             trace = json.load(f)
             pass
