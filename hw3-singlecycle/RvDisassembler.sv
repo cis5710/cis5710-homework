@@ -156,7 +156,13 @@ function automatic string rv_disasm (input bit [31:0] instruction);
                 da_str = "Unknown environment instruction";
             end
         end
-
+        7'd0: begin
+            if (instruction[31:7] == 0) begin
+                da_str = "bubble";
+            end else begin
+                da_str = "Unknown instruction";
+            end
+        end
         default: da_str = "Unknown instruction";
     endcase
 
