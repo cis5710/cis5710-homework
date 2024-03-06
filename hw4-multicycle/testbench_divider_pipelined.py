@@ -28,7 +28,7 @@ def runCocotbTests(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        parameters={'STAGES':DIVIDER_STAGES},
+        #parameters={'STAGES':DIVIDER_STAGES},
         includes=[proj_path],
         build_dir=SIM_BUILD_DIR,
         always=True, # always build the code
