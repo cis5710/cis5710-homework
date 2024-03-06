@@ -35,7 +35,9 @@ You will also need to add WM bypassing to your pipeline.
 
 You will need to support divide and remainder operations -- for simplicity we'll discuss only divide as remainder is handled identically. Your divide operations should use the 2-stage pipelined divider from HW4. Since a divide takes 2 cycles, its quotient will not be available until the beginning of the Writeback stage, similar to loads. You will need to add a "divide-to-use" stall if there is a dependent instruction immediately following the divide.
 
-One final case to handle is the `fence.i` instruction, for supporting self-modifying code. Due to parallel execution within the pipeline, `fence.i` can no longer be a simple NOP: consider a store that writes to instruction memory in the Memory stage but the instructions at the written location have already been fetched. This behavior is a departure from the single-cycle design, where all instruction fetches "see the values" of all prior stores automatically. See `testFencei` for an example. To preserve single-cycle behavior for your pipeline, if a `fence.i` instruction immediately precedes a store in the pipeline, the `fence.i` should stall until the store reaches Writeback.  Regular `fence` instructions, however, can be handled as pure NOPs and do not need to incur any stalling.
+One final case to handle is the `fence` instruction to support self-modifying code. Due to parallel execution within the pipeline, `fence` can no longer be a simple NOP: consider a store that writes to instruction memory in the Memory stage but the instructions at the written location have already been fetched. This behavior is a departure from the single-cycle design, where all instruction fetches "see the values" of all prior stores automatically. See `testFence` for an example. To preserve single-cycle behavior for your pipeline, if a `fence` instruction immediately precedes a store in the pipeline, the `fence` should stall until the store reaches Writeback. If there are no stores preceding the `fence` instruction in the pipeline, or there is only one such store and it is in the Writeback stage, then no stalling is necessary.
+
+> Note: this is a departure from official RV semantics, which would require this behavior only on the specific `fence.i` instruction instead. We'll discuss this later in class but for simplicity you can treat all fences the same in your design.
 
 Cycle-level tracing is also enabled for this milestone, this time for the LW and dhrystone tests.
 
@@ -55,7 +57,7 @@ SystemVerilog's `struct packed` are a great way to bundle your signals together 
 
 We have packaged up the RV disassembler into the `Disasm` module which is easier to work with. We recommend you instantiate one for each stage. The 32'd0 insn is also rendered as the string "bubble" now.
 
-
+Instead of copying over all of your HW4 code at once and adding pipeline stages to it, we recommend you pull in just the parts needed to get each test case working. This will keep your design as small as possible as long as possible, making it easier to understand and debug.
 
 The testcases we have provided are relatively limited. Adding your own tests will help you uncover bugs before they crop up in a larger riscv-test or dhrystone which are harder to understand.
 
