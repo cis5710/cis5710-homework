@@ -143,20 +143,18 @@ def runCocotbTests(pytestconfig):
             waves=True,
             hdl_toplevel=toplevel_module, 
             test_module=Path(__file__).stem, # use tests from this file
-            results_xml='multicycle_datapath.results.xml',
+            results_xml='pipelined_datapath.results.xml',
             testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
         )
     finally:
         pointsEarned = 0
         pointsPossible = 0
-        div_path = Path(SIM_BUILD_DIR,'runCocotbTests.divider_pipelined.results.xml')
-        proc_path = Path(SIM_BUILD_DIR,'runCocotbTests.multicycle_datapath.results.xml')
-        if div_path.exists() and proc_path.exists():
-            div_total_failed = get_results(div_path)
+        proc_path = Path(SIM_BUILD_DIR,'runCocotbTests.pipelined_datapath.results.xml')
+        if proc_path.exists():
             proc_total_failed = get_results(proc_path)
             # 1 point per test
-            pointsEarned += (div_total_failed[0] - div_total_failed[1]) + (proc_total_failed[0] - proc_total_failed[1])
-            pointsPossible = div_total_failed[0] + proc_total_failed[0]
+            pointsEarned += (proc_total_failed[0] - proc_total_failed[1])
+            pointsPossible = proc_total_failed[0]
             pass
         points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
         with open('points.json', 'w') as f:
