@@ -21,7 +21,7 @@ All told, the datapath changes amount to less than 10 lines of code.
 
 ## Disallowed SystemVerilog Operators
 
-You cannot use the `/` or `%` operators in your code (except as part of compile-time code like `for` loops). Run `make codecheck` to see if any illegal operators are present; the autograder performs this same check.
+You cannot use the `/` or `%` operators in your divider code (except as part of compile-time code like `for` loops), or additionally the `-` operator in your datapath (`-` is ok in the divider, however). Run `make codecheck` to see if any illegal operators are present; the autograder performs this same check.
 
 ## Testing and Debugging Notes
 
