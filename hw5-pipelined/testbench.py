@@ -81,7 +81,7 @@ def loadBinaryIntoMemory(dut, binaryPath):
         memBaseAddr >>= 2 # convert to word address
         dut._log.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
         for i in range(len(words)):
-            dut.mem.mem[memBaseAddr + i].value = words[i]
+            dut.the_mem.mem[memBaseAddr + i].value = words[i]
             pass
         pass
     pass
@@ -409,7 +409,7 @@ async def testWMData(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.mem.mem[3].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.the_mem.mem[3].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -423,9 +423,9 @@ async def testWMAddress(dut):
     loadValue = 0x2083
 
     await ClockCycles(dut.clk, 5) # sb in X stage
-    assert dut.mem.mem[int(loadValue / 4)].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.the_mem.mem[int(loadValue / 4)].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     await ClockCycles(dut.clk, 1) # sb reaches M stage, writes to memory
-    assert dut.mem.mem[int(loadValue / 4)].value == 0x8300_0000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.the_mem.mem[int(loadValue / 4)].value == 0x8300_0000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
