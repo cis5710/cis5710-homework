@@ -169,11 +169,12 @@ module DatapathPipelined (
 
   // Here's how to disassemble an insn into a string you can view in GtkWave.
   // Use PREFIX to provide a 1-character tag to identify which stage the insn comes from.
+  wire [255:0] f_disasm;
   Disasm #(
       .PREFIX("F")
   ) disasm_0fetch (
       .insn  (f_insn),
-      .disasm()
+      .disasm(f_disasm)
   );
 
   /****************/
@@ -199,11 +200,12 @@ module DatapathPipelined (
       end
     end
   end
+  wire [255:0] d_disasm;
   Disasm #(
       .PREFIX("D")
   ) disasm_1decode (
       .insn  (decode_state.insn),
-      .disasm()
+      .disasm(d_disasm)
   );
 
   // TODO: your code here, though you will also need to modify some of the code above
@@ -300,7 +302,7 @@ module RiscvProcessor (
 
   MemorySingleCycle #(
       .NUM_WORDS(8192)
-  ) mem (
+  ) the_mem (
       .rst                (rst),
       .clk                (clk),
       // imem is read-only
