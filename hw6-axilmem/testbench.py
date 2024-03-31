@@ -134,7 +134,7 @@ def runCocotbTests(pytestconfig):
             build_dir=SIM_BUILD_DIR,
             always=True,
             # NB: --trace-max-array must be the size of the memory (in 4B words) for memory to appear in the waveforms
-            build_args=['--assert','--trace','--trace-fst','--trace-structs','--trace-max-array',str(2**18)]
+            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs','--trace-max-array',str(2**18)]
         )
 
         oneTimeSetup()
