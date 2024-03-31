@@ -1,0 +1,398 @@
+[
+  {
+    "cycle": 0,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 1
+  },
+  {
+    "cycle": 1,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 1
+  },
+  {
+    "cycle": 2,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 1
+  },
+  {
+    "cycle": 3,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 1
+  },
+  {
+    "cycle": 4,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000093",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 5,
+    "trace_writeback_pc": "0x4",
+    "trace_writeback_insn": "0x00000113",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 6,
+    "trace_writeback_pc": "0x8",
+    "trace_writeback_insn": "0x00000193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 7,
+    "trace_writeback_pc": "0xc",
+    "trace_writeback_insn": "0x00000213",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 8,
+    "trace_writeback_pc": "0x10",
+    "trace_writeback_insn": "0x00000293",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 9,
+    "trace_writeback_pc": "0x14",
+    "trace_writeback_insn": "0x00000313",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 10,
+    "trace_writeback_pc": "0x18",
+    "trace_writeback_insn": "0x00000393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 11,
+    "trace_writeback_pc": "0x1c",
+    "trace_writeback_insn": "0x00000413",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 12,
+    "trace_writeback_pc": "0x20",
+    "trace_writeback_insn": "0x00000493",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 13,
+    "trace_writeback_pc": "0x24",
+    "trace_writeback_insn": "0x00000513",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 14,
+    "trace_writeback_pc": "0x28",
+    "trace_writeback_insn": "0x00000593",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 15,
+    "trace_writeback_pc": "0x2c",
+    "trace_writeback_insn": "0x00000613",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 16,
+    "trace_writeback_pc": "0x30",
+    "trace_writeback_insn": "0x00000693",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 17,
+    "trace_writeback_pc": "0x34",
+    "trace_writeback_insn": "0x00000713",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 18,
+    "trace_writeback_pc": "0x38",
+    "trace_writeback_insn": "0x00000793",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 19,
+    "trace_writeback_pc": "0x3c",
+    "trace_writeback_insn": "0x00000813",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 20,
+    "trace_writeback_pc": "0x40",
+    "trace_writeback_insn": "0x00000893",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 21,
+    "trace_writeback_pc": "0x44",
+    "trace_writeback_insn": "0x00000913",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 22,
+    "trace_writeback_pc": "0x48",
+    "trace_writeback_insn": "0x00000993",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 23,
+    "trace_writeback_pc": "0x4c",
+    "trace_writeback_insn": "0x00000a13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 24,
+    "trace_writeback_pc": "0x50",
+    "trace_writeback_insn": "0x00000a93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 25,
+    "trace_writeback_pc": "0x54",
+    "trace_writeback_insn": "0x00000b13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 26,
+    "trace_writeback_pc": "0x58",
+    "trace_writeback_insn": "0x00000b93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 27,
+    "trace_writeback_pc": "0x5c",
+    "trace_writeback_insn": "0x00000c13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 28,
+    "trace_writeback_pc": "0x60",
+    "trace_writeback_insn": "0x00000c93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 29,
+    "trace_writeback_pc": "0x64",
+    "trace_writeback_insn": "0x00000d13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 30,
+    "trace_writeback_pc": "0x68",
+    "trace_writeback_insn": "0x00000d93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 31,
+    "trace_writeback_pc": "0x6c",
+    "trace_writeback_insn": "0x00000e13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 32,
+    "trace_writeback_pc": "0x70",
+    "trace_writeback_insn": "0x00000e93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 33,
+    "trace_writeback_pc": "0x74",
+    "trace_writeback_insn": "0x00000f13",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 34,
+    "trace_writeback_pc": "0x78",
+    "trace_writeback_insn": "0x00000f93",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 35,
+    "trace_writeback_pc": "0x7c",
+    "trace_writeback_insn": "0x00000193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 36,
+    "trace_writeback_pc": "0x80",
+    "trace_writeback_insn": "0x00200193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 37,
+    "trace_writeback_pc": "0x84",
+    "trace_writeback_insn": "0x000000b7",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 38,
+    "trace_writeback_pc": "0x88",
+    "trace_writeback_insn": "0x00000393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 39,
+    "trace_writeback_pc": "0x8c",
+    "trace_writeback_insn": "0x04709a63",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 40,
+    "trace_writeback_pc": "0x90",
+    "trace_writeback_insn": "0x00300193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 41,
+    "trace_writeback_pc": "0x94",
+    "trace_writeback_insn": "0xfffff0b7",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 42,
+    "trace_writeback_pc": "0x98",
+    "trace_writeback_insn": "0x4010d093",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 43,
+    "trace_writeback_pc": "0x9c",
+    "trace_writeback_insn": "0x80000393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 44,
+    "trace_writeback_pc": "0xa0",
+    "trace_writeback_insn": "0x04709063",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 45,
+    "trace_writeback_pc": "0xa4",
+    "trace_writeback_insn": "0x00400193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 46,
+    "trace_writeback_pc": "0xa8",
+    "trace_writeback_insn": "0x7ffff0b7",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 47,
+    "trace_writeback_pc": "0xac",
+    "trace_writeback_insn": "0x4140d093",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 48,
+    "trace_writeback_pc": "0xb0",
+    "trace_writeback_insn": "0x7ff00393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 49,
+    "trace_writeback_pc": "0xb4",
+    "trace_writeback_insn": "0x02709663",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 50,
+    "trace_writeback_pc": "0xb8",
+    "trace_writeback_insn": "0x00500193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 51,
+    "trace_writeback_pc": "0xbc",
+    "trace_writeback_insn": "0x800000b7",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 52,
+    "trace_writeback_pc": "0xc0",
+    "trace_writeback_insn": "0x4140d093",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 53,
+    "trace_writeback_pc": "0xc4",
+    "trace_writeback_insn": "0x80000393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 54,
+    "trace_writeback_pc": "0xc8",
+    "trace_writeback_insn": "0x00709c63",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 55,
+    "trace_writeback_pc": "0xcc",
+    "trace_writeback_insn": "0x00600193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 56,
+    "trace_writeback_pc": "0xd0",
+    "trace_writeback_insn": "0x80000037",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 57,
+    "trace_writeback_pc": "0xd4",
+    "trace_writeback_insn": "0x00000393",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 58,
+    "trace_writeback_pc": "0xd8",
+    "trace_writeback_insn": "0x00701463",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 59,
+    "trace_writeback_pc": "0xdc",
+    "trace_writeback_insn": "0x00301e63",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 60,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 4
+  },
+  {
+    "cycle": 61,
+    "trace_writeback_pc": "0x0",
+    "trace_writeback_insn": "0x00000000",
+    "trace_writeback_cycle_status": 4
+  },
+  {
+    "cycle": 62,
+    "trace_writeback_pc": "0xf8",
+    "trace_writeback_insn": "0x00100193",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 63,
+    "trace_writeback_pc": "0xfc",
+    "trace_writeback_insn": "0x05d00893",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 64,
+    "trace_writeback_pc": "0x100",
+    "trace_writeback_insn": "0x00000513",
+    "trace_writeback_cycle_status": 2
+  },
+  {
+    "cycle": 65,
+    "trace_writeback_pc": "0x104",
+    "trace_writeback_insn": "0x00000073",
+    "trace_writeback_cycle_status": 2
+  }
+]
