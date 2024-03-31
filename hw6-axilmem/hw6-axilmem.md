@@ -1,12 +1,12 @@
-# Homework 6: Datapath with AXI-Lite Memory
+# Homework 6: Pipelined Datapath with AXI-Lite Memory
 
 In this homework you will build a more realistic memory that communicates via the AXI4-Lite interface, and then integrate that memory with your pipelined datapath from HW5. There is only a single submission for this homework, though we decompose the assignment into 3 key steps below.
 
 ## Step 1: AXI-Lite Memory
 
-First, you will need to build your AXI4-Lite memory module, completing the starter code given in the `MemoryAxiLite` module. The [official AXI4-Lite specification from ARM](https://www.arm.com/architecture/system-architectures/amba/amba-4) is a valuable and accessible resource. There are both simplifications and restrictions with respect to the official AXI4-Lite (hereafter AXIL for simplicity) specification that you can/should make in your design.
+First, you will need to build your AXI4-Lite memory module, completing the starter code given in the `MemoryAxiLite` module. The [official AXI4-Lite specification from ARM](https://www.arm.com/architecture/system-architectures/amba/amba-4) is a valuable and accessible resource. There are both simplifications and complications with respect to the official AXI4-Lite (hereafter AXIL for simplicity) specification that you can/should make in your design.
 
-**Simplifications**
+### Simplifications
 
 Your AXIL memory can assume that `AWADDR` and `WDATA`/`WSTRB` will appear together in the same cycle. In the official AXIL spec, they can appear independently and must be buffered internally until both are received.
 
@@ -14,9 +14,11 @@ You can also assume that the manager (the datapath) will always be ready to rece
 
 Your memory will have a fixed 1-cycle latency for both reads and writes.
 
-**Restrictions**
+### Complications
 
 To keep up with the datapath, the memory needs to be able to handle consecutive memory reads as a new instruction needs to be fetched each cycle, and the processor may run a series of consecutive load instructions. Similarly, the memory needs to be able to handle consecutive memory writes due to consecutive store instructions. The general AXIL interface allows the subordinate to determine the timing of responses to the manager (e.g., the manager must wait until `RVALID`/`BVALID` is set by the subordinate). However, in our datapath we want to avoid both stalls and the additional complexity of handling variable latency in the Fetch/Memory stages. It is both easier and higher performance to make the memory capable of handling consecutive requests than to have the pipeline support a truly latency-insensitive memory.
+
+### Testing
 
 We have also provided a set of tests for your `MemoryAxiLite` module, which you can run via:
 ```
@@ -24,7 +26,7 @@ pytest-3 -s testbench_mem.py
 ```
 Note that the [cocotb-bus library](https://github.com/cocotb/cocotb-bus) (pre-installed in your Docker container) has nice support for generating AXIL read/write requests and checking the responses, making it easy to interact with your memory with a few lines of Python.
 
-#### Tips
+### Tips
 
 We have created parameters for `ADDR_WIDTH` and `DATA_WIDTH` to allow flexibility for future versions of this assignment. However, both parameters will always be 32 for this assignment, so your `MemoryAxiLite` should manage an array of 4B words and reads and writes will request 32-bit addresses. The `NUM_WORDS` parameter can change, however, to be other powers-of-two and your code should be able to handle that. When testing `MemoryAxiLite` in isolation we scale it down to make debugging easier, but riscv-tests and dhrystone require a larger memory.
 
