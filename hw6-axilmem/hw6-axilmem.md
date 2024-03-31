@@ -80,4 +80,4 @@ To change the clock frequency, edit the file `hw6-axilmem/system/mmcm.v` followi
 
 ## Submitting
 
-Run `make impl` and `make zip` (both on biglab.seas) and submit the `axilmem.zip` file on Gradescope.
+Run `make impl` and `make zip` (both on biglab.seas) and submit the `axilmem.zip` file on Gradescope. The autograder runs all tests from both `testbench_mem.py` and `testbench.py`.
