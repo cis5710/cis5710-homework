@@ -35,6 +35,8 @@ You will also need to add WM bypassing to your pipeline.
 
 You will need to support divide and remainder operations - for simplicity we'll discuss only divide as remainder is handled identically. Your divide operations should use the 2-stage pipelined divider from HW4. Since a divide takes 2 cycles, its quotient will not be available until the beginning of the Writeback stage, similar to loads. You will need to add a "divide-to-use" stall if there is a dependent instruction immediately following the divide.
 
+> For simplicity, you do *not* need to implement a WM divide-to-store bypass.
+
 One final case to handle is the `fence` instruction to support self-modifying code. Due to parallel execution within the pipeline, `fence` can no longer be a simple NOP: consider a store that writes to instruction memory in the Memory stage but the instructions at the written location have already been fetched. This behavior is a departure from the single-cycle design, where all instruction fetches "see the values" of all prior stores automatically. See `testFence` for an example. To preserve single-cycle behavior for your pipeline, if a `fence` instruction precedes a store in the pipeline, the `fence` should stall until the store reaches Writeback. If there are no stores preceding the `fence` instruction in the pipeline, or there is only one such store and it is in the Writeback stage, then no stalling is necessary.
 
 > Note: this is a departure from official RV semantics, which would require this behavior only on the specific `fence.i` instruction instead. We'll discuss this later in class but for simplicity you can treat all fences the same in your design.
