@@ -137,8 +137,9 @@ async def testInsnMultiRead(dut):
 
     # read the data back
     for i in range(1,15):
-        value = await imem.read(i*4)
-        assert hexRepeat(i) == value, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual:x}'
+        actual = await imem.read(i*4)
+        expected = hexRepeat(i)
+        assert expected == actual, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual.value:x}'
         pass
 
 # test that imem does not accept writes
@@ -226,7 +227,7 @@ async def testDataMultiRead(dut):
     for i in range(1,15):
         actual = await dmem.read(i*4)
         expected = hexRepeat(i)
-        assert expected == actual, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual:x}'
+        assert expected == actual, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual.value:x}'
         pass
 
 # test write+read to dmem
@@ -264,7 +265,7 @@ async def testDataMultiWriteRead(dut):
     for i in range(1,15):
         actual = await dmem.read(i*4)
         expected = hexRepeat(i)
-        assert expected == actual, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual:x}'
+        assert expected == actual, f'error reading address 0x{i*4:x}, expected value 0x{expected:x} but was 0x{actual.value:x}'
         pass
 
 async def data_read_helper(dut, address, expected):
