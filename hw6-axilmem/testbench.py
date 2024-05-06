@@ -213,12 +213,17 @@ async def testLui3(dut):
 async def testAddi3(dut):
     "Run three addi insns"
     asm(dut, '''addi x1,x1,1
-        addi x1,x1,1
-        addi x1,x1,1''')
+        addi x1,x1,2
+        addi x1,x1,3 # stop executing here
+        addi x1,x1,4 # add extra insns to see ensure we don't over-fetch
+        addi x1,x1,5
+        addi x1,x1,6
+        addi x1,x1,7
+        addi x1,x1,8''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[1].value == 3, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 6, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testBneTaken(dut):
