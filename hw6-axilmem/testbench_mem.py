@@ -99,6 +99,7 @@ TIMEOUT_NS = 40
 #########################
 
 # test that the imem has appropriate initial outputs
+@cocotb.test()
 async def testInsnInit(dut):
     await preTestSetup(dut)
     assert 1 == dut.I_ARREADY.value, "imem ARREADY should initially be ready to read"
