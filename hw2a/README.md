@@ -4,7 +4,7 @@ RISC-V contains 4 division/remainder insns (`div`,`divu`,`rem` and `remu`) which
 perform signed and unsigned divide and remainder operations. You will build a
 module that performs unsigned division and remainder operations. In a later
 homework when you build a complete RV processor, you will add a bit of
-extra logic to support the signed division/remainder as well.
+extra logic to support the signed division/remainder operations as well.
 
 ## Division Algorithm (Software)
 
@@ -49,6 +49,16 @@ You cannot use SystemVerilog's `/` or `%` operators in your code. This will be
 enforced by the autograder, and you can run `make codecheck` to perform these
 same checks yourself before submitting.
 
+## Schematic
+
+Draw a detailed schematic (by hand or computerized) of your hardware design for the divider. You should include signal names, module names, port names and bus widths. You can leave a module as a black box to simplify things, but then you should show elsewhere on the schematic what that black box does. Simple modules (muxes and any SystemVerilog operators you are allowed to use) can be drawn as in the lecture slides or as a simple box with a label; they don't need further elaboration. For the `divider_unsigned` module, you don't need to draw all 32 instances of the `divu_1iter` module, but should show **the first two and the last one** to demonstrate that you know how to wire them together.
+
+See also [the example schematic for HW1](../hw1-systemverilog/hw1-schematic.pdf). Grading of the schematics will be on a full-credit/no-credit basis. We won't rigorously examine the correctness of your design, but instead aim to give you quick feedback about obvious flaws. Still, it behooves you to invest time in your schematic to catch bugs up-front, instead of looking at waveforms or code.
+
+**Please make sure your PDFs are rotated correctly, and are not insanely huge resolution!** We will take points off for these since they make grading more difficult.
+
+When your schematic is complete, you can translate it directly into SystemVerilog. We encourage you to keep your schematic up-to-date as your design evolves, as it will help ensure your design works as required.
+
 ## Writing your code
 
 Begin with the `divu_1iter` module that does one iteration of the division
@@ -61,25 +71,15 @@ instances. It is quite tedious (and error-prone) to connect them by hand.
 ## Tests
 
 We have provided tests for both the `divu_1iter` and `divider_unsigned`
-modules. You can run the `divu_1iter` tests via:
+modules. You can run tests via the command:
 
 ```
-pytest-3 -s testbench_1iter.py
+make test
 ```
 
-There are only a couple simple tests provided, so you may find it useful to use
+This runs the `divu_1iter` tests and then the `divider_unsigned` tests.
+There are only a couple simple tests provided in the `testbench*.py` files, so you may find it useful to use
 these as a template for adding your own tests that cover various corner cases.
-
-Later, when you have the `divu_1iter` module working you can run the
-`divider_unsigned` tests with:
-
-```
-pytest-3 -s testbench.py
-```
-
-Note that the autograder only runs these latter `divider_unsigned` tests, so
-only those will be part of your grade, not the "1iter" tests. You may again find
-it useful to add your own tests.
 
 ## Submitting your code
 
