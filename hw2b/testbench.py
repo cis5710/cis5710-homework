@@ -1,37 +1,66 @@
-import cocotb, json, os, random
+import cocotb, json, random, sys
 
 from pathlib import Path
 from cocotb.runner import get_runner, get_results
 from cocotb.triggers import Timer
 
+p = Path.cwd() / '..' / 'common' / 'python'
+sys.path.append(str(p))
+import cocotb_utils
+
 # directory where our simulator will compile our tests + code
 SIM_BUILD_DIR = "sim_build"
 
+# simulator to use
+SIM = "verilator"
 
-def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
+VERILATOR_FLAGS = ['--assert','-Wall','-Wno-DECLFILENAME','--trace-fst','--trace-structs']
 
-    # for deterministic random numbers
-    random.seed(12345)
+random.seed(12345) # for determinism
+PROJECT_PATH = Path(__file__).resolve().parent
 
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [proj_path / "cla.sv" ]
+def runCocotbTestsGp4(pytestconfig):
+    """run GP4 tests"""
+
+    verilog_sources = [PROJECT_PATH / "cla.sv" ]
+
+    toplevel_module = "gp4"
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        hdl_toplevel=toplevel_module,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        always=True,
+        waves=True,
+        build_args=VERILATOR_FLAGS,
+    ),
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module='testbench_gp4', # use tests from testbench_gp4.py
+        testcase=pytestconfig.option.tests,
+    )
+    pass
+
+def runCocotbTestsCla(pytestconfig):
+    """run CLA tests"""
+
+    verilog_sources = [PROJECT_PATH / "cla.sv" ]
     toplevel_module = "cla"
 
-    pointsEarned = 0
     try:
-        runr = get_runner(sim)
+        runr = get_runner(SIM)
         runr.build(
             verilog_sources=verilog_sources,
-            vhdl_sources=[],
             hdl_toplevel=toplevel_module,
-            includes=[proj_path],
+            includes=[PROJECT_PATH],
             build_dir=SIM_BUILD_DIR,
             always=True,
-            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
+            waves=True,
+            build_args=VERILATOR_FLAGS,
         ),
 
         runr.test(
@@ -42,20 +71,16 @@ def runCocotbTests(pytestconfig):
             testcase=pytestconfig.option.tests,
         )
     finally:
-        total_failed = get_results(Path(SIM_BUILD_DIR,'runCocotbTests.results.xml'))
-        # 1 point per test
-        pointsEarned += total_failed[0] - total_failed[1]
-        pointsPossible = total_failed[0]     
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
+        test_results = cocotb_utils.aggregate_test_results(
+            get_results(Path(SIM_BUILD_DIR,'runCocotbTestsGp4.None')),
+            get_results(Path(SIM_BUILD_DIR,'runCocotbTestsCla.None'))
+        )
+        # 1 point per cocotb test
+        points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
         with open('points.json', 'w') as f:
             json.dump(points, f, indent=2)
             pass
         pass
-
-
-if __name__ == "__main__":
-    runCocotbTests()
-    pass
 
 
 #########################
