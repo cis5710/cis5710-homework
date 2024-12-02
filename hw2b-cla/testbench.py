@@ -15,7 +15,6 @@ SIM_BUILD_DIR = "sim_build"
 SIM = "verilator"
 
 VERILATOR_FLAGS = ['--assert','-Wall','-Wno-DECLFILENAME','--trace-fst','--trace-structs']
-
 random.seed(12345) # for determinism
 PROJECT_PATH = Path(__file__).resolve().parent
 
@@ -23,8 +22,8 @@ def runCocotbTestsGp4(pytestconfig):
     """run GP4 tests"""
 
     verilog_sources = [PROJECT_PATH / "cla.sv" ]
-
     toplevel_module = "gp4"
+
     runr = get_runner(SIM)
     runr.build(
         verilog_sources=verilog_sources,
