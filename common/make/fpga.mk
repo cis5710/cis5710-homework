@@ -67,7 +67,7 @@ pnr: $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json
 
 # program the device with a bitstream
 program:
-	openFPGALoader --board ulx3s $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).bit
+	openFPGALoader --freq 3000000 --board ulx3s $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).bit
 
 # create a zip archive of source code, bitstream, and power/performance/area reports. We filter out warnings because for the ALU-only version of the processor labs we pull in a bitstream, even though the bitstream is only for the full version of the lab
 zip: $(ZIP_SOURCES)
