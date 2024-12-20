@@ -32,7 +32,7 @@ SDBOOT_BIF=.boot.bif
 PATH_UPDATE_SOURCE_FILE=~cis5710/tools/cis5710-update-path.sh
 BACKEND_OUTPUT_DIR=fpga_build
 
-time=time -f "command took %E m:s and %M KB"
+time=/usr/bin/time -f 'command took %E m:s and %M KB'
 
 # NB: the .set_testcase.v target does create a file .set_testcase.v, but we want it to run every time so we declare it phony
 .PHONY: codecheck test synth pnr program pennsim boot clean
@@ -47,19 +47,23 @@ codecheck:
 
 test:
 	@echo You can run just specific tests via:
-	@echo "     pytest-3 --capture=no --exitfirst testbench.py --tests TEST1,TEST2,..."
+	@echo "     pytest-3 --exitfirst --capture=no testbench.py --tests TEST1,TEST2,..."
 	pytest-3 --capture=no --exitfirst testbench.py
 
 # run synthesis to identify code errors/warnings
 synth: $(SYNTH_SOURCES)
 	mkdir -p $(BACKEND_OUTPUT_DIR)
-	$(time) synlig -p "read_systemverilog $(SYNTH_SOURCES); synth_ecp5; write_json $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json"
+	bash -c "$(time) synlig -p \"systemverilog_defines -DSYNTHESIS; read_systemverilog $(SYNTH_SOURCES); synth_ecp5 -top $(TOP_SYNTH_MODULE); write_json $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
+
+synth-yosys: $(SYNTH_SOURCES)
+	mkdir -p $(BACKEND_OUTPUT_DIR)
+	bash -c "set -o pipefail; $(time) yosys -p \"verilog_defines -DSYNTHESIS; read -vlog2k $(SYNTH_SOURCES); synth_ecp5 -top $(TOP_SYNTH_MODULE) -json $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
 
 # run pnr to generate a bitstream
 pnr: $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json
-	$(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $^ --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).config --lpf $(CONSTRAINTS)
+	bash -c "$(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $^ --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).config --lpf $(CONSTRAINTS) --lpf-allow-unconstrained 2>&1 | tee $(BACKEND_OUTPUT_DIR)/pnr.log"
 	python3 -m json.tool $(BACKEND_OUTPUT_DIR)/report.json > $(BACKEND_OUTPUT_DIR)/resource-report.json
-	ecppack --compress --freq 62.0 --input $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).config --bit $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).bit
+	bash -c "ecppack --compress --freq 62.0 --input $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).config --bit $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE).bit 2>&1 | tee $(BACKEND_OUTPUT_DIR)/ecppack.log"
 
 # program the device with a bitstream
 program:
@@ -69,11 +73,8 @@ program:
 zip: $(ZIP_SOURCES)
 	zip -j $(ZIP_FILE) $(ZIP_SOURCES) | grep -v warning
 
-# find path to this Makefile (NB: MAKEFILE_LIST also contains vivado.mk as the 2nd entry)
-THIS_MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-
 # make BOOT.BIN image for programming FPGA from an SD card
-# TODO: not working for ULX3S yet
+# TODO: not working for ULX3S, I don't think it can program FPGA from the SD card
 boot: vivado_output/$(BITSTREAM_FILENAME) $(SDBOOT_DIR)/zynq_fsbl_0.elf
 ifndef XILINX_VIVADO
 	$(error ERROR cannot find Vivado, run "source $(PATH_UPDATE_SOURCE_FILE)")
@@ -82,6 +83,6 @@ endif
 	echo vivado_output/$(BITSTREAM_FILENAME)"}" >> $(SDBOOT_BIF)
 	bootgen -image $(SDBOOT_BIF) -arch zynq -o vivado_output/BOOT.BIN
 
-# remove Vivado logs and our hidden file
+# remove build files
 clean:
-	rm -rf sim_build/ fpga_build/ slpp_all/
+	rm -rf points.json sim_build/ $(BACKEND_OUTPUT_DIR)/ slpp_all/
