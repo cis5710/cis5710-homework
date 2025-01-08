@@ -2,8 +2,13 @@
 points.json
 *.parsed.json
 
-# Verilator build directory
+# used only for Gradescope submission
+*.zip
+
+# build directories
 sim_build/
+fpga_build/
+slpp_all/
 
 # things created by Vivado
 *.bit
