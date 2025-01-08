@@ -1,30 +1,10 @@
 This repository contains the documentation and starter code for the homework assignments in [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/). Below we describe some of the important computing tools you'll need to use this semester.
 
-# Docker
-
-All of the software tools needed to compile, run and test your code are packaged into the `cis5710/hw-base:latest` Docker container which is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base). You can install Docker on your computer, and then grab this container to get all of the tools at once. This is the same image that the Gradescope autograder uses as well.
-
-First, install Docker for your OS. For Windows/Mac users, you'll probably want to use [Docker Desktop](https://www.docker.com/get-started/). Linux users may prefer to install via your regular package manager.
-
-Then, you can pull the *container image*, which is the set of files that will be inside the running *container*. Pull the image via:
-```
-docker pull cis5710/hw-base:latest
-```
-
-And then run it to launch the *container*. This puts you inside an Ubuntu Linux command-line system with all of the tools installed. Launch the container with:
-```
-docker run -it cis5710/hw-base:latest /bin/bash
-```
-
-You should also configure Docker to [share a directory with your host machine](https://www.digitalocean.com/community/tutorials/how-to-share-data-between-the-docker-container-and-the-host) so that your files are saved when the container is terminated. We may need to make updates to the container image throughout the semester, so you will want to be able to restart your container (to obtain those updates) without losing your work.
-
-If you'd like to install the tools locally instead, you can follow our [Dockerfile](docker/Dockerfile) for guidance.
-
 # Git
   
-We'll use git to distribute the code and instructions for the labs. Here's our recommended git setup so that you can have a private repo you can share with your group partner, and that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. We'll use github in these instructions, but you can adapt these to other hosting situations as well.
+We'll use git to distribute the code and instructions for the homeworks. Here's our recommended git setup so that you can have a private repo you can share with your group partner, and that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. In these instructions, we'll use github and git terminal commands, but you can adapt these to other git hosting services or other git clients.
 
-> **Do not fork this repo** on GitHub unless you are submitting a Pull Request to fix something here. For doing your homework, you should start from a new private GitHub repo instead (see below).
+> **Do not fork this repo** on GitHub unless you are submitting a Pull Request to fix something here. For doing your homework, you should start from a new private GitHub repo instead.
 
 ### Setup an SSH key
 
@@ -34,7 +14,7 @@ Don't type in your password every time you push/pull from your repo. [Setup an S
 
 First, one group member creates a new, empty private repo. **Do not initialize** the repo with a README, a `.gitignore` file, or a license.
 
-Then, run the following commands on the command-line (e.g., on biglab or inside your Docker container). Substitute your GH username and the name of the repo you created for `YOURUSERNAME` and `YOURREPO`, respectively.
+Then, run the following commands on the command-line on your laptop. Substitute your GH username and the name of the repo you created for `YOURUSERNAME` and `YOURREPO`, respectively.
 
 First, clone your empty repo (via SSH so that you use the SSH keys you setup previously):
 ```
@@ -71,22 +51,57 @@ git fetch upstream
 git merge upstream/main
 ```
 
-You can also pull in submodule changes via `git submodule update --recursive riscv-tests/`, though that should be only rarely needed.
+You can pull in submodule changes via `git submodule update --recursive riscv-tests/`.
 
+
+# Docker
+
+All of the software tools needed to run and test your code are packaged into the `cis5710/hw-base:latest` Docker container which is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base). You can install Docker on your computer, and then grab this container to get all of the tools at once. This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
+
+First, install Docker for your OS. For Windows/Mac users, you'll probably want to use [Docker Desktop](https://www.docker.com/get-started/). Linux users may prefer to install via your regular package manager.
+
+Then, you can pull the *container image*, which is the set of files that will be inside the running *container*. Pull the image via:
+```
+docker pull cis5710/hw-base:latest
+```
+
+The next step will be to launch a *container*, which is like a lighter-weight version of a virtual machine. Our container is an Ubuntu Linux command-line system.
+
+First, you should pick the *name* of your container (change it from `MY-CIS5710` in the `docker run` command below), which will make it easy to start, stop and distinguish from other containers you may be running.
+
+The container has its own filesystem, separate from the files on your laptop. However, you can select a directory that you want to share between your laptop and the container. **Files outside of this shared directory do not persist if the container is restarted.** You may need to restart the container if you need to reboot your laptop or if we update the container image during the semester. So your cloned git repo should live on your laptop, not solely inside the container. In the `docker run` command below, replace `/PATH/ON/YOUR/LAPTOP` with the path to the laptop directory where you cloned your private github repo. This directory will appear inside the container at `/MYSTUFF`
+
+After editing this command appropriately, launch the container for the first time:
+```
+docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw-base:latest /bin/bash
+```
+
+Once you've launched the container, you can keep it running in the background. If you want to free up more resources, you can **stop** your container with this command (substituting the name you gave your container previously):
+
+```
+docker stop MY-CIS5710
+```
+
+Stopping your container will **reset the state of all files inside the container**, except for the directory shared with your laptop. You can then start the container again with:
+
+```
+docker start MY-CIS5710
+```
+
+It is also possible to install the various tools you need for this course directly on your laptop, which avoids the need for Docker. You can follow our [Dockerfile](docker/Dockerfile) for guidance.
 
 # VSCode
 
-While you can edit your code however you like, VSCode has decent support for SystemVerilog. I recommend the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL) and the Python extension, as those are the languages you'll use most in this class. I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
+We've found that VSCode has decent support for SystemVerilog. I recommend the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL) and the Python extension, as those are the languages you'll use most in this class. I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
 
-# GtkWave
+# Waveform Viewer
 
-While most of the tools we use run on the Linux command line, viewing waveforms is best done visually. Thus, you will want to install the GtkWave waveform viewer directly on your machine. In general, waveform files will be generated by running your design inside the container, and then you'll want to view those waveform files *outside* the container. Here's a screenshot of what GtkWave looks like:
+While most of the tools we use run on the Linux command line, viewing waveforms is best done in a graphical environment. Thus, you will want to install the a waveform viewer directly on your laptop. In general, waveform files will be generated by running your design inside the container, and then you'll want to view those waveform files *outside* the container. GtkWave is a popular waveform viewer, which looks like this:
 
 ![GtkWave screenshot](images/gtkwave-screenshot.png)
 
-### Linux
+### Ubuntu Linux
 
-On Ubuntu:
 
 ```
 sudo apt-get install gtkwave
@@ -96,22 +111,19 @@ You can then run `gtkwave SOMETHING.vcd &` to view the waveforms.
 
 ### Mac OSX
 
-We recommend you use the [homebrew package manager](https://brew.sh):
+We recommend you use the [homebrew package manager](https://brew.sh), and then run:
 
-```
-brew cask install gtkwave
-```
-
-Note: If running a new version of homebrew, you may get the following error:
-```
-Error: `brew cask` is no longer a `brew` command. Use `brew <command> --cask` instead.
-```
-Change your command to the following: 
 ```
 brew install gtkwave --cask
 ```
 
 You can then launch `gtkwave`, and open the `.vcd` file with `File => Open New Window` or `File => Open New Tab`. Running `open SOMETHING.vcd` also opens gtkwave automatically, as does double-clicking the `.vcd` file in Finder.
+
+In some versions of MacOS, `gtkwave` cannot be installed, but `surfer` is a nice alternative. Install it with:
+
+```
+brew install surfer
+```
 
 ### Windows
 
@@ -127,4 +139,4 @@ You can use `File => Write Save File` to save a `.gtkw` file that records the si
 
 **Use markers to remember important places**
 
-With `Markers => Drop named marker` you can leave a mark at a particular time to make it easier to find again if you scroll away.
+With `Markers => Drop named marker` you can leave a mark at a particular time to make it easier to find again after you scroll away. This is especially helpful in long traces.
