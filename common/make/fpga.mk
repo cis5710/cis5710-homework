@@ -66,6 +66,7 @@ check-logs:
 
 # run ecppll to set clock frequencies
 clock-gen:
+	mkdir -p $(BACKEND_OUTPUT_DIR)
 	ecppll --internal_feedback --clkin_name input_clk_25MHz --clkin 25 --clkout0_name clk_125MHz --clkout0 125 --clkout1_name clk_25MHz --clkout1 25 --clkout2_name clk_proc --clkout2 $(CLOCK_FREQUENCY) -n $(CLOCK_GEN_NAME) -f .tmp-clk-gen.v > $(BACKEND_OUTPUT_DIR)/clock_generation_report.txt
 	@echo 'check that clocks have the proper frequencies'
 	grep 'clkout0 frequency: 125 MHz' $(BACKEND_OUTPUT_DIR)/clock_generation_report.txt
@@ -82,6 +83,8 @@ clock-gen:
 synth-synlig: $(SYNTH_SOURCES) clock-gen
 	mkdir -p $(BACKEND_OUTPUT_DIR)
 	bash -c "set -o pipefail; $(time) synlig -p \"systemverilog_defines -DSYNTHESIS; read_systemverilog $(SYNTH_SOURCES); synth_ecp5 -top $(TOP_SYNTH_MODULE); write_json $(BACKEND_OUTPUT_DIR)/$(TOP_SYNTH_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
+
+synth: synth-yosys
 
 synth-yosys: $(SYNTH_SOURCES) clock-gen
 	mkdir -p $(BACKEND_OUTPUT_DIR)
