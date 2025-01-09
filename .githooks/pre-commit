@@ -7,7 +7,7 @@ FORBIDDEN = 'THIS IS SOLUTION CODE'
 #git diff --cached --name-only | xargs grep --with-filename -n "$FORBIDDEN" && echo "COMMIT REJECTED Found '$FORBIDDEN' in files to be committed." && exit 1
 
 
-import subprocess, sys
+import subprocess, os, sys
 
 def has_forbidden_string(file_path, forbidden_string):
     try:
@@ -26,7 +26,7 @@ def main():
 
     # Check each staged file for the forbidden string
     for file_path in staged_files:
-        if has_forbidden_string(file_path, FORBIDDEN):
+        if os.path.isfile(file_path) and has_forbidden_string(file_path, FORBIDDEN):
             print(f"Error: Commit aborted. File {file_path} contains the forbidden string '{FORBIDDEN}'.")
             exit(1)
             pass
