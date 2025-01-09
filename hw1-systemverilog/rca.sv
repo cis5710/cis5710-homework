@@ -39,13 +39,23 @@ module fulladder2(input wire        cin,
    fulladder a1(.cin(cout_tmp), .a(a[1]), .b(b[1]), .s(s[0]), .cout(cout_tmp));
 endmodule
 
-/* 4-bit ripple-carry adder that adds two 4-bit numbers (taken from the
- * ZedBoard's switches) and produces a 4-bit result (displayed on the ZedBoard's
- * LEDs) */
-module rca4(input wire  [7:0] SWITCH,
-            output wire [7:0] LED);
-   wire cout0, ignored;
-   fulladder2 a0(.cin(1'b1), .a(SWITCH[1:0]), .b(SWITCH[5:4]), .s(LED[1:0]), .cout(cout0));
-   fulladder2 a3(.cin(cout0), .a(SWITCH[3:1]), .b(SWITCH[7:6]), .s(LED[3:2]), .cout(ignored));
-   assign LED[7:4] = 4'h0;
+/* 4-bit ripple-carry adder that adds two 4-bit numbers */
+module rca4(input wire [3:0]  a,
+            input wire [3:0]  b,
+            output wire [3:0] sum,
+            output wire       carry_out);
+   wire cout0;
+   fulladder2 a0(.cin(1'b1), .a(a[1:0]), .b(b[5:4]), .s(sum[1:0]), .cout(cout0));
+   fulladder2 a3(.cin(cout0), .a(a[3:1]), .b(b[7:6]), .s(sum[3:2]), .cout(carry_out));
+endmodule
+
+/** 
+ * Demo module that adds a constant 2 to a 4-bit input taken from the FPGA
+ * board's buttons B2,B5,B4,B6. The sum is displayed on the board's LEDs.
+ * Note: there are no bugs in this module.
+ */
+module rca4_demo(input wire  [6:0] BUTTON,
+                 output wire [7:0] LED);
+   rca4 rca (.a(4'd2), .b({BUTTON[2],BUTTON[5],BUTTON[4],BUTTON[6]}), .sum(LED[3:0]), .carry_out(LED[4]));
+   assign LED[7:5] = 3'd0;
 endmodule
