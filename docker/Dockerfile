@@ -52,6 +52,11 @@ RUN sudo cp sv2v-Linux/sv2v /tools/oss-cad-suite/bin/
 RUN sudo chown penn /tools/oss-cad-suite/bin/sv2v
 RUN sudo rm -rf /tmp/sv2v-Linux*
 
+# add pytest script
+ADD pytest /tools/oss-cad-suite/bin/
+RUN sudo chmod 755 /tools/oss-cad-suite/bin/pytest
+RUN sudo chown penn /tools/oss-cad-suite/bin/pytest
+
 ENV PATH="$PATH:/tools/oss-cad-suite/bin"
 WORKDIR /tools/oss-cad-suite
 RUN bash -c "source environment && pip3 install git+https://github.com/cis5710/cocotbext-axi.git"
@@ -62,6 +67,7 @@ RUN echo "source /tools/oss-cad-suite/environment" >> /home/penn/.bashrc
 RUN which verible-verilog-syntax
 RUN which spike
 RUN which verilator
+RUN which pytest
 RUN which nextpnr-ecp5
 RUN which sv2v
 RUN which yosys
