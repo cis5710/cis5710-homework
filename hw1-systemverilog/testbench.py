@@ -11,10 +11,8 @@ SIM_BUILD_DIR = "sim_build"
 def runCocotbTests(pytestconfig):
     """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
 
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "verilator")
     proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
     verilog_sources = [proj_path / "rca.sv" ]
 
     # by default, run all tests
@@ -42,14 +40,15 @@ def runCocotbTests(pytestconfig):
                 includes=[proj_path],
                 build_dir=SIM_BUILD_DIR,
                 always=True,
-                build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
+                waves=True,
+                build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace-fst','--trace-structs']
             ),
 
             results_file = runr.test(
                 seed=12345,
                 waves=True,
                 hdl_toplevel=top_module, 
-                test_module="testbench",
+                test_module=Path(__file__).stem, # use tests from this file
                 testcase="test_"+top_module,
             )
             total_failed = get_results(results_file)
@@ -63,10 +62,6 @@ def runCocotbTests(pytestconfig):
             pass
         pass
 
-
-if __name__ == "__main__":
-    runCocotbTests()
-    pass
 
 
 #########################
@@ -151,11 +146,15 @@ async def test_rca4(dut):
         for b in range(16):
             for c in [0,1]:
                 await Timer(1, "ns")
-                dut.SWITCH.value = a + (b << 4)
+                dut.a.value = a
+                dut.b.value = b
                 await Timer(1, "ns")
                 expected_sum = (a + b) & 0x0F # truncate to 4 bits
-                actual_sum = dut.LED.value
+                expected_cout = ((a + b) & 0x10) >> 4
+                actual_sum = dut.sum.value
+                actual_cout = dut.carry_out.value
                 assert expected_sum == actual_sum, f'expected {a}+{b} == {expected_sum} but it was {actual_sum}'
+                assert expected_cout == actual_cout, f'expected carry-out of {a}+{b} to be {expected_cout} but it was {actual_cout}'
                 pass
             pass
         pass
