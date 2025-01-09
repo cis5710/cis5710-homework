@@ -12,5 +12,8 @@ push: build
 	docker push cis5710/hw-base:$(VERSION)
 	docker push cis5710/hw-base:latest
 
+rm:
+	docker container rm 5710-playground
+
 run:
 	docker run -it cis5710/hw-base:latest /bin/bash
