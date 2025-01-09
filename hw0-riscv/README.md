@@ -7,14 +7,14 @@ This [table of ASCII character codes](https://www.cs.cmu.edu/~pattis/15-1XX/comm
 ### Setup
 
 For this and later assignments you will work in
-the course [Docker
-container](https://github.com/cis5710/cis5710-homework/blob/main/README.md#docker). After you get the container running, clone your repo by following [the git setup instructions](https://github.com/cis5710/cis5710-homework/blob/main/README.md#git).
+the course Docker
+container, which you should create following [our setup instructions](https://github.com/cis5710/cis5710-homework/blob/main/README.md).
 
 Note that this is an **individual lab**, so you should complete it on your own.
 
 ### Build your code
 
-From inside the `hw0` directory, the `make build` command will assemble your `uppercase.S` file into a RV executable, which can then be run.
+From inside the `hw0-riscv` directory, the `make build` command will assemble your `uppercase.S` file into a RV executable, which can then be run.
 
 ### Run your code
 
@@ -34,15 +34,14 @@ Note that at the very beginning of execution, spike runs a few instructions befo
 
 The ASCII string you need to convert is located in memory starting at address 0x2000.
 
-When learning RV assembly, you may find this [RV interpreter website](https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/) to be helpful. It doesn't understand all RV instructions or assembler syntax, but it can be useful to see how a small code snippet works.
+When learning RV assembly, you may find this [RV interpreter website](https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/) to be helpful. It doesn't understand all RV instructions or the full assembler syntax, but it can be useful to see how a small code snippet works.
 
 ### Test your code
 
 The `make run` command will run your program under spike, displaying the input string beforehand and afterwards. This is the command we will use to test your code.
 
-You should also try other strings than the one we've provided to **make sure your program works for all of the printable ASCII characters** (decimal values 32-126).
+You should try other strings than the one we've provided to **make sure your program works for all of the printable ASCII characters** (decimal values 32-126).
 
 ### Submit your code
 
 Submit your `uppercase.S` file on Gradescope.
-
