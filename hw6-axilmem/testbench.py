@@ -12,14 +12,40 @@ from cocotb.runner import get_runner, get_results
 from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 from cocotb.triggers import Timer
 
+from cocotbext.axi import AxiLiteBus, AxiLiteRam
+
+import logging
+
 import sys
 
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
-import riscv_binary_utils
+import cocotb_utils, riscv_binary_utils
+
+# the number of stages the divider is split into
+DIVIDER_STAGES = 2
 
 # directory where our simulator will compile our tests + code
 SIM_BUILD_DIR = "sim_build"
+
+# simulator to use
+SIM = "verilator"
+#SIM = "icarus"
+
+VERILATOR_FLAGS = [
+    '--assert',
+    '-Wall',
+    '-Wno-DECLFILENAME',
+    f'-DDIVIDER_STAGES={DIVIDER_STAGES}',
+    '--trace',
+    '--trace-fst',
+    '--trace-structs',
+    # NB: --trace-max-array must be ≥ size of the memory (in 4B words) for memory to appear in the waveforms
+    '--trace-max-array',str(2**18)
+    ]
+
+# directory for this homework
+PROJECT_PATH = Path(__file__).resolve().parent
 
 # temporary file used to hold assembler output
 TEMP_MACHINE_CODE_FILE = ".tmp.riscv.o"
@@ -36,13 +62,13 @@ READELF = 'riscv64-unknown-elf-readelf'
 RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
 RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
-TIMEOUT_CYCLES = 1_000
+TIMEOUT_CYCLES = 4_500
 
 TRACING_MODE = 'compare' # compare against the solution trace
 #TRACING_MODE = None # don't compare against or generate a trace
 #TRACING_MODE = 'generate' # generate a new trace (for staff only)
 
-def asm(dut, assemblyCode):
+def asm(dut, axil_mem, assemblyCode):
     """Assembles the given RISC-V code, returning the machine code as a list of numbers"""
 
     # avoid assembler warning about missing trailing newline
@@ -59,13 +85,13 @@ def asm(dut, assemblyCode):
         process.check_returncode() # throws
         pass
 
-    loadBinaryIntoMemory(dut, TEMP_MACHINE_CODE_FILE)
+    loadBinaryIntoMemory(dut, axil_mem, TEMP_MACHINE_CODE_FILE)
 
-def loadBinaryIntoMemory(dut, binaryPath):
+def loadBinaryIntoMemory(dut, axil_mem, binaryPath):
     """Read the given binary's sections, and load them into memory at the appropriate addresses."""
     
     sectionInfo = riscv_binary_utils.getSectionInfo(binaryPath)
-    #dut._log.info(sectionInfo)
+    #dut._log.warning(sectionInfo)
     sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
 
     for sectionName in sectionsToLoad:
@@ -78,10 +104,11 @@ def loadBinaryIntoMemory(dut, binaryPath):
         if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
             memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
             pass
-        memBaseAddr >>= 2 # convert to word address
         dut._log.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
         for i in range(len(words)):
-            dut.mem.mem_array[memBaseAddr + i].value = words[i]
+            axil_mem.write_dword(memBaseAddr + (i*4), words[i])
+            # if memBaseAddr + (i*4) >= 0x2000:
+            #     dut._log.warning(f'writing {words[i]:#x} to address {memBaseAddr+(i*4):#x}')
             pass
         pass
     pass
@@ -102,72 +129,283 @@ async def preTestSetup(dut):
     proc_clock = Clock(dut.clk, 4, units="ns")
     # Start the clocks
     cocotb.start_soon(proc_clock.start(start_high=True))
+
+    # connect memory
+    axil_imem = AxiLiteRam(AxiLiteBus.from_prefix(dut, "MEMA"), 
+                            dut.clk, 
+                            dut.rst, 
+                            reset_active_level=True,
+                            size=2**16)
+    axil_dmem = AxiLiteRam(AxiLiteBus.from_prefix(dut, "MEMB"), 
+                            dut.clk, 
+                            dut.rst, 
+                            reset_active_level=True,
+                            mem=axil_imem.mem)
+
+    # AxiLiteBus.log.setLevel(logging.WARNING)
+    # axil_dmem.log.setLevel(logging.WARNING)
+
     # wait for first rising edge
     await RisingEdge(dut.clk)
-
-    # raise `rst` signal for one rising edge
+    # raise `rst` signal for 2 cycles
     dut.rst.value = 1
     await ClockCycles(dut.clk, 2)
-    #await FallingEdge(dut.clk)
     # lower `rst` signal
     dut.rst.value = 0
     # design should be reset now
-    return
+
+    return (axil_imem, axil_dmem)
+
+def runCocotbTestsDmCacheHit(pytestconfig):
+    """run direct-mapped cache hit tests"""
+
+    verilog_sources = [ PROJECT_PATH / "AxilCache.sv" ]
+    toplevel_module = "AxilCacheTester"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        parameters={'WAYS':1, 'TEST_PATTERN_ON_RESET':1},
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module='testbench_dmcache_hit', # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsDmCacheMiss(pytestconfig):
+    """run direct-mapped cache miss tests"""
+
+    verilog_sources = [ PROJECT_PATH / "AxilCache.sv" ]
+    toplevel_module = "AxilCacheTester"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        parameters={'WAYS':1, 'CLEAR_ON_RESET':1},
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module='testbench_dmcache_miss', # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTests2wayCache(pytestconfig):
+    """run 2-way set-associative cache tests"""
+
+    verilog_sources = [ PROJECT_PATH / "AxilCache.sv" ]
+    toplevel_module = "AxilCacheTester"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        parameters={'WAYS':2, 'CLEAR_ON_RESET':1},
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module='testbench_smcache', # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsProcessor(pytestconfig):
+    """run processor tests"""
+
+    verilog_sources = [ PROJECT_PATH / "DatapathPipelinedCache-noif.sv" ]
+    toplevel_module = "Processor"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsSystem(pytestconfig):
+    """run system tests"""
+
+    verilog_sources = [ PROJECT_PATH / "system" / "System.sv" ]
+    toplevel_module = "System"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module="testbench_system", # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsLintHdmi(pytestconfig):
+    """lint hdmi tests"""
+
+    verilog_sources = [ PROJECT_PATH / "system" / "System.sv" ]
+    toplevel_module = "System"
+
+    verilator_flags = [
+    '--assert',
+    '-Wall',
+    '-Wno-DECLFILENAME',
+    '-Wno-UNOPTFLAT',
+    '--trace',
+    '--trace-fst',
+    '--trace-structs',
+    # NB: --trace-max-array must be ≥ size of the memory (in 4B words) for memory to appear in the waveforms
+    '--trace-max-array',str(2**18)
+    ]
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=verilator_flags,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module="testbench_system", # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsHdmi(pytestconfig):
+    """run hdmi tests"""
+
+    verilog_sources = [ PROJECT_PATH / "System.v" ]
+    toplevel_module = "SystemDebug"
+
+    runr = get_runner('icarus')
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=['-Wall'],
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module="testbench_system", # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsAxilMem(pytestconfig):
+    """run AxilMemory tests"""
+
+    verilog_sources = [ PROJECT_PATH / "System-noif.sv" ]
+    toplevel_module = "AxilMemory"
+
+    runr = get_runner(SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=SIM_BUILD_DIR,
+        build_args=VERILATOR_FLAGS,
+    )
+
+    oneTimeSetup()
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module="testbench_axilmem", # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
 
 def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
-
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [ proj_path / "DatapathAxilMemory.sv" ]
-    toplevel_module = "RiscvProcessor"
-
-    try:
-        runr = get_runner(sim)
-        runr.build(
-            verilog_sources=verilog_sources,
-            vhdl_sources=[],
-            hdl_toplevel=toplevel_module,
-            includes=[proj_path],
-            build_dir=SIM_BUILD_DIR,
-            always=True,
-            # NB: --trace-max-array must be the size of the memory (in 4B words) for memory to appear in the waveforms
-            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs','--trace-max-array',str(2**18)]
-        )
-
-        oneTimeSetup()
-
-        runr.test(
-            seed=12345,
-            waves=True,
-            hdl_toplevel=toplevel_module, 
-            test_module=Path(__file__).stem, # use tests from this file
-            results_xml='axilmem_datapath.results.xml',
-            testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
-        )
-    finally:
-        pointsEarned = 0
-        pointsPossible = 0
-        mem_path = Path(SIM_BUILD_DIR,'runCocotbTests.axilmem.results.xml')
-        proc_path = Path(SIM_BUILD_DIR,'runCocotbTests.axilmem_datapath.results.xml')
-        if mem_path.exists() and proc_path.exists():
-            mem_total_failed = get_results(mem_path)
-            proc_total_failed = get_results(proc_path)
-            # 1 point per test
-            pointsEarned += (mem_total_failed[0] - mem_total_failed[1]) + (proc_total_failed[0] - proc_total_failed[1])
-            pointsPossible = mem_total_failed[0] + proc_total_failed[0]
-            pass
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
-        with open('points.json', 'w') as f:
-            json.dump(points, f, indent=2)
-            pass
+    """calculate scores for autograder"""
+    test_results = cocotb_utils.aggregate_test_results(
+        get_results(Path(SIM_BUILD_DIR,'runCocotbTestsCache.None')),
+        get_results(Path(SIM_BUILD_DIR,'runCocotbTestsProcessor.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open('points.json', 'w') as f:
+        json.dump(points, f, indent=2)
         pass
-
-
-if __name__ == "__main__":
-    runCocotbTests()
     pass
 
 
@@ -176,76 +414,89 @@ if __name__ == "__main__":
 ## TEST CASES GO HERE ##
 ########################
 
+INSN_LATENCY = 5
+MISS_LATENCY = 4
+CHECK_LATENCY = 1
+MISPRED_LATENCY = 4 # 2 cycles to clear F/D, then +2 cycles for current I$ miss to resolve
+
+START_LATENCY = 10 # TODO: deprecated
+
 @cocotb.test()
 async def testLui(dut):
     "Run one lui insn"
-    asm(dut, 'lui x1,0x12345')
-    await preTestSetup(dut)
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, 'lui x1,0x12345')
 
-    await ClockCycles(dut.clk, 6)
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + CHECK_LATENCY)
     assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testLuiLui(dut):
     "Run two lui independent insns"
-    asm(dut, '''lui x1,0x12345
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''lui x1,0x12345
         lui x2,0x6789A''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 7)
+    # lui x2's miss latency is hidden by lui x1's trip through the pipeline
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + INSN_LATENCY + CHECK_LATENCY)
     assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     assert dut.datapath.rf.regs[2].value == 0x6789A000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testLui3(dut):
     "Run three lui independent insns"
-    asm(dut, '''lui x1,0x12345
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''lui x1,0x12345
         lui x2,0x6789A
         lui x3,0xBCDEF''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 8)
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + 2*INSN_LATENCY + CHECK_LATENCY)
     assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     assert dut.datapath.rf.regs[2].value == 0x6789A000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     assert dut.datapath.rf.regs[3].value == 0xBCDEF000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
+# TODO: include bypassing tests from HW5
+
+# TODO: include cache hit tests
+
 @cocotb.test()
 async def testAddi3(dut):
     "Run three addi insns"
-    asm(dut, '''addi x1,x1,1
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''addi x1,x1,1
         addi x1,x1,2
-        addi x1,x1,3 # stop executing here
+        addi x1,x1,3 # stop executing after this insn
         addi x1,x1,4 # add extra insns to see ensure we don't over-fetch
         addi x1,x1,5
         addi x1,x1,6
         addi x1,x1,7
         addi x1,x1,8''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 8)
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + 2*INSN_LATENCY + CHECK_LATENCY)
     assert dut.datapath.rf.regs[1].value == 6, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test()
 async def testBneTaken(dut):
     "bne which is taken"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lui x1,0x12345
         bne x1,x0,target
-        lui x1,0x54321 # in Decode when branch is taken, should get cleared
-        lui x1,0xABCDE # in Fetch when branch is taken, should get cleared
-        target: addi x0,x0,0
+        lui x1,0x54321 # still waiting on I$ miss when branch is taken, should get cleared
+        lui x1,0xABCDE # should never get fetched
+        target: addi x1,x1,1
         addi x0,x0,0
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + 2*INSN_LATENCY + MISPRED_LATENCY + CHECK_LATENCY)
+    assert dut.datapath.rf.regs[1].value == 0x12345001, f'failed at cycle {dut.datapath.cycles_current.value.integer}. Expected 0x123450000 but was {dut.datapath.rf.regs[1].value:#x}'
     pass
 
 @cocotb.test()
 async def testBeqTaken(dut):
     "beq which is taken"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lui x1,0x12345
         beq x1,x1,target
         lui x1,0x54321 # in Decode when branch is taken, should get cleared
@@ -253,9 +504,8 @@ async def testBeqTaken(dut):
         target: addi x0,x0,0
         addi x0,x0,0
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 9)
+    await ClockCycles(dut.clk, INSN_LATENCY + MISS_LATENCY + 2*INSN_LATENCY + MISPRED_LATENCY + CHECK_LATENCY)
     assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
@@ -273,66 +523,85 @@ async def testTraceRvBeq(dut):
 ## FULL ISA TEST CASES ##
 #########################
 
+# TODO: load D$ with test pattern so we can check hit timing
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def testLoad(dut):
+    "test lw insn"
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
+        lw x1,0(x0) # loads bits of the lw insn itself
+        ''')
+
+    await ClockCycles(dut.clk, INSN_LATENCY + 2*MISS_LATENCY + CHECK_LATENCY)
+    assert dut.datapath.rf.regs[1].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    pass
+
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadUse1(dut):
     "load to use in rs1"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         add x2,x1,x0
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 8)
+    # -1 because add's I$ miss overlaps a bit with lw's d$ miss
+    await ClockCycles(dut.clk, INSN_LATENCY + 2*MISS_LATENCY + INSN_LATENCY + CHECK_LATENCY - 1)
     assert dut.datapath.rf.regs[2].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadUse2(dut):
     "load to use in rs1"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         add x2,x0,x1
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 8)
+    # -1 because add's I$ miss overlaps a bit with lw's d$ miss
+    await ClockCycles(dut.clk, INSN_LATENCY + 2*MISS_LATENCY + INSN_LATENCY + CHECK_LATENCY - 1)
     assert dut.datapath.rf.regs[2].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadFalseUse(dut):
     "load followed by insn that doesn't actually use load result"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lw x0,0(x0) # loads bits of the lw insn itself
         lui x1,0xFE007
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 7)
+    # -1 because lui's I$ miss overlaps a bit with lw's d$ miss
+    await ClockCycles(dut.clk, INSN_LATENCY + 2*MISS_LATENCY + INSN_LATENCY + CHECK_LATENCY - 1)
     assert dut.datapath.rf.regs[1].value == 0xFE00_7000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
+
+# TODO: tests below here have not had their latencies updated
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testWMData(dut):
     "WM bypass"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         sw x1,12(x0)
         ''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 7)
+    await ClockCycles(dut.clk, (START_LATENCY + 2*MISS_LATENCY) - 1)
     assert dut.mem.mem_array[3].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testWMAddress(dut):
     "WM bypass"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         sb x1,0(x1) # use sb since x1 is not 2B or 4B aligned
         ''')
-    await preTestSetup(dut)
     loadValue = 0x2083
 
     await ClockCycles(dut.clk, 5) # sb in X stage
@@ -341,17 +610,17 @@ async def testWMAddress(dut):
     assert dut.mem.mem_array[int(loadValue / 4)].value == 0x8300_0000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
     pass
 
-@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+# @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testFence(dut):
     "Test fence insn"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
         # addi part of li goes here
         sw x2,16(x0) # overwrite lui below
         fence # should stall until sw reaches Writeback
         lui x1,0x12345
         ''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 12)
     assert dut.datapath.rf.regs[1].value == 0xFFFF_F000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
@@ -360,23 +629,23 @@ async def testFence(dut):
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDiv(dut):
     "Run div insn"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lui x1,0x12345
         div x2,x1,x1''')
-    await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 7)
+    await ClockCycles(dut.clk, INSN_LATENCY + 2*MISS_LATENCY + DIVIDER_STAGES + CHECK_LATENCY)
     assert dut.datapath.rf.regs[2].value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivUse(dut):
     "Run div + dependent insn"
-    asm(dut, '''
+    axil_imem, _ = await preTestSetup(dut)
+    asm(dut, axil_imem, '''
         lui x1,0x12345
         div x2,x1,x1
         add x3,x2,x2 # needs stall + WX bypass
         ''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
     assert dut.datapath.rf.regs[2].value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
@@ -410,8 +679,8 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
     "Run the official RISC-V test whose binary lives at `binaryPath`"
     assert binaryPath is not None
     assert binaryPath.exists(), f'Could not find RV test binary {binaryPath}, have you built riscv-tests?'
-    loadBinaryIntoMemory(dut, binaryPath)
-    await preTestSetup(dut)
+    axil_imem, _ = await preTestSetup(dut)
+    loadBinaryIntoMemory(dut, axil_imem, binaryPath)
 
     trace = []
     if tracingMode == 'compare':
@@ -440,7 +709,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
     raise SimTimeoutError()
 
 RV_TEST_BINARIES = [
-    RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
+    RISCV_TESTS_PATH / 'rv32ui-p-simple', # test numbers start at 1
     RISCV_TESTS_PATH / 'rv32ui-p-lui',
     
     RISCV_TESTS_PATH / 'rv32ui-p-and', # 3
@@ -485,19 +754,19 @@ RV_TEST_BINARIES = [
     RISCV_TESTS_PATH / 'rv32ui-p-sh',
     RISCV_TESTS_PATH / 'rv32ui-p-sb',
 
-    # self-modifying code and fence.i insn
-    RISCV_TESTS_PATH / 'rv32ui-p-fence_i', # 39
-
-    RISCV_TESTS_PATH / 'rv32um-p-mul', # 40
+    RISCV_TESTS_PATH / 'rv32um-p-mul', # 39
     RISCV_TESTS_PATH / 'rv32um-p-mulh',
     RISCV_TESTS_PATH / 'rv32um-p-mulhsu',
     RISCV_TESTS_PATH / 'rv32um-p-mulhu',
-    RISCV_TESTS_PATH / 'rv32um-p-div', # 44
+    RISCV_TESTS_PATH / 'rv32um-p-div', # 43
     RISCV_TESTS_PATH / 'rv32um-p-divu',
     RISCV_TESTS_PATH / 'rv32um-p-rem',
     RISCV_TESTS_PATH / 'rv32um-p-remu',
 
-    # misaligned accesses, we don't support these
+    # unsupported tests
+    # self-modifying code and fence.i insn
+    # RISCV_TESTS_PATH / 'rv32ui-p-fence_i', # 39
+    # misaligned accesses
     #RISCV_TESTS_PATH / 'rv32ui-p-ma_data',
 ]
 
