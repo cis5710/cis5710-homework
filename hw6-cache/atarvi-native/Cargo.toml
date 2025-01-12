@@ -1,0 +1,23 @@
+[package]
+name = "rusty-riscy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitfield-struct = "0.10"
+
+# [dependencies.core]
+# version = "0.0.0"
+# features = ["compiler-builtins-mem"]
+
+[profile.release]
+panic = "abort"
+
+[build]
+target = "riscv32im-unknown-none-elf"
+
+[target.riscv32im-unknown-none-elf]
+linker = "rust-lld"
+rustflags = [
+    "-C", "link-arg=-Tmemory.x",
+]
