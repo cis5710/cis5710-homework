@@ -1,0 +1,8 @@
+[package]
+name = "atarvi-sim"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+minifb = "0.27"
+rand = "0.8" # For randomizing the game grid
