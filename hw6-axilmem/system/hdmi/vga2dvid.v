@@ -54,7 +54,7 @@ output wire [1:0] out_blue,
 output wire [1:0] out_clock
 );
 
-parameter C_shift_clock_synchronizer=1'b1;
+// parameter C_shift_clock_synchronizer = 1'b1;
 // VGA pixel clock, 25 MHz for 640x480
 // SDR: 10x clk_pixel, DDR: 5x clk_pixel, in phase with clk_pixel
 
@@ -67,8 +67,8 @@ reg [9:0] shift_clock;
 reg R_shift_clock_off_sync;
 reg [7:0] R_shift_clock_synchronizer;
 reg [6:0] R_sync_fail;  // counts sync fails, after too many, reinitialize shift_clock
-parameter c_red = 1'b0;
-parameter c_green = 1'b0;
+parameter c_red = 2'b00;
+parameter c_green = 2'b00;
 wire [1:0] c_blue;
 wire [7:0] red_d;
 wire [7:0] green_d;
@@ -97,7 +97,7 @@ wire [7:0] blue_d;
   // every N cycles of clk_shift: signal to skip 1 cycle in order to get in sync
   always @(posedge clk_shift) begin
     if (!resetn)
-       R_shift_clock_synchronizer <=  1'b0;
+       R_shift_clock_synchronizer <= 0;
     if(R_shift_clock_off_sync == 1'b1) begin
       if(R_shift_clock_synchronizer[(7)] == 1'b1) begin
         R_shift_clock_synchronizer <= {8{1'b0}};
@@ -139,9 +139,9 @@ wire [7:0] blue_d;
   always @(posedge clk_pixel) begin
     if (!resetn)
     begin
-      latched_red <= 1'b0;
-      latched_green <= 1'b0;
-      latched_blue <= 1'b0;
+      latched_red <= 0;
+      latched_green <= 0;
+      latched_blue <= 0;
     end
     else
     begin
@@ -158,9 +158,9 @@ wire [7:0] blue_d;
   always @(posedge clk_shift) begin
     if (!resetn)
     begin
-      shift_red <= 1'b0;
-      shift_green <= 1'b0;
-      shift_blue <= 1'b0;
+      shift_red <= 0;
+      shift_green <= 0;
+      shift_blue <= 0;
       shift_clock <= C_shift_clock_initial;
     end
     //if shift_clock = "0000011111" then

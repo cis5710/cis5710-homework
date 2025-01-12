@@ -94,7 +94,7 @@ reg [3:0] dc_bias;
   assign xnored[7] =  ~(data[7] ^ xnored[6]);
   assign xnored[8] = 1'b0;
   // Count how many ones are set in data
-  assign ones = 4'b0000 + data[0] + data[1] + data[2] + data[3] + data[4] + data[5] + data[6] + data[7];
+  assign ones = 4'b0000 + {3'd0, data[0]} + {3'd0, data[1]} + {3'd0, data[2]} + {3'd0, data[3]} + {3'd0, data[4]} + {3'd0, data[5]} + {3'd0, data[6]} + {3'd0, data[7]};
   // Decide which encoding to use
   always @(ones, data[0], xnored, xored) begin
     if(ones > 4 || (ones == 4 && data[0] == 1'b0)) begin
@@ -108,11 +108,11 @@ reg [3:0] dc_bias;
   end
 
   // Work out the DC bias of the dataword;
-  assign data_word_disparity = 4'b1100 + data_word[0] + data_word[1] + data_word[2] + data_word[3] + data_word[4] + data_word[5] + data_word[6] + data_word[7];
+  assign data_word_disparity = 4'b1100 + {3'd0, data_word[0]} + {3'd0, data_word[1]} + {3'd0, data_word[2]} + {3'd0, data_word[3]} + {3'd0, data_word[4]} + {3'd0, data_word[5]} + {3'd0, data_word[6]} + {3'd0, data_word[7]};
   // Now work out what the output should be
   always @(posedge clk) begin
     if (!resetn)
-      dc_bias <= 1'b0;
+      dc_bias <= 4'd0;
     if(blank == 1'b1) begin
       // In the control periods, all values have and have balanced bit count
       case(c)
@@ -132,7 +132,7 @@ reg [3:0] dc_bias;
       dc_bias <= {4{1'b0}};
     end
     else begin
-      if(dc_bias == 5'b00000 || data_word_disparity == 0) begin
+      if(dc_bias == 0 || data_word_disparity == 0) begin
         // dataword has no disparity
         if(data_word[8] == 1'b1) begin
           encoded <= {2'b01,data_word[7:0]};
@@ -145,11 +145,11 @@ reg [3:0] dc_bias;
       end
       else if((dc_bias[3] == 1'b0 && data_word_disparity[3] == 1'b0) || (dc_bias[3] == 1'b1 && data_word_disparity[3] == 1'b1)) begin
         encoded <= {1'b1,data_word[8],data_word_inv[7:0]};
-        dc_bias <= dc_bias + data_word[8] - data_word_disparity;
+        dc_bias <= dc_bias + {3'd0, data_word[8]} - data_word_disparity;
       end
       else begin
         encoded <= {1'b0,data_word};
-        dc_bias <= dc_bias - data_word_inv[8] + data_word_disparity;
+        dc_bias <= dc_bias - {3'd0, data_word_inv[8]} + data_word_disparity;
       end
     end
   end
