@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use core::arch::asm;
 use core::cmp::{max, min};
 use core::panic::PanicInfo;
 use core::ptr::{read_volatile, write_volatile};
@@ -60,9 +61,16 @@ struct LedOutput {
     d7: bool
 }
 
+#[link_section = ".start"]
 #[no_mangle]
 pub fn _start() -> ! {
-    // TODO: setup stack pointer sp
+    // setup stack pointer sp
+    unsafe {
+        asm!(
+        "li sp, 0x6000", // Load immediate value 0x6000 into sp
+        options(nostack) // Indicate that this assembly does not use the stack
+        );
+    }
     main();
 }
 
