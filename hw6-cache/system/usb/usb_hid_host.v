@@ -554,7 +554,7 @@ module usb_hid_host_rom(clk, adr, data);
       mem[534] = 4'h0;
       mem[535] = 4'h0;
    end
-   always @(posedge clk) data <= mem[adr];
+   always @(posedge clk) data <= mem[adr[9:0]];
 endmodule
 
 module usb_hid_host (
@@ -592,10 +592,11 @@ wire save;			    // save dat[b] to output register r
 wire [3:0] save_r;      // which register to save to
 wire [3:0] save_b;      // dat[b]
 wire connected;
+wire ignore;
 
 ukp ukp(
     .usbrst_n(usbrst_n), .usbclk(usbclk),
-    .usb_dp(usb_dp), .usb_dm(usb_dm), .usb_oe(),
+    .usb_dp(usb_dp), .usb_dm(usb_dm), .usb_oe(ignore),
     .ukprdy(data_rdy), .ukpstb(data_strobe), .ukpdat(ukpdat), .save(save), .save_r(save_r), .save_b(save_b),
     .connected(connected), .conerr(conerr));
 
@@ -624,7 +625,7 @@ always @(posedge usbclk) begin : process_in_data
     if(~data_rdy) rcvct <= 0;
     else begin
         if(data_strobe && ~data_strobe_r) begin  // rising edge of ukp data strobe
-            dat[rcvct] <= ukpdat;
+            dat[rcvct[2:0]] <= ukpdat;
 
             if (typ == 1) begin     // keyboard
                 case (rcvct)
@@ -698,7 +699,7 @@ reg connected_r;
 always @(posedge usbclk) begin : response_recognition
     save_delayed <= save;
     if (save) begin
-        regs[save_r] <= dat[save_b];
+        regs[save_r[2:0]] <= dat[save_b[2:0]];
     end else if (save_delayed && ~save && save_r == 6) begin     
         // falling edge of save for bInterfaceProtocol
         if (regs[4] == 3) begin  // bInterfaceClass. 3: HID, other: non-HID
@@ -792,7 +793,7 @@ module ukp(
                         insth <= inst;
                         if(inst==1) state <= S_LDI0;						// op=ldi
                         if(inst==3) begin sadr <= 3; state <= S_S0; end		// op=out4
-                        if(inst==4) begin ug <= 9; up <= 0; um <= 0; end
+                        if(inst==4) begin /*ug <= 9; jld */ ug <= 1; up <= 0; um <= 0; end
                         if(inst==5) begin ug <= 0; end
                         if(inst==6) begin sadr <= 7; state <= S_S0; end		// op=outb
                         if (inst[3:2]==2'b10) begin							// op=10xx(BZ,BC,BNAK,DJNZ)
