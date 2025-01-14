@@ -6,6 +6,10 @@ We'll use git to distribute the code and instructions for the homeworks. Here's 
 
 > **Do not fork this repo** on GitHub unless you are submitting a Pull Request to fix something here. For doing your homework, you should start from a new private GitHub repo instead.
 
+Once you are done setting things up, your repo will have this structure:
+
+![](images/git-setup.png)
+
 ### Setup an SSH key
 
 Don't type in your password every time you push/pull from your repo. [Setup an SSH key on your github account](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key) to enjoy security _and_ more usability!
