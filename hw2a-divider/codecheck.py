@@ -18,7 +18,7 @@ def objectIsLegal(filename, obj):
     if tag == "kTimescaleDirective":
         # ignore "/" symbol inside `timescale
         return (True,False)
-    if (tag == "SystemTFIdentifier" and text == "$fopen") or tag == "/":
+    if (tag == "SystemTFIdentifier" and text == "$fopen") or tag == "/" or (tag == 'PP_define_body' and text.count('/') > 0):
         return (False,True)
     return (True,True)
 

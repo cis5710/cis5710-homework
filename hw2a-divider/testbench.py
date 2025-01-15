@@ -1,61 +1,85 @@
-import cocotb, json, os, random
+import cocotb, json, sys, random
 
 from pathlib import Path
 from cocotb.runner import get_runner, get_results
 from cocotb.triggers import Timer
 
-# directory where our simulator will compile our tests + code
-SIM_BUILD_DIR = "sim_build"
+# directory for this homework
+PROJECT_PATH = Path(__file__).resolve().parent
 
+p = Path.cwd() / '..' / 'common' / 'python'
+sys.path.append(str(p))
+import cocotb_utils as cu
 
-def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
+def runCocotbTests1iter(pytestconfig):
+    """run 1iter tests"""
 
     # for deterministic random numbers
     random.seed(12345)
 
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [proj_path / "divider_unsigned.sv" ]
+    verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
+    toplevel_module = "divu_1iter"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module="testbench_1iter", # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsDivider(pytestconfig):
+    """run divider tests"""
+
+    # for deterministic random numbers
+    random.seed(12345)
+
+    verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
     toplevel_module = "divider_unsigned"
 
-    pointsEarned = 0
-    pointsPossible = 0
-    try:
-        runr = get_runner(sim)
-        runr.build(
-            verilog_sources=verilog_sources,
-            vhdl_sources=[],
-            hdl_toplevel=toplevel_module,
-            includes=[proj_path],
-            build_dir=SIM_BUILD_DIR,
-            always=True, # always build the code
-            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
-        ),
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
 
-        runr.test(
-            seed=12345,
-            waves=True,
-            hdl_toplevel=toplevel_module,
-            test_module=Path(__file__).stem, # use tests from this file
-            testcase=pytestconfig.option.tests,
-        )
-    finally:
-        total_failed = get_results(Path(SIM_BUILD_DIR,'runCocotbTests.results.xml'))
-        # 1 point per test
-        pointsEarned += total_failed[0] - total_failed[1]
-        pointsPossible = total_failed[0]     
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
-        with open('points.json', 'w') as f:
-            json.dump(points, f, indent=2)
-            pass
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTests(pytestconfig):
+    """calculate scores for autograder"""
+    test_results = cu.aggregateTestResults(
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTests1iter.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDivider.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open('points.json', 'w') as f:
+        json.dump(points, f, indent=2)
         pass
-
-
-if __name__ == "__main__":
-    runCocotbTests()
     pass
 
 
@@ -69,8 +93,8 @@ async def test_simple0(dut):
     dut.i_dividend.value = 4
     dut.i_divisor.value = 2
     await Timer(1, "ns")
-    assert 2 == dut.o_quotient.value
-    assert 0 == dut.o_remainder.value
+    cu.assertEquals(2, dut.o_quotient.value)
+    cu.assertEquals(0, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple1(dut):
@@ -78,8 +102,8 @@ async def test_simple1(dut):
     dut.i_dividend.value = 4
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    assert 1 == dut.o_quotient.value
-    assert 0 == dut.o_remainder.value
+    cu.assertEquals(1, dut.o_quotient.value)
+    cu.assertEquals(0, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple2(dut):
@@ -87,8 +111,8 @@ async def test_simple2(dut):
     dut.i_dividend.value = 10
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    assert 2 == dut.o_quotient.value
-    assert 2 == dut.o_remainder.value
+    cu.assertEquals(2, dut.o_quotient.value)
+    cu.assertEquals(2, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple3(dut):
@@ -96,8 +120,8 @@ async def test_simple3(dut):
     dut.i_dividend.value = 2
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    assert 0 == dut.o_quotient.value
-    assert 2 == dut.o_remainder.value
+    cu.assertEquals(0, dut.o_quotient.value)
+    cu.assertEquals(2, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_random1k(dut):
@@ -114,7 +138,7 @@ async def test_random1k(dut):
 
         msg = f'expected {dividend} / {divisor} = {exp_quotient} rem {exp_remainder}\n'
         msg += f'but was quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        assert exp_quotient == dut.o_quotient.value, msg
-        assert exp_remainder == dut.o_remainder.value, msg
+        cu.assertEquals(exp_quotient, dut.o_quotient.value, msg)
+        cu.assertEquals(exp_remainder, dut.o_remainder.value, msg)
         pass
     pass

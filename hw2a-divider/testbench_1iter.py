@@ -1,50 +1,12 @@
-import cocotb, json, os, random
-
+import cocotb, sys, random
 from pathlib import Path
-from cocotb.runner import get_runner, get_results
+
+# from cocotb.runner import get_runner, get_results
 from cocotb.triggers import Timer
 
-# directory where our simulator will compile our tests + code
-SIM_BUILD_DIR = "sim_build"
-
-
-def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
-
-    # for deterministic random numbers
-    random.seed(12345)
-
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [proj_path / "divider_unsigned.sv" ]
-
-    toplevel_module = "divu_1iter"
-    runr = get_runner(sim)
-    runr.build(
-        verilog_sources=verilog_sources,
-        vhdl_sources=[],
-        hdl_toplevel=toplevel_module,
-        includes=[proj_path],
-        build_dir=SIM_BUILD_DIR,
-        always=True,
-        build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
-    ),
-
-    results_file = runr.test(
-        seed=12345,
-        waves=True,
-        hdl_toplevel=toplevel_module, 
-        test_module=Path(__file__).stem, # use tests from this file
-        testcase=pytestconfig.option.tests,
-    )
-    pass
-
-
-if __name__ == "__main__":
-    runCocotbTests()
-    pass
+p = Path.cwd() / '..' / 'common' / 'python'
+sys.path.append(str(p))
+import cocotb_utils as cu
 
 
 #########################
@@ -59,9 +21,9 @@ async def test_rem_lt_divisor(dut):
     dut.i_remainder.value = 0
     dut.i_quotient.value = 8
     await Timer(1, "ns")
-    assert 0 == dut.o_dividend.value
-    assert 16 == dut.o_quotient.value
-    assert 1 == dut.o_remainder.value
+    cu.assertEquals(0, dut.o_dividend.value)
+    cu.assertEquals(16, dut.o_quotient.value)
+    cu.assertEquals(1, dut.o_remainder.value)
     pass
 
 @cocotb.test()
@@ -72,9 +34,9 @@ async def test_rem_gte_divisor(dut):
     dut.i_remainder.value = 0
     dut.i_quotient.value = 8
     await Timer(1, "ns")
-    assert 0 == dut.o_dividend.value
-    assert 16+1 == dut.o_quotient.value
-    assert 0 == dut.o_remainder.value
+    cu.assertEquals(0, dut.o_dividend.value)
+    cu.assertEquals(16+1, dut.o_quotient.value)
+    cu.assertEquals(0, dut.o_remainder.value)
     pass
 
 @cocotb.test()
@@ -104,8 +66,8 @@ async def test_random1k(dut):
         msg = f'input {dividend} / {divisor} rem={remainder} quotient={quotient}\n'
         msg += f'expected dividend={exp_dividend} quot={exp_quotient} rem={exp_remainder}\n'
         msg += f'but was dividend={dut.o_dividend.value} quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        assert exp_dividend == dut.o_dividend.value, msg
-        assert exp_quotient == dut.o_quotient.value, msg
-        assert exp_remainder == dut.o_remainder.value, msg
+        cu.assertEquals(exp_dividend, dut.o_dividend.value, msg)
+        cu.assertEquals(exp_quotient, dut.o_quotient.value, msg)
+        cu.assertEquals(exp_remainder, dut.o_remainder.value, msg)
         pass
     pass
