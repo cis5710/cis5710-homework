@@ -14,10 +14,8 @@ def objectIsLegal(filename, obj):
     if 'tag' not in obj:
         return (True,True)
     tag = obj['tag']
-    if tag in ["kDataType","kForCondition","kLoopHeader","kDimensionRange","kDimensionScalar"]:
-        return (True,False)
     text = obj.get('text', None)
-    if (tag == "SystemTFIdentifier" and text == "$fopen") or tag == "+" or tag == "-" or (tag == 'PP_define_body' and text.count('+') > 0) or (tag == 'PP_define_body' and text.count('-') > 0):
+    if tag == "+" or tag == "-" or (tag == 'PP_define_body' and text.count('+') > 0) or (tag == 'PP_define_body' and text.count('-') > 0):
         return (False,True)
     return (True,True)
 

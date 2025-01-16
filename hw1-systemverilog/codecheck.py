@@ -17,7 +17,7 @@ Second parameter is True if we should continue to iterate into descendent object
         return (True,True)
     tag = obj['tag']
     text = obj.get('text', None)
-    if (tag == "SystemTFIdentifier" and text == "$fopen") or tag == "+":
+    if tag == "+":
         return (False,True)
     return (True,True)
 

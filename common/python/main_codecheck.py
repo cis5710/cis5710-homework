@@ -14,7 +14,20 @@ def traverseSyntaxTree(filename, obj, newlineIndices, objectIsLegal, parent_key=
     global FOUND_ILLEGAL_CODE
     if isinstance(obj, dict):
 
+        tag = obj.get('tag', None)
+        text = obj.get('text', None)        
+        # don't explore these constructs
+        if tag in ["kDataType","kForCondition","kLoopHeader","kDimensionRange","kDimensionScalar","kTimescaleDirective"]:
+            return            
+        
         legalConstruct,descendInto = objectIsLegal(filename, obj)
+
+        # student code should never open a file or stop early
+        if tag == "SystemTFIdentifier" and text in ["$fopen","$finish"]:
+            legalConstruct = False
+            descendInto = True
+            pass
+        
         if not legalConstruct:
             FOUND_ILLEGAL_CODE = True
             tag = obj['tag']
@@ -36,6 +49,9 @@ def traverseSyntaxTree(filename, obj, newlineIndices, objectIsLegal, parent_key=
             traverseSyntaxTree(filename, value, newlineIndices, objectIsLegal, f"{parent_key}.{key}" if parent_key else key)
             pass
     elif isinstance(obj, list):
+        # skip assert statements
+        if len(obj) > 0 and obj[0] is not None and 'tag' in obj[0] and obj[0]['tag'] == 'assert':
+            return
         for i, item in enumerate(obj):
             traverseSyntaxTree(filename, item, newlineIndices, objectIsLegal, f"{parent_key}[{i}]")
             pass
