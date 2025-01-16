@@ -17,7 +17,6 @@ random.seed(12345)
 def runCocotbTests1iter(pytestconfig):
     """run 1iter tests"""
 
-
     verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
     toplevel_module = "divu_1iter"
 
@@ -36,7 +35,7 @@ def runCocotbTests1iter(pytestconfig):
         seed=12345,
         waves=True,
         hdl_toplevel=toplevel_module, 
-        test_module="testbench_1iter", # use tests from this file
+        test_module="testbench_1iter", # use tests from testbench_1iter.py
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
     )
     pass
@@ -62,7 +61,7 @@ def runCocotbTestsDivider(pytestconfig):
         seed=12345,
         waves=True,
         hdl_toplevel=toplevel_module, 
-        test_module=Path(__file__).stem, # use tests from this file
+        test_module=Path(__file__).stem, # use tests from the current file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
     )
     pass
