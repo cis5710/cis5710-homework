@@ -37,9 +37,10 @@ RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 def assertEquals(expected, actual, msg=''):
     """Wrapper around regular assert, with automatic formatting of values in hex"""
     if expected != actual:
-        assert_msg = f'expected {expected:#X} but was {actual:#X}'
+        assert_msg = f'expected {int(expected):#X} but was {int(actual):#X}'
         if msg != '':
-            assert_msg = f'expected {expected:#X} but was {actual:#X}: {msg}'
+            assert_msg += f': {msg}'
+            pass
         assert expected == actual, assert_msg
         pass
     pass
