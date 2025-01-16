@@ -34,10 +34,13 @@ READELF = 'riscv64-unknown-elf-readelf'
 RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
 RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
-def assertEquals(expected, actual, msg):
+def assertEquals(expected, actual, msg=''):
     """Wrapper around regular assert, with automatic formatting of values in hex"""
     if expected != actual:
-        assert expected == actual, f'expected {expected:#X} but was {actual:#X}: {msg}'
+        assert_msg = f'expected {expected:#X} but was {actual:#X}'
+        if msg != '':
+            assert_msg = f'expected {expected:#X} but was {actual:#X}: {msg}'
+        assert expected == actual, assert_msg
         pass
     pass
 
