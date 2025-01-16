@@ -17,7 +17,7 @@ Second parameter is True if we should continue to iterate into descendent object
         return (True,True)
     tag = obj['tag']
     text = obj.get('text', None)
-    if tag == "+":
+    if tag == "+" or (tag == 'PP_define_body' and text.count('+') > 0):
         return (False,True)
     return (True,True)
 
