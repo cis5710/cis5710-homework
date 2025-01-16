@@ -11,11 +11,12 @@ p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import cocotb_utils as cu
 
+# for deterministic random numbers
+random.seed(12345)
+
 def runCocotbTests1iter(pytestconfig):
     """run 1iter tests"""
 
-    # for deterministic random numbers
-    random.seed(12345)
 
     verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
     toplevel_module = "divu_1iter"
@@ -42,9 +43,6 @@ def runCocotbTests1iter(pytestconfig):
 
 def runCocotbTestsDivider(pytestconfig):
     """run divider tests"""
-
-    # for deterministic random numbers
-    random.seed(12345)
 
     verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
     toplevel_module = "divider_unsigned"
