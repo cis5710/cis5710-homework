@@ -34,6 +34,8 @@ READELF = 'riscv64-unknown-elf-readelf'
 RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
 RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
+POINTS_FILE = 'points.json'
+
 def assertEquals(expected, actual, msg=''):
     """Wrapper around regular assert, with automatic formatting of values in hex"""
     if expected != actual:

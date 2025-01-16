@@ -74,7 +74,7 @@ def runCocotbTests(pytestconfig):
     )
     # 1 point per cocotb test
     points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
-    with open('points.json', 'w') as f:
+    with open(cu.POINTS_FILE, 'w') as f:
         json.dump(points, f, indent=2)
         pass
     pass
