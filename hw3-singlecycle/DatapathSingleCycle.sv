@@ -6,8 +6,8 @@
 // RV opcodes are 7 bits
 `define OPCODE_SIZE 6:0
 
-`include "../hw2a/divider_unsigned.sv"
-`include "../hw2b/cla.sv"
+`include "../hw2a-divider/divider_unsigned.sv"
+`include "../hw2b-cla/cla.sv"
 
 module RegFile (
     input logic [4:0] rd,
@@ -90,21 +90,21 @@ module DatapathSingleCycle (
   localparam bit [`OPCODE_SIZE] OpAuipc = 7'b00_101_11;
   localparam bit [`OPCODE_SIZE] OpLui = 7'b01_101_11;
 
-  wire insn_lui = insn_opcode == OpLui;
+  wire insn_lui   = insn_opcode == OpLui;
   wire insn_auipc = insn_opcode == OpAuipc;
-  wire insn_jal = insn_opcode == OpJal;
-  wire insn_jalr = insn_opcode == OpJalr;
+  wire insn_jal   = insn_opcode == OpJal;
+  wire insn_jalr  = insn_opcode == OpJalr;
 
-  wire insn_beq = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b000;
-  wire insn_bne = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b001;
-  wire insn_blt = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b100;
-  wire insn_bge = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b101;
+  wire insn_beq  = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b000;
+  wire insn_bne  = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b001;
+  wire insn_blt  = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b100;
+  wire insn_bge  = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b101;
   wire insn_bltu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b110;
   wire insn_bgeu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b111;
 
-  wire insn_lb = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b000;
-  wire insn_lh = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b001;
-  wire insn_lw = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b010;
+  wire insn_lb  = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b000;
+  wire insn_lh  = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b001;
+  wire insn_lw  = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b010;
   wire insn_lbu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b100;
   wire insn_lhu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b101;
 
@@ -112,27 +112,27 @@ module DatapathSingleCycle (
   wire insn_sh = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b001;
   wire insn_sw = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b010;
 
-  wire insn_addi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b000;
-  wire insn_slti = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b010;
+  wire insn_addi  = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b000;
+  wire insn_slti  = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b010;
   wire insn_sltiu = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b011;
-  wire insn_xori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b100;
-  wire insn_ori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b110;
-  wire insn_andi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b111;
+  wire insn_xori  = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b100;
+  wire insn_ori   = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b110;
+  wire insn_andi  = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b111;
 
   wire insn_slli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
   wire insn_srli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
   wire insn_srai = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
 
-  wire insn_add = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'd0;
+  wire insn_add  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'd0;
   wire insn_sub  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'b0100000;
-  wire insn_sll = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
-  wire insn_slt = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b010 && insn_from_imem[31:25] == 7'd0;
+  wire insn_sll  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
+  wire insn_slt  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b010 && insn_from_imem[31:25] == 7'd0;
   wire insn_sltu = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b011 && insn_from_imem[31:25] == 7'd0;
-  wire insn_xor = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b100 && insn_from_imem[31:25] == 7'd0;
-  wire insn_srl = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
+  wire insn_xor  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b100 && insn_from_imem[31:25] == 7'd0;
+  wire insn_srl  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
   wire insn_sra  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
-  wire insn_or = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b110 && insn_from_imem[31:25] == 7'd0;
-  wire insn_and = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b111 && insn_from_imem[31:25] == 7'd0;
+  wire insn_or   = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b110 && insn_from_imem[31:25] == 7'd0;
+  wire insn_and  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b111 && insn_from_imem[31:25] == 7'd0;
 
   wire insn_mul    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b000;
   wire insn_mulh   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b001;
@@ -146,8 +146,8 @@ module DatapathSingleCycle (
   wire insn_ecall = insn_opcode == OpEnviron && insn_from_imem[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
-  // synthesis translate_off
   // this code is only for simulation, not synthesis
+  `ifndef SYNTHESIS
   `include "RvDisassembler.sv"
   string disasm_string;
   always_comb begin
@@ -159,7 +159,7 @@ module DatapathSingleCycle (
   for (i = 0; i < 32; i = i + 1) begin : gen_disasm
     assign disasm_wire[(((i+1))*8)-1:((i)*8)] = disasm_string[31-i];
   end
-  // synthesis translate_on
+  `endif
 
   // program counter
   logic [`REG_SIZE] pcNext, pcCurrent;
@@ -185,6 +185,12 @@ module DatapathSingleCycle (
       end
     end
   end
+
+  // NOTE: don't rename your RegFile instance as the tests expect it to be `rf`
+  // TODO: you will need to edit the port connections, however.
+  wire [`REG_SIZE] rs1_data;
+  wire [`REG_SIZE] rs2_data;
+  RegFile rf (.clk(clk), .rst(rst), .we(1'b0), .rd(0), .rd_data(0), .rs1(0), .rs2(0), .rs1_data(rs1_data), .rs2_data(rs2_data));
 
   logic illegal_insn;
 
@@ -236,10 +242,10 @@ module MemorySingleCycle #(
 );
 
   // memory is arranged as an array of 4B words
-  logic [`REG_SIZE] mem[NUM_WORDS];
+  logic [`REG_SIZE] mem_array[NUM_WORDS];
 
   initial begin
-    $readmemh("mem_initial_contents.hex", mem, 0);
+    $readmemh("../mem_initial_contents.hex", mem_array, 0);
   end
 
   always_comb begin
@@ -254,7 +260,7 @@ module MemorySingleCycle #(
   always @(posedge clock_mem) begin
     if (rst) begin
     end else begin
-      insn_from_imem <= mem[{pc_to_imem[AddrMsb:AddrLsb]}];
+      insn_from_imem <= mem_array[{pc_to_imem[AddrMsb:AddrLsb]}];
     end
   end
 
@@ -262,19 +268,19 @@ module MemorySingleCycle #(
     if (rst) begin
     end else begin
       if (store_we_to_dmem[0]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
       end
       if (store_we_to_dmem[1]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
       end
       if (store_we_to_dmem[2]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
       end
       if (store_we_to_dmem[3]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
       end
       // dmem is "read-first": read returns value before the write
-      load_data_from_dmem <= mem[{addr_to_dmem[AddrMsb:AddrLsb]}];
+      load_data_from_dmem <= mem_array[{addr_to_dmem[AddrMsb:AddrLsb]}];
     end
   end
 endmodule
@@ -292,7 +298,7 @@ prepare register/PC updates, which occur at @posedge clock_proc.
            ____
  mem:  ___|    |___
 */
-module RiscvProcessor (
+module Processor (
     input  wire  clock_proc,
     input  wire  clock_mem,
     input  wire  rst,
@@ -302,9 +308,13 @@ module RiscvProcessor (
   wire [`REG_SIZE] pc_to_imem, insn_from_imem, mem_data_addr, mem_data_loaded_value, mem_data_to_write;
   wire [3:0] mem_data_we;
 
+  // This wire is set by cocotb to the name of the currently-running test, to make it easier
+  // to see what is going on in the waveforms.
+  wire [(8*32)-1:0] test_case;
+
   MemorySingleCycle #(
       .NUM_WORDS(8192)
-  ) mem (
+  ) memory (
       .rst      (rst),
       .clock_mem (clock_mem),
       // imem is read-only
