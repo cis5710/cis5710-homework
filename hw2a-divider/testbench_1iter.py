@@ -6,7 +6,7 @@ from cocotb.triggers import Timer
 
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
-import cocotb_utils as cu
+from cocotb_utils import assertEquals
 
 
 #########################
@@ -21,9 +21,9 @@ async def test_rem_lt_divisor(dut):
     dut.i_remainder.value = 0
     dut.i_quotient.value = 8
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.o_dividend.value)
-    cu.assertEquals(16, dut.o_quotient.value)
-    cu.assertEquals(1, dut.o_remainder.value)
+    assertEquals(0, dut.o_dividend.value)
+    assertEquals(16, dut.o_quotient.value)
+    assertEquals(1, dut.o_remainder.value)
     pass
 
 @cocotb.test()
@@ -34,9 +34,9 @@ async def test_rem_gte_divisor(dut):
     dut.i_remainder.value = 0
     dut.i_quotient.value = 8
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.o_dividend.value)
-    cu.assertEquals(16+1, dut.o_quotient.value)
-    cu.assertEquals(0, dut.o_remainder.value)
+    assertEquals(0, dut.o_dividend.value)
+    assertEquals(16+1, dut.o_quotient.value)
+    assertEquals(0, dut.o_remainder.value)
     pass
 
 @cocotb.test()
@@ -66,8 +66,8 @@ async def test_random1k(dut):
         msg = f'input {dividend} / {divisor} rem={remainder} quotient={quotient}\n'
         msg += f'expected dividend={exp_dividend} quot={exp_quotient} rem={exp_remainder}\n'
         msg += f'but was dividend={dut.o_dividend.value} quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        cu.assertEquals(exp_dividend, dut.o_dividend.value, msg)
-        cu.assertEquals(exp_quotient, dut.o_quotient.value, msg)
-        cu.assertEquals(exp_remainder, dut.o_remainder.value, msg)
+        assertEquals(exp_dividend, dut.o_dividend.value, msg)
+        assertEquals(exp_quotient, dut.o_quotient.value, msg)
+        assertEquals(exp_remainder, dut.o_remainder.value, msg)
         pass
     pass

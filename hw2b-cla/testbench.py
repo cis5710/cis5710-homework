@@ -7,6 +7,7 @@ from cocotb.triggers import Timer
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import cocotb_utils as cu
+from cocotb_utils import assertEquals
 
 PROJECT_PATH = Path(__file__).resolve().parent
 
@@ -88,7 +89,7 @@ async def test_0_0_0(dut):
     dut.b.value = 0
     dut.cin.value = 0
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.sum.value)
+    assertEquals(0, dut.sum.value)
 
 @cocotb.test()
 async def test_0_1_0(dut):
@@ -97,7 +98,7 @@ async def test_0_1_0(dut):
     dut.b.value = 1
     dut.cin.value = 0
     await Timer(1, "ns")
-    cu.assertEquals(1, dut.sum.value)
+    assertEquals(1, dut.sum.value)
 
 @cocotb.test()
 async def test_1_0_0(dut):
@@ -106,7 +107,7 @@ async def test_1_0_0(dut):
     dut.b.value = 0
     dut.cin.value = 0
     await Timer(1, "ns")
-    cu.assertEquals(1, dut.sum.value)
+    assertEquals(1, dut.sum.value)
 
 @cocotb.test()
 async def test_1_1_0(dut):
@@ -115,7 +116,7 @@ async def test_1_1_0(dut):
     dut.b.value = 1
     dut.cin.value = 0
     await Timer(1, "ns")
-    cu.assertEquals(2, dut.sum.value)
+    assertEquals(2, dut.sum.value)
 
 @cocotb.test()
 async def test_1_1_1(dut):
@@ -124,7 +125,7 @@ async def test_1_1_1(dut):
     dut.b.value = 1
     dut.cin.value = 1
     await Timer(1, "ns")
-    cu.assertEquals(3, dut.sum.value)
+    assertEquals(3, dut.sum.value)
 
 @cocotb.test()
 async def test_overflow0(dut):
@@ -133,7 +134,7 @@ async def test_overflow0(dut):
     dut.b.value = 0
     dut.cin.value = 1
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.sum.value)
+    assertEquals(0, dut.sum.value)
 
 @cocotb.test()
 async def test_overflow1(dut):
@@ -142,7 +143,7 @@ async def test_overflow1(dut):
     dut.b.value = 0x5555_5555 # 1's in odd positions
     dut.cin.value = 1
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.sum.value)
+    assertEquals(0, dut.sum.value)
 
 @cocotb.test()
 async def test_random1k(dut):
@@ -161,6 +162,6 @@ async def test_random1k(dut):
         actual_sum = dut.sum.value.integer & 0x0000_FFFF_FFFF
 
         msg = f'expected {a} + {b} + {cin} = {exp_sum} but was {actual_sum}'
-        cu.assertEquals(exp_sum, actual_sum, msg)
+        assertEquals(exp_sum, actual_sum, msg)
         pass
     pass

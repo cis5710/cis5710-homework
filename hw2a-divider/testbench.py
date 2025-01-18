@@ -10,6 +10,7 @@ PROJECT_PATH = Path(__file__).resolve().parent
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import cocotb_utils as cu
+from cocotb_utils import assertEquals
 
 # for deterministic random numbers
 random.seed(12345)
@@ -90,8 +91,8 @@ async def test_simple0(dut):
     dut.i_dividend.value = 4
     dut.i_divisor.value = 2
     await Timer(1, "ns")
-    cu.assertEquals(2, dut.o_quotient.value)
-    cu.assertEquals(0, dut.o_remainder.value)
+    assertEquals(2, dut.o_quotient.value)
+    assertEquals(0, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple1(dut):
@@ -99,8 +100,8 @@ async def test_simple1(dut):
     dut.i_dividend.value = 4
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    cu.assertEquals(1, dut.o_quotient.value)
-    cu.assertEquals(0, dut.o_remainder.value)
+    assertEquals(1, dut.o_quotient.value)
+    assertEquals(0, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple2(dut):
@@ -108,8 +109,8 @@ async def test_simple2(dut):
     dut.i_dividend.value = 10
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    cu.assertEquals(2, dut.o_quotient.value)
-    cu.assertEquals(2, dut.o_remainder.value)
+    assertEquals(2, dut.o_quotient.value)
+    assertEquals(2, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_simple3(dut):
@@ -117,8 +118,8 @@ async def test_simple3(dut):
     dut.i_dividend.value = 2
     dut.i_divisor.value = 4
     await Timer(1, "ns")
-    cu.assertEquals(0, dut.o_quotient.value)
-    cu.assertEquals(2, dut.o_remainder.value)
+    assertEquals(0, dut.o_quotient.value)
+    assertEquals(2, dut.o_remainder.value)
 
 @cocotb.test()
 async def test_random1k(dut):
@@ -135,7 +136,7 @@ async def test_random1k(dut):
 
         msg = f'expected {dividend} / {divisor} = {exp_quotient} rem {exp_remainder}\n'
         msg += f'but was quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        cu.assertEquals(exp_quotient, dut.o_quotient.value, msg)
-        cu.assertEquals(exp_remainder, dut.o_remainder.value, msg)
+        assertEquals(exp_quotient, dut.o_quotient.value, msg)
+        assertEquals(exp_remainder, dut.o_remainder.value, msg)
         pass
     pass
