@@ -54,8 +54,8 @@ codecheck:
 
 test:
 	@echo You can run just specific tests via:
-	@echo "     pytest-3 --exitfirst --capture=no testbench.py --tests TEST1,TEST2,..."
-	pytest-3 --capture=no --exitfirst testbench.py
+	@echo "     pytest --exitfirst --capture=no testbench.py --tests TEST1,TEST2,..."
+	pytest --capture=no --exitfirst testbench.py
 
 bit: synth-yosys pnr
 
