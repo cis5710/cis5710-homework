@@ -71,15 +71,15 @@ instances. It is quite tedious (and error-prone) to connect them by hand.
 ## Tests
 
 We have provided tests for both the `divu_1iter` and `divider_unsigned`
-modules. You can run tests via the command:
+modules. You can run tests via the command
 
 ```
-make test
+MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py
 ```
 
-This runs the `divu_1iter` tests and then the `divider_unsigned` tests.
+This runs the `divu_1iter` tests and then the `divider_unsigned` tests, exiting at the first failure.
 There are only a couple simple tests provided in the `testbench*.py` files, so you may find it useful to use
-these as a template for adding your own tests that cover various corner cases.
+these as a template for adding your own tests to cover various corner cases.
 
 ## Submitting your code
 
