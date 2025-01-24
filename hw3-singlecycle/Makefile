@@ -18,7 +18,7 @@ CLOCK_GEN_NAME=MyClockGen
 CLOCK_GEN_FILE=$(CLOCK_GEN_NAME).v
 
 # run ecppll to set clocks
-clock-gen:
+clock-gen: Makefile
 	mkdir -p $(BACKEND_OUTPUT_DIR)
 	ecppll --internal_feedback --clkin_name input_clk_25MHz --clkin 25 --clkout0_name clk_proc --clkout0 $(CLOCK_FREQUENCY) --clkout1_name clk_mem --clkout1 $(CLOCK_FREQUENCY) --phase1 90 -n $(CLOCK_GEN_NAME) -f .tmp-clk-gen.v > $(BACKEND_OUTPUT_DIR)/clock_generation_report.txt
 	@echo 'check that clocks have the requested frequency'
