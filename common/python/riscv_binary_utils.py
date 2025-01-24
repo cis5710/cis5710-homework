@@ -1,10 +1,66 @@
 from pathlib import Path
 import subprocess
 import re
+import shutil
 import sys
 
 # readelf program
 READELF = 'riscv64-unknown-elf-readelf'
+
+# assembler program
+ASSEMBLER = 'riscv64-unknown-elf-as'
+
+# temporary file used to hold assembler output
+TEMP_MACHINE_CODE_FILE = ".tmp.riscv.o"
+
+# offset to map from standard Linux/ELF addresses to what our processor's memory uses
+BIN_2_MEMORY_ADDRESS_OFFSET = 0x80000000
+
+assert shutil.which(ASSEMBLER) is not None, f"Couldn't find assembler program {ASSEMBLER}"
+assert shutil.which(READELF) is not None, f"Couldn't find readelf program {READELF}"
+
+def asm(dut, assemblyCode):
+    """Assembles the given RISC-V code, returning the machine code as a list of numbers"""
+
+    # avoid assembler warning about missing trailing newline
+    if not assemblyCode.endswith('\n'):
+        assemblyCode += '\n'
+        pass
+
+    # Use subprocess to run the assembler command
+    command = [ASSEMBLER, "-march=rv32im", "-o", TEMP_MACHINE_CODE_FILE]
+    process = subprocess.run(command, input=assemblyCode, capture_output=True, text=True, check=False)
+    if process.returncode != 0:
+        dut._log.error(f"Error: {process.stderr}")
+        process.check_returncode() # throws
+        pass
+
+    loadBinaryIntoMemory(dut, TEMP_MACHINE_CODE_FILE)
+
+def loadBinaryIntoMemory(dut, binaryPath):
+    """Read the given binary's sections, and load them into memory at the appropriate addresses."""
+    
+    sectionInfo = getSectionInfo(binaryPath)
+    sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
+
+    for sectionName in sectionsToLoad:
+        if sectionName not in sectionInfo:
+            continue
+        offset = sectionInfo[sectionName]['offset']
+        length = sectionInfo[sectionName]['size']
+        words = extractDataFromBinary(binaryPath, offset, length + (length % 4))
+        memBaseAddr = sectionInfo[sectionName]['address']
+        if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
+            memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
+            pass
+        memBaseAddr >>= 2 # convert to word address
+        print(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
+        for i in range(len(words)):
+            # NB: doesn't work if we try to pass dut.memory.mem_array as an argument, need top-level dut
+            dut.memory.mem_array[memBaseAddr + i].value = words[i]
+            pass
+        pass
+    pass
 
 def getSectionInfo(binaryPath):
     """Returns information about the sections in the binary given at `binaryPath`. Returns a dictionary with
