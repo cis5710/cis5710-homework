@@ -19,18 +19,10 @@ SIM_BUILD_DIR = "sim_build"
 # simulator to use
 SIM = "verilator"
 
-# temporary file used to hold assembler output
-TEMP_MACHINE_CODE_FILE = ".tmp.riscv.o"
-
 # offset to map from standard Linux/ELF addresses to what our processor's memory uses
 BIN_2_MEMORY_ADDRESS_OFFSET = 0x80000000
 
-# assembler program
-ASSEMBLER = 'riscv64-unknown-elf-as'
-
-# readelf program
-READELF = 'riscv64-unknown-elf-readelf'
-
+# NB: these paths are relative to the testbench file, not cocotb_utils.py
 RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
 RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
 
@@ -39,7 +31,7 @@ POINTS_FILE = 'points.json'
 def assertEquals(expected, actual, msg=''):
     """Wrapper around regular assert, with automatic formatting of values in hex"""
     if expected != actual:
-        assert_msg = f'expected {int(expected):#X} but was {int(actual):#X}'
+        assert_msg = f'expected 0x{int(expected):X} but was 0x{int(actual):X}'
         if msg != '':
             assert_msg += f': {msg}'
             pass
