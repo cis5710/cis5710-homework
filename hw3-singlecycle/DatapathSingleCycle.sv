@@ -35,10 +35,10 @@ module DatapathSingleCycle (
     output logic [`REG_SIZE] pc_to_imem,
     input wire [`REG_SIZE] insn_from_imem,
     // addr_to_dmem is a read-write port
-    output wire [`REG_SIZE] addr_to_dmem,
+    output logic [`REG_SIZE] addr_to_dmem,
     input logic [`REG_SIZE] load_data_from_dmem,
-    output wire [`REG_SIZE] store_data_to_dmem,
-    output wire [3:0] store_we_to_dmem
+    output logic [`REG_SIZE] store_data_to_dmem,
+    output logic [3:0] store_we_to_dmem
 );
 
   // components of the instruction
@@ -190,7 +190,16 @@ module DatapathSingleCycle (
   // TODO: you will need to edit the port connections, however.
   wire [`REG_SIZE] rs1_data;
   wire [`REG_SIZE] rs2_data;
-  RegFile rf (.clk(clk), .rst(rst), .we(1'b0), .rd(0), .rd_data(0), .rs1(0), .rs2(0), .rs1_data(rs1_data), .rs2_data(rs2_data));
+  RegFile rf (
+    .clk(clk),
+    .rst(rst),
+    .we(1'b0),
+    .rd(0),
+    .rd_data(0),
+    .rs1(0),
+    .rs2(0),
+    .rs1_data(rs1_data),
+    .rs2_data(rs2_data));
 
   logic illegal_insn;
 
