@@ -45,7 +45,7 @@ You cannot use the `-`, `/` or `%` operators in your code.
 
 ## Testing and Debugging Tips
 
-You can run just a single RV test via a command like `pytest --exitfirst --capture=no testbench.py --tests riscvTest_001`. This will result in much simpler waveforms than when running all tests together (as they all appear consecutively in a single waveform file). You can also specify a comma-separated list of tests to the `--tests` flag to run multiple tests, e.g., `pytest --exitfirst --capture=no testbench.py --tests testLui,riscvTest_001`.
+You can run just a single RV test via a command like `pytest --exitfirst --capture=no -k runCocotbTestsProcessor testbench.py --tests riscvTest_001`. This will result in much simpler waveforms than when running all tests together (as they all appear consecutively in a single waveform file). You can also specify a comma-separated list of tests to the `--tests` flag to run multiple tests, e.g., `pytest --exitfirst --capture=no -k runCocotbTestsProcessor testbench.py --tests testLui,riscvTest_001`.
 
 In the waveforms, use the `disasm_wire` signal inside the `DatapathSingleCycle` module (be sure to change the Data Format to `ASCII`) to view the assembly code for the current instruction. This, along with the PC and `cycles_current` value, can help you track what your processor is doing. You can also see the name of the currently-running test using the `test_case` wire (again, use the ASCII data format) inside the `Processor` module.
 
