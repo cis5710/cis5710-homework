@@ -47,6 +47,9 @@ test:
 demo:
 	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_DEMO)
 
+demo-fast:
+	$(MAKE) synth-yosys-fast pnr-fast TOP_MODULE=$(TOP_MODULE_DEMO)
+
 resource-check:
 	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_RESOURCE_CHECK)
 
@@ -55,11 +58,6 @@ check-logs:
 
 $(VERILOG_SYNTH_SOURCE): $(SV_SYNTH_SOURCES) clock-gen
 	sv2v -DSYNTHESIS $(SV_SYNTH_SOURCES) --write=$(VERILOG_SYNTH_SOURCE) --top=$(TOP_MODULE) --incdir=`pwd`
-
-# NB: synlig miscompiles our code...
-#synth-synlig: verilog $(SYNTH_SOURCES) clock-gen
-#	mkdir -p $(BACKEND_OUTPUT_DIR)
-#	bash -c "set -o pipefail; $(time) synlig -p \"systemverilog_defines -DSYNTHESIS; read_systemverilog $(SYNTH_SOURCES); synth_ecp5 -top $(TOP_MODULE); write_json $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
 
 synth: synth-yosys
 
