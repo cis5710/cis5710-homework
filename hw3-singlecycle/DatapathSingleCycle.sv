@@ -253,9 +253,11 @@ module MemorySingleCycle #(
   // memory is arranged as an array of 4B words
   logic [`REG_SIZE] mem_array[NUM_WORDS];
 
+`ifdef SYNTHESIS
   initial begin
-    $readmemh("../mem_initial_contents.hex", mem_array, 0);
+    $readmemh("mem_initial_contents.hex", mem_array);
   end
+`endif
 
   always_comb begin
     // memory addresses should always be 4B-aligned
