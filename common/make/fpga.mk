@@ -45,10 +45,10 @@ test:
 	MAKEFLAGS=-j4 pytest --capture=no --exitfirst testbench.py
 
 demo:
-	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_DEMO)
-
-demo-fast:
 	$(MAKE) synth-yosys-fast pnr-fast TOP_MODULE=$(TOP_MODULE_DEMO)
+
+demo-slow:
+	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_DEMO)
 
 resource-check:
 	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_RESOURCE_CHECK)
