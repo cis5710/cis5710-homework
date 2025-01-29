@@ -1,0 +1,16 @@
+[profile.release]
+# To simplify panic handling, don't unwind the stack, just crash
+panic = "abort"
+
+[build]
+# compile for our RV32IM processor
+target = "riscv32im-unknown-none-elf"
+
+[target.riscv32im-unknown-none-elf]
+# specify a linker script
+linker = "rust-lld"
+rustflags = [
+    "-C", "link-arg=-Tmemory.x",
+    "-C", "no-redzone",
+    "-C", "llvm-args=-unroll-threshold=0",
+]
