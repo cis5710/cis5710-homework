@@ -31,3 +31,8 @@ clock-gen: Makefile
 	@echo '`timescale 1ns / 1ns' >> $(CLOCK_GEN_FILE)
 	@echo '' >> $(CLOCK_GEN_FILE)
 	@cat .tmp-clk-gen.v >> $(CLOCK_GEN_FILE)
+
+# compile demo code and extract into mem_initial_contents.hex
+demo-code:
+	cd ledrop && cargo build --release
+	python3 make-mem-contents.py
