@@ -54,7 +54,7 @@ The tests in `testbench.py` are arranged in the order in which we recommend you 
 
 ## Check timing closure
 
-For this homework, in addition to the usual testing in simulation, you will also run the FPGA tools to generate a bitstream. Doing so allows you to check how fast your design runs (its clock frequency) and how many FPGA resources it consumes. We will not require you to reach a particular clock frequency, though the clock is set at 4 MHz by default which was sufficient for our solution but YMMV.
+For this homework, in addition to the usual testing in simulation, you will also run the FPGA tools to generate a bitstream. Doing so allows you to check how fast your design runs (its clock frequency) and how many FPGA resources it consumes. We will not require you to reach a particular clock frequency or resource consumption level, though the clock is set at 4 MHz by default which was sufficient for our solution but YMMV.
 
 To generate a bitstream, run `make resource-check`. This will take a few minutes, and when it completes you can examine the `fpga_build/resource-report.json` file to see information about critical paths, the frequency of your design, and the resource consumption. The frequency part of the report is especially important, and it will look something like this:
 
@@ -97,4 +97,16 @@ For both HW3A and HW3B, run `make resource-check` and `make zip` and then submit
 
 # FPGA Demo
 
-Details forthcoming.
+The demo for this homework is a small reaction-time game, written [in Rust](ledrop/src/main.rs). In this game, a "ball" travels along the LEDs on the board and you have to "catch" it by pressing button B2 once LED D0 (red) is lit and holding it until the next LED would be lit. If you caught the ball, a blue "success" LED (D7) will briefly illuminate, and the ball will start moving faster. If you press B2 at any other time, however, you will lose and must reset the processor (via button B0/PWR).
+
+The machine code for the demo is pre-compiled in `mem_initial_contents.hex`. You can build your bitstream via `make demo` (this will take a couple minutes). It is very important that your design meets timing closure, otherwise timing glitches will likely corrupt the gameplay. You are free to adjust `CLOCK_FREQUENCY` as necessary (see above).
+
+> You can also edit the game code if you want, to adjust the gameplay or even create a new game. Recompile the game code via `make demo-code`. Be sure to also then regenerate your bitstream via `make demo` so that the board runs the latest version of your game.
+
+## Programming the FPGA
+
+TODO: board programming instructions...
+
+## TA Sign-off
+
+You should demonstrate the demo running on a board to a TA during their Office Hours. They will give your team credit for the demo. Editing the game is not required, though we will be excited if you decide to do so!
