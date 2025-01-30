@@ -14,14 +14,17 @@ def objectIsLegal(filename, obj):
     if 'tag' not in obj:
         return (True,True)
     tag = obj['tag']
-    if tag in ["kTimescaleDirective","kDataType","kParamDeclaration","kForCondition",
-               "kLoopHeader","kDimensionRange","kDimensionScalar","kGenerateIf"]:
-        return (True,False)
     text = obj.get('text', None)
-    if (tag == "SystemTFIdentifier" and text == "$fopen") or tag in "/%":
+    if tag in "/%":
         return (False,True)
-    if filename == 'DatapathMultiCycle.sv' and tag in "-":
+    if tag == 'PP_define_body' and (text.count('/') > 0 or text.count('%') > 0):
         return (False,True)
+    if filename == 'DatapathMultiCycle.sv':
+        if tag in "-":
+            return (False,True)
+        if tag == 'PP_define_body' and text.count('-') > 0:
+            return (False,True)
+        pass
     return (True,True)
 
 main_codecheck.runCodecheck(objectIsLegal, ['DatapathMultiCycle.sv','divider_unsigned_pipelined.sv'])
