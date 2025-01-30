@@ -27,4 +27,4 @@ def objectIsLegal(filename, obj):
         pass
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal, ['DatapathMultiCycle.sv','divider_unsigned_pipelined.sv'])
+main_codecheck.runCodecheck(objectIsLegal, ['DatapathMultiCycle.sv','DividerUnsignedPipelined.sv'])
