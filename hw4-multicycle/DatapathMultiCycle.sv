@@ -8,11 +8,9 @@
 // RV opcodes are 7 bits
 `define OPCODE_SIZE 6:0
 
-`ifndef RISCV_FORMAL
-`include "../hw2b/cla.sv"
-`include "divider_unsigned_pipelined.sv"
+`include "../hw2b-cla/cla.sv"
+`include "DividerUnsignedPipelined.sv"
 `include "../hw3-singlecycle/RvDisassembler.sv"
-`endif
 
 module RegFile (
     input logic [4:0] rd,
@@ -78,11 +76,13 @@ module MemorySingleCycle #(
 );
 
   // memory is arranged as an array of 4B words
-  logic [`REG_SIZE] mem[NUM_WORDS];
+  logic [`REG_SIZE] mem_array[NUM_WORDS];
 
+`ifdef SYNTHESIS
   initial begin
-    $readmemh("mem_initial_contents.hex", mem, 0);
+    $readmemh("mem_initial_contents.hex", mem_array);
   end
+`endif
 
   always_comb begin
     // memory addresses should always be 4B-aligned
@@ -96,7 +96,7 @@ module MemorySingleCycle #(
   always @(posedge clock_mem) begin
     if (rst) begin
     end else begin
-      insn_from_imem <= mem[{pc_to_imem[AddrMsb:AddrLsb]}];
+      insn_from_imem <= mem_array[{pc_to_imem[AddrMsb:AddrLsb]}];
     end
   end
 
@@ -104,19 +104,19 @@ module MemorySingleCycle #(
     if (rst) begin
     end else begin
       if (store_we_to_dmem[0]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
       end
       if (store_we_to_dmem[1]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
       end
       if (store_we_to_dmem[2]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
       end
       if (store_we_to_dmem[3]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
       end
       // dmem is "read-first": read returns value before the write
-      load_data_from_dmem <= mem[{addr_to_dmem[AddrMsb:AddrLsb]}];
+      load_data_from_dmem <= mem_array[{addr_to_dmem[AddrMsb:AddrLsb]}];
     end
   end
 endmodule
@@ -134,7 +134,7 @@ prepare register/PC updates, which occur at @posedge clock_proc.
            ____
  mem:  ___|    |___
 */
-module RiscvProcessor (
+module Processor (
     input  wire  clock_proc,
     input  wire  clock_mem,
     input  wire  rst,
@@ -144,9 +144,13 @@ module RiscvProcessor (
   wire [`REG_SIZE] pc_to_imem, insn_from_imem, mem_data_addr, mem_data_loaded_value, mem_data_to_write;
   wire [3:0] mem_data_we;
 
+  // This wire is set by cocotb to the name of the currently-running test, to make it easier
+  // to see what is going on in the waveforms.
+  wire [(8*32)-1:0] test_case;
+
   MemorySingleCycle #(
       .NUM_WORDS(8192)
-  ) mem (
+  ) memory (
       .rst      (rst),
       .clock_mem (clock_mem),
       // imem is read-only
