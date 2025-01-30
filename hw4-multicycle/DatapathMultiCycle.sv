@@ -10,7 +10,6 @@
 
 `include "../hw2b-cla/cla.sv"
 `include "DividerUnsignedPipelined.sv"
-`include "../hw3-singlecycle/RvDisassembler.sv"
 
 module RegFile (
     input logic [4:0] rd,
