@@ -80,16 +80,17 @@ After editing this command appropriately, launch the container for the first tim
 docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw-base:latest /bin/bash
 ```
 
-Once you've launched the container, you can keep it running in the background. If you want to free up more resources, you can **stop** your container with this command (substituting the name you gave your container previously):
+Once you've launched the container, you can keep it running in the background. If you want to free up more resources, however, you can **stop** your container with this command (substituting the name you gave your container previously):
 
 ```
 docker stop MY-CIS5710
 ```
 
-Stopping your container will **reset the state of all files inside the container**, except for the directory shared with your laptop. You can then start the container again with:
+Stopping your container will end your shell session, but not lose any of the files inside the container. You can then start the container again and launch a new shell with:
 
 ```
 docker start MY-CIS5710
+docker exec -it MY-CIS5710 /bin/bash
 ```
 
 It is also possible to install the various tools you need for this course directly on your laptop, which avoids the need for Docker. You can follow our [Dockerfile](docker/Dockerfile) for guidance.
