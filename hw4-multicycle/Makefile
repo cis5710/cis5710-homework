@@ -2,7 +2,7 @@ SV_SYNTH_SOURCES=system/System.sv
 VERILOG_SYNTH_SOURCE=system/System.v
 
 TOP_MODULE_RESOURCE_CHECK=SystemResourceCheck
-CONSTRAINTS=../hw3-singlecycle/system/board.lpf
+CONSTRAINTS=../common/constraints/ulx3s.lpf
 
 ZIP_SOURCES=DatapathMultiCycle.sv DividerUnsignedPipelined.sv ../hw2b-cla/cla.sv fpga_build/resource-report.json
 ZIP_FILE=multi.zip
