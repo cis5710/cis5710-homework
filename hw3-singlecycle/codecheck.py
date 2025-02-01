@@ -17,7 +17,7 @@ def objectIsLegal(filename, obj):
     text = obj.get('text', None)
     if tag in "-/%":
         return (False,True)
-    if tag == 'PP_define_body' and (text.count('-') > 0 or text.count('/') > 0 or text.count('%') > 0 ):
+    if tag == 'PP_define_body' and (text.count('-') > 0 or text.count('/') > 0 or text.count('%') > 0):
         return (False,True)
     return (True,True)
 
