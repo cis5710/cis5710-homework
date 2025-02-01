@@ -1,8 +1,6 @@
 import cocotb
 import json
 import os
-import shutil
-import subprocess
 
 from pathlib import Path
 from cocotb.clock import Clock
@@ -11,90 +9,28 @@ from cocotb.result import SimTimeoutError
 from cocotb.runner import get_runner, get_results
 from cocotb.triggers import RisingEdge, ClockCycles
 from cocotb.triggers import Timer
+import inspect
+from cocotb.binary import BinaryValue
 
 import sys
 
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
 import riscv_binary_utils
+import cocotb_utils as cu
+from cocotb_utils import assertEquals
 
-# directory where our simulator will compile our tests + code
-SIM_BUILD_DIR = "sim_build"
+# the number of stages the divider is split into
+DIVIDER_STAGES = 8
 
-# temporary file used to hold assembler output
-TEMP_MACHINE_CODE_FILE = ".tmp.riscv.o"
-
-# offset to map from standard Linux/ELF addresses to what our processor's memory uses
-BIN_2_MEMORY_ADDRESS_OFFSET = 0x80000000
-
-# assembler program
-ASSEMBLER = 'riscv64-unknown-elf-as'
-
-# readelf program
-READELF = 'riscv64-unknown-elf-readelf'
-
-RISCV_TESTS_PATH = Path('../../riscv-tests/isa')
-RISCV_BENCHMARKS_PATH = Path('../../riscv-tests/benchmarks')
+# directory for this homework
+PROJECT_PATH = Path(__file__).resolve().parent
 
 TIMEOUT_CYCLES = 1_000
 
 TRACING_MODE = 'compare' # compare against the solution trace
 #TRACING_MODE = None # don't compare against or generate a trace
 #TRACING_MODE = 'generate' # generate a new trace (for staff only)
-
-def asm(dut, assemblyCode):
-    """Assembles the given RISC-V code, returning the machine code as a list of numbers"""
-
-    # avoid assembler warning about missing trailing newline
-    if not assemblyCode.endswith('\n'):
-        assemblyCode += '\n'
-        pass
-
-    # Use subprocess to run the assembler command
-    #command = [ASSEMBLER, "-march=rv32imzifencei", "-o", TEMP_MACHINE_CODE_FILE]
-    command = [ASSEMBLER, "-march=rv32im", "-o", TEMP_MACHINE_CODE_FILE]
-    process = subprocess.run(command, input=assemblyCode, capture_output=True, text=True, check=False)
-    if process.returncode != 0:
-        dut._log.error(f"Error: {process.stderr}")
-        process.check_returncode() # throws
-        pass
-
-    loadBinaryIntoMemory(dut, TEMP_MACHINE_CODE_FILE)
-
-def loadBinaryIntoMemory(dut, binaryPath):
-    """Read the given binary's sections, and load them into memory at the appropriate addresses."""
-    
-    sectionInfo = riscv_binary_utils.getSectionInfo(binaryPath)
-    #dut._log.info(sectionInfo)
-    sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
-
-    for sectionName in sectionsToLoad:
-        if sectionName not in sectionInfo:
-            continue
-        offset = sectionInfo[sectionName]['offset']
-        length = sectionInfo[sectionName]['size']
-        words = riscv_binary_utils.extractDataFromBinary(binaryPath, offset, length + (length % 4))
-        memBaseAddr = sectionInfo[sectionName]['address']
-        if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
-            memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
-            pass
-        memBaseAddr >>= 2 # convert to word address
-        dut._log.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
-        for i in range(len(words)):
-            dut.the_mem.mem[memBaseAddr + i].value = words[i]
-            pass
-        pass
-    pass
-
-
-def oneTimeSetup():
-    """This runs once, before any of the tests. Performs global setup."""
-
-    # check that tools are accessible
-    assert shutil.which(ASSEMBLER) is not None, f"Couldn't find assembler program {ASSEMBLER}"
-    assert shutil.which(READELF) is not None, f"Couldn't find readelf program {READELF}"
-    assert RISCV_TESTS_PATH.relative_to('..').exists(), f"Couldn't read riscv-tests from {RISCV_TESTS_PATH}"
-    pass
 
 async def preTestSetup(dut):
     """Setup the DUT. MUST be called at the start of EACH test."""
@@ -111,62 +47,55 @@ async def preTestSetup(dut):
     # lower `rst` signal
     dut.rst.value = 0
     # design should be reset now
+
+    # set test_case wire
+    caller_name = inspect.stack()[1].function
+    if caller_name == 'riscvTest':
+        caller_frame = inspect.currentframe().f_back
+        caller_name = os.path.basename(caller_frame.f_locals['binaryPath'])
+        pass
+    caller_name_binary = ''.join(format(ord(char), '08b') for char in caller_name.ljust(32))
+    dut.test_case.value = BinaryValue(caller_name_binary, n_bits=len(caller_name_binary))
+
     return
 
-def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
+def runCocotbTestsProcessor(pytestconfig):
+    """run processor tests"""
 
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [ proj_path / "DatapathPipelined.sv" ]
-    toplevel_module = "RiscvProcessor"
+    verilog_sources = [ PROJECT_PATH / "DatapathPipelined.sv" ]
+    toplevel_module = "Processor"
 
-    try:
-        runr = get_runner(sim)
-        runr.build(
-            verilog_sources=verilog_sources,
-            vhdl_sources=[],
-            hdl_toplevel=toplevel_module,
-            includes=[proj_path],
-            build_dir=SIM_BUILD_DIR,
-            always=True,
-            # NB: --trace-max-array must be the size of the memory (in 4B words) for memory to appear in the waveforms
-            build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs','--trace-max-array',str(2**18)]
-        )
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}'],
+    )
 
-        oneTimeSetup()
-
-        runr.test(
-            seed=12345,
-            waves=True,
-            hdl_toplevel=toplevel_module, 
-            test_module=Path(__file__).stem, # use tests from this file
-            results_xml='pipelined_datapath.results.xml',
-            testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
-        )
-    finally:
-        pointsEarned = 0
-        pointsPossible = 0
-        proc_path = Path(SIM_BUILD_DIR,'runCocotbTests.pipelined_datapath.results.xml')
-        if proc_path.exists():
-            proc_total_failed = get_results(proc_path)
-            # 1 point per test
-            pointsEarned += (proc_total_failed[0] - proc_total_failed[1])
-            pointsPossible = proc_total_failed[0]
-            pass
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': pointsPossible }
-        with open('points.json', 'w') as f:
-            json.dump(points, f, indent=2)
-            pass
-        pass
-
-
-if __name__ == "__main__":
-    runCocotbTests()
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
     pass
 
+def runCocotbTests(pytestconfig):
+    """calculate scores for autograder"""
+    test_results = cu.aggregateTestResults(
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsProcessor.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open('points.json', 'w') as f:
+        json.dump(points, f, indent=2)
+        pass
+    pass
 
 
 ########################
@@ -176,73 +105,85 @@ if __name__ == "__main__":
 @cocotb.test()
 async def testLui(dut):
     "Run one lui insn"
-    asm(dut, 'lui x1,0x12345')
+    riscv_binary_utils.asm(dut, 'lui x1,0x12345')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 6)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testLuiLui(dut):
     "Run two lui independent insns"
-    asm(dut, '''lui x1,0x12345
+    riscv_binary_utils.asm(dut, '''lui x1,0x12345
         lui x2,0x6789A''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
-    assert dut.datapath.rf.regs[2].value == 0x6789A000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(0x6789A000, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test()
+async def testAddi3(dut):
+    "Run three addi insns"
+    riscv_binary_utils.asm(dut, '''addi x1,x1,1
+        addi x1,x1,1
+        addi x1,x1,1''')
+    await preTestSetup(dut)
+    assertEquals(0, dut.datapath.rf.regs[1].value)
+
+    await ClockCycles(dut.clk, 8)
+    assertEquals(3, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testMX1(dut):
     "Check MX bypass to rs1"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         add x2,x1,x0''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testMX2(dut):
     "Check MX bypass to rs2"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         add x2,x0,x1''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testWX1(dut):
     "Check WX bypass to rs1"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         lui x5,0x12345
         add x2,x1,x0''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testWX2(dut):
     "Check WX bypass to rs2"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         lui x5,0x12345
         add x2,x0,x1''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testWD1(dut):
     "Check WD bypass to rs1"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         lui x5,0x12345
         lui x6,0x12345
@@ -250,12 +191,12 @@ async def testWD1(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testWD2(dut):
     "Check WD bypass to rs2"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         addi x1,x0,42
         lui x5,0x12345
         lui x6,0x12345
@@ -263,12 +204,12 @@ async def testWD2(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[2].value == 42, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testX0Bypassing(dut):
     "Check that reads/writes to x0 are not bypassed"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x0,0x12345
         add x1,x0,x0 # should not use MX bypass
         add x2,x0,x0 # should not use WX bypass
@@ -278,15 +219,15 @@ async def testX0Bypassing(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 10)
-    assert dut.datapath.rf.regs[1].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
-    assert dut.datapath.rf.regs[2].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
-    assert dut.datapath.rf.regs[3].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
-    assert dut.datapath.rf.regs[4].value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(0, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(0, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(1, dut.datapath.rf.regs[4].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
 async def testBneNotTaken(dut):
     "bne which is not taken"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         bne x0,x0,target
         lui x1,0x54321
@@ -294,13 +235,13 @@ async def testBneNotTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test()
 async def testBeqNotTaken(dut):
     "beq which is not taken"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         beq x1,x0,target
         lui x1,0x54321
@@ -308,13 +249,13 @@ async def testBeqNotTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[1].value == 0x54321000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test()
 async def testBneTaken(dut):
     "bne which is taken"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         bne x1,x0,target
         lui x1,0x54321 # in Decode when branch is taken, should get cleared
@@ -325,13 +266,13 @@ async def testBneTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test()
 async def testBeqTaken(dut):
     "beq which is taken"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         beq x1,x1,target
         lui x1,0x54321 # in Decode when branch is taken, should get cleared
@@ -342,18 +283,18 @@ async def testBeqTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test()
 async def testTraceRvLui(dut):
     "Use the LUI riscv-test with trace comparison"
-    await riscvTest(dut, RISCV_TESTS_PATH / 'rv32ui-p-lui', TRACING_MODE)
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lui', TRACING_MODE)
 
 @cocotb.test()
 async def testTraceRvBeq(dut):
     "Use the BEQ riscv-test with trace comparison"
-    await riscvTest(dut, RISCV_TESTS_PATH / 'rv32ui-p-beq', TRACING_MODE)
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-beq', TRACING_MODE)
 
 
 #########################
@@ -363,59 +304,59 @@ async def testTraceRvBeq(dut):
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadUse1(dut):
     "load to use in rs1"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         add x2,x1,x0
         ''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[2].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x0000_2083, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadUse2(dut):
     "load to use in rs1"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         add x2,x0,x1
         ''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 8)
-    assert dut.datapath.rf.regs[2].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x0000_2083, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testLoadFalseUse(dut):
     "load followed by insn that doesn't actually use load result"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lw x0,0(x0) # loads bits of the lw insn itself
         lui x1,0xFE007
         ''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.datapath.rf.regs[1].value == 0xFE00_7000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0xFE00_7000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testWMData(dut):
     "WM bypass"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         sw x1,12(x0)
         ''')
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 7)
-    assert dut.the_mem.mem[3].value == 0x0000_2083, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x0000_2083, dut.memory.mem_array[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testWMAddress(dut):
     "WM bypass"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lw x1,0(x0) # loads bits of the lw insn itself
         sb x1,0(x1) # use sb since x1 is not 2B or 4B aligned
         ''')
@@ -423,15 +364,15 @@ async def testWMAddress(dut):
     loadValue = 0x2083
 
     await ClockCycles(dut.clk, 5) # sb in X stage
-    assert dut.the_mem.mem[int(loadValue / 4)].value == 0, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0, dut.memory.mem_array[int(loadValue / 4)].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     await ClockCycles(dut.clk, 1) # sb reaches M stage, writes to memory
-    assert dut.the_mem.mem[int(loadValue / 4)].value == 0x8300_0000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0x8300_0000, dut.memory.mem_array[int(loadValue / 4)].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testFence(dut):
     "Test fence insn"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
         # addi part of li goes here
         sw x2,16(x0) # overwrite lui below
@@ -441,38 +382,66 @@ async def testFence(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 12)
-    assert dut.datapath.rf.regs[1].value == 0xFFFF_F000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assertEquals(0xFFFF_F000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDiv(dut):
     "Run div insn"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         div x2,x1,x1''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 7)
-    assert dut.datapath.rf.regs[2].value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    await ClockCycles(dut.clk, 6 + DIVIDER_STAGES)
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def test2Div(dut):
+    "Run 2 div insns"
+    riscv_binary_utils.asm(dut, '''
+        lui x1,0x12345
+        div x2,x1,x1
+        div x3,x1,x1''')
+    await preTestSetup(dut)
+
+    await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 1)
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(1, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivUse(dut):
     "Run div + dependent insn"
-    asm(dut, '''
+    riscv_binary_utils.asm(dut, '''
         lui x1,0x12345
         div x2,x1,x1
         add x3,x2,x2 # needs stall + WX bypass
         ''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[2].value == 1, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
-    assert dut.datapath.rf.regs[3].value == 2, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 2)
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(2, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def testDivToStore(dut):
+    "Run div + dependent insn"
+    riscv_binary_utils.asm(dut, '''
+        lui x1,0x12345
+        div x2,x1,x1
+        sw x2,16(x0) # uses WM bypass to avoid stall
+        ''')
+    await preTestSetup(dut)
+
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES) # sw is in M stage, div is in W
+    assertEquals(1, dut.memory.mem_array[4].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await ClockCycles(dut.clk, 1) # one more cycle for x2 to update
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testTraceRvLw(dut):
     "Use the LW riscv-test with trace comparison"
-    await riscvTest(dut, RISCV_TESTS_PATH / 'rv32ui-p-lw', TRACING_MODE)
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lw', TRACING_MODE)
 
 def handleTrace(dut, trace, traceIdx, tracingMode):
     if tracingMode == 'generate':
@@ -497,7 +466,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
     "Run the official RISC-V test whose binary lives at `binaryPath`"
     assert binaryPath is not None
     assert binaryPath.exists(), f'Could not find RV test binary {binaryPath}, have you built riscv-tests?'
-    loadBinaryIntoMemory(dut, binaryPath)
+    riscv_binary_utils.loadBinaryIntoMemory(dut, binaryPath)
     await preTestSetup(dut)
 
     trace = []
@@ -515,7 +484,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
         handleTrace(dut, trace, cycles, tracingMode)
         if dut.halt.value == 1:
             # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
-            assert 93 == dut.datapath.rf.regs[17].value.integer # magic value from pass/fail functions
+            assertEquals(93, dut.datapath.rf.regs[17].value.integer) # magic value from pass/fail functions
             resultCode = dut.datapath.rf.regs[10].value.integer
             assert 0 == resultCode, f'failed test {resultCode >> 1} at cycle {dut.datapath.cycles_current.value.integer}'
             if tracingMode == 'generate':
@@ -527,65 +496,67 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
     raise SimTimeoutError()
 
 RV_TEST_BINARIES = [
-    RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
-    RISCV_TESTS_PATH / 'rv32ui-p-lui',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lui',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-and', # 3
-    RISCV_TESTS_PATH / 'rv32ui-p-or',
-    RISCV_TESTS_PATH / 'rv32ui-p-xor',
-    RISCV_TESTS_PATH / 'rv32ui-p-sll',
-    RISCV_TESTS_PATH / 'rv32ui-p-sra',
-    RISCV_TESTS_PATH / 'rv32ui-p-srl',
-    RISCV_TESTS_PATH / 'rv32ui-p-slt',
-    RISCV_TESTS_PATH / 'rv32ui-p-add',
-    RISCV_TESTS_PATH / 'rv32ui-p-sub',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-and', # 3
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-or',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-xor',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sll',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sra',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-srl',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-slt',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-add',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sub',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-andi', # 12
-    RISCV_TESTS_PATH / 'rv32ui-p-ori',
-    RISCV_TESTS_PATH / 'rv32ui-p-slli',
-    RISCV_TESTS_PATH / 'rv32ui-p-srai',
-    RISCV_TESTS_PATH / 'rv32ui-p-srli',
-    RISCV_TESTS_PATH / 'rv32ui-p-xori',
-    RISCV_TESTS_PATH / 'rv32ui-p-slti',
-    RISCV_TESTS_PATH / 'rv32ui-p-sltiu',
-    RISCV_TESTS_PATH / 'rv32ui-p-sltu',
-    RISCV_TESTS_PATH / 'rv32ui-p-addi',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-andi', # 12
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-ori',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-slli',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-srai',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-srli',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-xori',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-slti',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sltiu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sltu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-addi',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-beq', # 22
-    RISCV_TESTS_PATH / 'rv32ui-p-bge',
-    RISCV_TESTS_PATH / 'rv32ui-p-bgeu',
-    RISCV_TESTS_PATH / 'rv32ui-p-blt',
-    RISCV_TESTS_PATH / 'rv32ui-p-bltu',
-    RISCV_TESTS_PATH / 'rv32ui-p-bne',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-beq', # 22
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-bge',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-bgeu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-blt',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-bltu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-bne',
 
-    RISCV_TESTS_PATH / 'rv32ui-p-jal', # 28
-    RISCV_TESTS_PATH / 'rv32ui-p-jalr',
-    RISCV_TESTS_PATH / 'rv32ui-p-auipc', # needs JAL
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-jal', # 28
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-jalr',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-auipc', # needs JAL
 
-    RISCV_TESTS_PATH / 'rv32ui-p-lw', # 31
-    RISCV_TESTS_PATH / 'rv32ui-p-lh',
-    RISCV_TESTS_PATH / 'rv32ui-p-lhu',
-    RISCV_TESTS_PATH / 'rv32ui-p-lb',
-    RISCV_TESTS_PATH / 'rv32ui-p-lbu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lw', # 31
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lh',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lhu',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lb',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-lbu',
     
-    RISCV_TESTS_PATH / 'rv32ui-p-sw', # 36
-    RISCV_TESTS_PATH / 'rv32ui-p-sh',
-    RISCV_TESTS_PATH / 'rv32ui-p-sb',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sw', # 36
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sh',
+    cu.RISCV_TESTS_PATH / 'rv32ui-p-sb',
+
+    cu.RISCV_TESTS_PATH / 'rv32um-p-mul', # 39
+    cu.RISCV_TESTS_PATH / 'rv32um-p-mulh',
+    cu.RISCV_TESTS_PATH / 'rv32um-p-mulhsu',
+    cu.RISCV_TESTS_PATH / 'rv32um-p-mulhu',
+    cu.RISCV_TESTS_PATH / 'rv32um-p-div', # 43
+    cu.RISCV_TESTS_PATH / 'rv32um-p-divu',
+    cu.RISCV_TESTS_PATH / 'rv32um-p-rem',
+    cu.RISCV_TESTS_PATH / 'rv32um-p-remu',
+
+    # unsupported tests
 
     # self-modifying code and fence.i insn
-    RISCV_TESTS_PATH / 'rv32ui-p-fence_i', # 39
-
-    RISCV_TESTS_PATH / 'rv32um-p-mul', # 40
-    RISCV_TESTS_PATH / 'rv32um-p-mulh',
-    RISCV_TESTS_PATH / 'rv32um-p-mulhsu',
-    RISCV_TESTS_PATH / 'rv32um-p-mulhu',
-    RISCV_TESTS_PATH / 'rv32um-p-div', # 44
-    RISCV_TESTS_PATH / 'rv32um-p-divu',
-    RISCV_TESTS_PATH / 'rv32um-p-rem',
-    RISCV_TESTS_PATH / 'rv32um-p-remu',
+    #cu.RISCV_TESTS_PATH / 'rv32ui-p-fence_i', # 39
 
     # misaligned accesses, we don't support these
-    #RISCV_TESTS_PATH / 'rv32ui-p-ma_data',
+    #cu.RISCV_TESTS_PATH / 'rv32ui-p-ma_data',
 ]
 
 rvTestFactory = TestFactory(test_function=riscvTest)
@@ -598,9 +569,9 @@ rvTestFactory.generate_tests()
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def dhrystone(dut, tracingMode=TRACING_MODE):
     "Run dhrystone benchmark from riscv-tests"
-    dsBinary = RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
+    dsBinary = cu.RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
     assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
-    loadBinaryIntoMemory(dut, dsBinary)
+    riscv_binary_utils.loadBinaryIntoMemory(dut, dsBinary)
     await preTestSetup(dut)
 
     trace = []
@@ -622,7 +593,7 @@ async def dhrystone(dut, tracingMode=TRACING_MODE):
         if dut.halt.value == 1:
             # there are 22 output checks, each sets 1 bit
             expectedValue = (1<<22) - 1
-            assert expectedValue == dut.datapath.rf.regs[5].value.integer
+            assertEquals(expectedValue, dut.datapath.rf.regs[5].value.integer)
             latency_millis = (cycles / 15_000_000) * 1000
             dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 15MHz clock')
             

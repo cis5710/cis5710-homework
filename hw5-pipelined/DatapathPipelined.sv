@@ -9,11 +9,16 @@
 // RV opcodes are 7 bits
 `define OPCODE_SIZE 6:0
 
-`ifndef RISCV_FORMAL
-`include "../hw2b/cla.sv"
-`include "../hw3-singlecycle/RvDisassembler.sv"
-`include "../hw4-multicycle/divider_unsigned_pipelined.sv"
+`ifndef DIVIDER_STAGES
+`define DIVIDER_STAGES 8
 `endif
+
+`ifndef SYNTHESIS
+`include "../hw3-singlecycle/RvDisassembler.sv"
+`endif
+`include "../hw2b-cla/cla.sv"
+`include "../hw4-multicycle/DividerUnsignedPipelined.sv"
+`include "cycle_status.sv"
 
 module Disasm #(
     byte PREFIX = "D"
@@ -21,7 +26,7 @@ module Disasm #(
     input wire [31:0] insn,
     output wire [(8*32)-1:0] disasm
 );
-  // synthesis translate_off
+`ifndef SYNTHESIS
   // this code is only for simulation, not synthesis
   string disasm_string;
   always_comb begin
@@ -36,7 +41,7 @@ module Disasm #(
   assign disasm[255-:8] = PREFIX;
   assign disasm[247-:8] = ":";
   assign disasm[239-:8] = " ";
-  // synthesis translate_on
+`endif
 endmodule
 
 module RegFile (
@@ -59,44 +64,6 @@ module RegFile (
 
 endmodule
 
-/**
- * This enum is used to classify each cycle as it comes through the Writeback stage, identifying
- * if a valid insn is present or, if it is a stall cycle instead, the reason for the stall. The
- * enum values are mutually exclusive: only one should be set for any given cycle. These values
- * are compared against the trace-*.json files to ensure that the datapath is running with the
- * correct timing.
- *
- * You will need to set these values at various places within your pipeline, and propagate them
- * through the stages until they reach Writeback where they can be checked.
- */
-typedef enum {
-  /** invalid value, this should never appear after the initial reset sequence completes */
-  CYCLE_INVALID = 0,
-  /** a stall cycle that arose from the initial reset signal */
-  CYCLE_RESET = 1,
-  /** not a stall cycle, a valid insn is in Writeback */
-  CYCLE_NO_STALL = 2,
-  /** a stall cycle that arose from a taken branch/jump */
-  CYCLE_TAKEN_BRANCH = 4,
-
-  // the values below are only needed in HW5B
-
-  /** a stall cycle that arose from a load-to-use stall */
-  CYCLE_LOAD2USE = 8,
-  /** a stall cycle that arose from a div/rem-to-use stall */
-  CYCLE_DIV2USE = 16,
-  /** a stall cycle that arose from a fence.i insn */
-  CYCLE_FENCEI = 32
-} cycle_status_e;
-
-/** state at the start of Decode stage */
-typedef struct packed {
-  logic [`REG_SIZE] pc;
-  logic [`INSN_SIZE] insn;
-  cycle_status_e cycle_status;
-} stage_decode_t;
-
-
 module DatapathPipelined (
     input wire clk,
     input wire rst,
@@ -114,7 +81,7 @@ module DatapathPipelined (
     output logic [`REG_SIZE] trace_writeback_pc,
     // The bits of the insn currently in Writeback. 0 if not a valid insn.
     output logic [`INSN_SIZE] trace_writeback_insn,
-    // The status of the insn (or stall) currently in Writeback. See cycle_status_e enum for valid values.
+    // The status of the insn (or stall) currently in Writeback. See the cycle_status.sv file for valid values.
     output cycle_status_e trace_writeback_cycle_status
 );
 
@@ -243,11 +210,13 @@ module MemorySingleCycle #(
 );
 
   // memory is arranged as an array of 4B words
-  logic [`REG_SIZE] mem[NUM_WORDS];
+  logic [`REG_SIZE] mem_array[NUM_WORDS];
 
+`ifdef SYNTHESIS
   initial begin
-    $readmemh("mem_initial_contents.hex", mem, 0);
+    $readmemh("mem_initial_contents.hex", mem_array);
   end
+`endif
 
   always_comb begin
     // memory addresses should always be 4B-aligned
@@ -261,7 +230,7 @@ module MemorySingleCycle #(
   always @(negedge clk) begin
     if (rst) begin
     end else begin
-      insn_from_imem <= mem[{pc_to_imem[AddrMsb:AddrLsb]}];
+      insn_from_imem <= mem_array[{pc_to_imem[AddrMsb:AddrLsb]}];
     end
   end
 
@@ -269,25 +238,25 @@ module MemorySingleCycle #(
     if (rst) begin
     end else begin
       if (store_we_to_dmem[0]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][7:0] <= store_data_to_dmem[7:0];
       end
       if (store_we_to_dmem[1]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][15:8] <= store_data_to_dmem[15:8];
       end
       if (store_we_to_dmem[2]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][23:16] <= store_data_to_dmem[23:16];
       end
       if (store_we_to_dmem[3]) begin
-        mem[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
+        mem_array[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
       end
       // dmem is "read-first": read returns value before the write
-      load_data_from_dmem <= mem[{addr_to_dmem[AddrMsb:AddrLsb]}];
+      load_data_from_dmem <= mem_array[{addr_to_dmem[AddrMsb:AddrLsb]}];
     end
   end
 endmodule
 
 /* This design has just one clock for both processor and memory. */
-module RiscvProcessor (
+module Processor (
     input  wire  clk,
     input  wire  rst,
     output logic halt,
@@ -300,9 +269,13 @@ module RiscvProcessor (
   wire [`REG_SIZE] pc_to_imem, mem_data_addr, mem_data_loaded_value, mem_data_to_write;
   wire [3:0] mem_data_we;
 
+  // This wire is set by cocotb to the name of the currently-running test, to make it easier
+  // to see what is going on in the waveforms.
+  wire [(8*32)-1:0] test_case;
+
   MemorySingleCycle #(
       .NUM_WORDS(8192)
-  ) the_mem (
+  ) memory (
       .rst                (rst),
       .clk                (clk),
       // imem is read-only
