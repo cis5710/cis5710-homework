@@ -1,8 +1,6 @@
 import cocotb
 import json
 import os
-import shutil
-import subprocess
 
 from pathlib import Path
 from cocotb.clock import Clock
