@@ -64,6 +64,13 @@ module RegFile (
 
 endmodule
 
+/** state at the start of Decode stage */
+typedef struct packed {
+  logic [`REG_SIZE] pc;
+  logic [`INSN_SIZE] insn;
+  cycle_status_e cycle_status;
+} stage_decode_t;
+
 module DatapathPipelined (
     input wire clk,
     input wire rst,
