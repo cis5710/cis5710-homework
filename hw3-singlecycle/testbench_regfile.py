@@ -1,7 +1,6 @@
 import cocotb, sys, random
 
 from pathlib import Path
-from cocotb.runner import get_runner
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 
