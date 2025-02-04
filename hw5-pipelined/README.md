@@ -55,7 +55,7 @@ We have packaged up the RV disassembler into the `Disasm` module which is easier
 
 Instead of copying over all of your HW4 code at once and adding pipeline stages to it, we recommend you pull in just the parts needed to get each test case working. This will keep your design as small as possible as long as possible, making it easier to understand and debug.
 
-The testcases we have provided are relatively limited. Adding your own tests will help you uncover bugs before they crop up in a larger riscv-test or dhrystone which are harder to understand.
+The testcases we have provided are relatively limited. Adding your own tests will help you uncover bugs before they crop up in a larger riscv-test or dhrystone which are harder to understand. Alternatively, if you do discover a bug via a larger test, consider trying to reproduce the bug via a smaller test. This can make it easier to check your fix and to ensure that it stays fixed as you work on other parts of the design.
 
 ## Check timing closure
 
@@ -64,4 +64,4 @@ For this homework, you will again run `make resource-check` to see how pipelinin
 ## Submitting
 
 Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource
-leaderboard for this assignment, but it is strictly informational - no points are awarded to based on the leaderboard.
+leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
