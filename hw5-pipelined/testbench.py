@@ -410,6 +410,23 @@ async def test2Div(dut):
     assertEquals(1, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def testDivNonDiv(dut):
+    "Run div insn followed by independent, non-div insn"
+    riscv_binary_utils.asm(dut, '''
+        lui x1,0x12345
+        div x2,x1,x1
+        addi x3,x0,7''')
+    await preTestSetup(dut)
+
+    await ClockCycles(dut.clk, 6 + DIVIDER_STAGES)
+    # div has written back, addi is in W but hasn't written back yet
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(0, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await ClockCycles(dut.clk, 1)
+    # now addi has written back
+    assertEquals(7, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivUse(dut):
     "Run div + dependent insn"
     riscv_binary_utils.asm(dut, '''
@@ -443,24 +460,6 @@ async def testTraceRvLw(dut):
     "Use the LW riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lw', TRACING_MODE)
 
-def handleTrace(dut, trace, traceIdx, tracingMode):
-    if tracingMode == 'generate':
-        traceElem = {}
-        traceElem['cycle'] = dut.datapath.cycles_current.value.integer
-        traceElem['trace_writeback_pc'] = f'0x{dut.datapath.trace_writeback_pc.value.integer:x}'
-        traceElem['trace_writeback_insn'] = f'0x{dut.datapath.trace_writeback_insn.value.integer:08x}'
-        traceElem['trace_writeback_cycle_status'] = dut.datapath.trace_writeback_cycle_status.value.integer
-        trace.append(traceElem)
-        pass
-    elif tracingMode == 'compare':
-        traceElem = trace[traceIdx]
-        msg = f'trace validation error at cycle {traceElem["cycle"]}'
-        assert int(traceElem['trace_writeback_pc'],16) == dut.datapath.trace_writeback_pc.value.integer, msg
-        assert int(traceElem['trace_writeback_insn'],16) == dut.datapath.trace_writeback_insn.value.integer, msg
-        assert traceElem['trace_writeback_cycle_status'] == dut.datapath.trace_writeback_cycle_status.value.integer, msg
-        pass
-    return
-
 # tracingMode argument is one of `generate`, `compare` or None
 async def riscvTest(dut, binaryPath=None, tracingMode=None):
     "Run the official RISC-V test whose binary lives at `binaryPath`"
@@ -481,7 +480,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
     for cycles in range(TIMEOUT_CYCLES):
         await RisingEdge(dut.clk)
 
-        handleTrace(dut, trace, cycles, tracingMode)
+        cu.handleTrace(dut, trace, cycles, tracingMode)
         if dut.halt.value == 1:
             # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
             assertEquals(93, dut.datapath.rf.regs[17].value.integer) # magic value from pass/fail functions
@@ -582,11 +581,11 @@ async def dhrystone(dut, tracingMode=TRACING_MODE):
             pass
         pass
 
-    dut._log.info(f'Running Dhrystone benchmark (takes 255k cycles)... with tracingMode == {tracingMode}')
+    dut._log.info(f'Running Dhrystone benchmark (takes 260k cycles)... with tracingMode == {tracingMode}')
     for cycles in range(280_000):
         await RisingEdge(dut.clk)
 
-        handleTrace(dut, trace, cycles, tracingMode)
+        cu.handleTrace(dut, trace, cycles, tracingMode)
         if cycles > 0 and 0 == cycles % 10_000:
             dut._log.info(f'ran {int(cycles/1000)}k cycles...')
             pass
