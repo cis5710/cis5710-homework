@@ -6,7 +6,8 @@
  * correct timing.
  *
  * You will need to set these values at various places within your pipeline, and propagate them
- * through the stages until they reach Writeback where they can be checked.
+ * through the stages until they reach Writeback where they can be checked. Note that MULTIPLE
+ * stall conditions may be present in a single cycle.
  */
 typedef enum {
   /** invalid value, this should never appear after the initial reset sequence completes */
@@ -26,8 +27,8 @@ typedef enum {
   CYCLE_LOAD2USE = 16,
   /** a stall cycle that arose from a div/rem-to-use stall */
   CYCLE_DIV2USE = 32,
-  /** a stall cycle that arose from a fence insn */
-  CYCLE_FENCE = 64,
+  /** NOT CURRENTLY USED: a stall cycle that arose from a fence.i insn */
+  CYCLE_FENCEI = 64,
 
   // the values below are only needed in HW6B
 
