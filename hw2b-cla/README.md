@@ -70,15 +70,15 @@ We use `fujprog` to program our lattice FPGA, the official github page of `fujpr
 
 First, go to the official repo and click the release section, select the `fujprog-v48-win64.exe` and download it.
 Then rename it to `fujprog.exe` and move it under your homework directory path.
-You can use `.\fujprog -h` command to see if `fujprog` is properly working.
+You can use `./fujprog -h` command to see if `fujprog` is properly working.
 
 Secondly, connect FPGA to your pc through `usb1` on board. 
-Run `.\fujprog -i` to see if your pc can detect any port. 
+Run `./fujprog -i` to see if your pc can detect any port. 
 If not, it means that you probably need to install some driver dependencies.
 Go [here](https://ftdichip.com/drivers/d2xx-drivers/) and download FTDI drivers. The setup executable noted in the comments column may be the easiest way to install the drivers.
 After you download and install the drivers, reboot your machine and windows will automatically use these drivers when a new ULXS3 (our board type) is plugged in.
 You can also open your device manager and check COM port to see if the FPGA is connected and is using the right driver.
 
-Lastly, run `.\fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
+Lastly, run `./fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
 
 The demo code is in the `system/System.sv` module, and it uses your adder to add 26 to a 5-digit binary number represented by four of the board's buttons (B1, B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs.
