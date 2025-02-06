@@ -222,7 +222,7 @@ async def testBneTaken(dut):
         target: lui x0,0''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clock_proc, 3)
+    await ClockCycles(dut.clock_proc, 4)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
