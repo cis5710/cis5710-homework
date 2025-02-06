@@ -81,4 +81,14 @@ You can also open your device manager and check COM port to see if the FPGA is c
 
 Lastly, run `./fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
 
+### Mac
+
+On macOS, we use `openFPGALoader` to program the FPGA.
+
+First, open a terminal and run: `brew install openfpgaloader`. 
+
+Then, ensure your ULX3S FPGA is recognized by your Mac: - Open **System Information** → **USB**, and check for a device named **ULX3S FPGA**. - Alternatively, run: `ls /dev/cu.*`. Look for a device with the pattern `/dev/cu.usbserial-*`.
+
+Lastly, run `openFPGALoader --freq 3000000 --board ulx3s path/to/your/bitstream`  to program your FPGA. If everything is set up correctly, you should see relevant prompts confirming the programming process. 
+
 The demo code is in the `system/System.sv` module, and it uses your adder to add 26 to a 5-digit binary number represented by four of the board's buttons (B1, B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs.
