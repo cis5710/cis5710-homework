@@ -167,7 +167,7 @@ async def testDivu(dut):
         divu x2,x1,x1''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clock_proc, 2 + testbench_divider_pipelined.DIVIDER_STAGES)
+    await ClockCycles(dut.clock_proc, 2 + 1 + testbench_divider_pipelined.DIVIDER_STAGES)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test()
@@ -181,7 +181,7 @@ async def test2Divu(dut):
         divu x3,x8,x2''')
     await preTestSetup(dut)
 
-    await ClockCycles(dut.clock_proc, 4 + testbench_divider_pipelined.DIVIDER_STAGES)
+    await ClockCycles(dut.clock_proc, 4 + 1 + testbench_divider_pipelined.DIVIDER_STAGES)
     assertEquals(8, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     await ClockCycles(dut.clock_proc, 1 + testbench_divider_pipelined.DIVIDER_STAGES)
     assertEquals(4, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -198,7 +198,7 @@ async def testDivuEtAl(dut):
 
     # Since divu takes k cycles, li,li,divu takes 2+k cycles to complete
     # and result is available in cycle 3+k.
-    await ClockCycles(dut.clock_proc, 3 + testbench_divider_pipelined.DIVIDER_STAGES)
+    await ClockCycles(dut.clock_proc, 3 + 1 + testbench_divider_pipelined.DIVIDER_STAGES)
     assertEquals(8, dut.datapath.rf.regs[8].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     await ClockCycles(dut.clock_proc, 2) # wait 2 more cycle for addi's result to be written back
     assertEquals(9, dut.datapath.rf.regs[9].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
