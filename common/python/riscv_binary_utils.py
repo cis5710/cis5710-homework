@@ -3,6 +3,8 @@ import subprocess
 import re
 import shutil
 import sys
+import logging
+import cocotb, cocotbext
 
 # readelf program
 READELF = 'riscv64-unknown-elf-readelf'
@@ -19,6 +21,9 @@ BIN_2_MEMORY_ADDRESS_OFFSET = 0x80000000
 assert shutil.which(ASSEMBLER) is not None, f"Couldn't find assembler program {ASSEMBLER}"
 assert shutil.which(READELF) is not None, f"Couldn't find readelf program {READELF}"
 
+LOG = logging.getLogger('riscv_binary_utils')
+LOG.setLevel(logging.INFO)
+
 def asm(dut, assemblyCode):
     """Assembles the given RISC-V code, and loads it into memory via cocotb"""
 
@@ -31,7 +36,7 @@ def asm(dut, assemblyCode):
     command = [ASSEMBLER, "-march=rv32im", "-o", TEMP_MACHINE_CODE_FILE]
     process = subprocess.run(command, input=assemblyCode, capture_output=True, text=True, check=False)
     if process.returncode != 0:
-        dut._log.error(f"Error: {process.stderr}")
+        LOG.error(f"Error: {process.stderr}")
         process.check_returncode() # throws
         pass
 
@@ -53,11 +58,18 @@ def loadBinaryIntoMemory(dut, binaryPath):
         if memBaseAddr >= BIN_2_MEMORY_ADDRESS_OFFSET:
             memBaseAddr -= BIN_2_MEMORY_ADDRESS_OFFSET
             pass
-        memBaseAddr >>= 2 # convert to word address
-        print(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
+        if isinstance(dut, cocotb.handle.HierarchyObject):
+            memBaseAddr >>= 2 # convert to word address
+            pass
+        LOG.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
         for i in range(len(words)):
-            # NB: doesn't work if we try to pass dut.memory.mem_array as an argument, need top-level dut
-            dut.memory.mem_array[memBaseAddr + i].value = words[i]
+            if isinstance(dut, cocotb.handle.HierarchyObject):
+                # NB: doesn't work if we try to pass dut.memory.mem_array as an argument, need top-level dut
+                dut.memory.mem_array[memBaseAddr + i].value = words[i]
+            elif isinstance(dut, cocotbext.axi.axil_ram.AxiLiteRam):
+                dut.write_dword(memBaseAddr + (i*4), words[i])
+            else:
+                assert False, f"cannot load into memory of type {type(dut)}"
             pass
         pass
     pass
