@@ -24,6 +24,7 @@ def traverseSyntaxTree(filename, obj, newlineIndices, objectIsLegal, parent_key=
                    "kParamDeclaration",
                    "kDimensionRange",
                    "kDimensionScalar",
+                   "kDimensionSlice",
                    "kTimescaleDirective"]:
             return
         
