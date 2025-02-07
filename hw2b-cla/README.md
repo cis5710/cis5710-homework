@@ -52,7 +52,10 @@ Submit your `cla.sv` file on Gradescope.
 
 ## FPGA Demo
 
-Now that your code works in simulation, you can run the FPGA board demo to see it run in real life! 
+Now that your code works in simulation, you can run the FPGA board demo to see it run in real life!
+
+The demo code is in the `system/System.sv` module, and it uses your adder to add 26 to a 5-digit binary number represented by four of the board's buttons (B1, B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs.
+
 
 ### Generating a bitstream
 
@@ -62,7 +65,7 @@ When this completes, you will have your bitstream file in `fpga_build/SystemDemo
 
 ### Programming the FPGA
 
-Since we are programming the FPGA outside of the container, this step is dependent on the host pc platform you use.
+Since we are programming the FPGA outside of the container, this step is dependent on the host computer platform you use.
 
 ### Windows
 
@@ -72,12 +75,13 @@ First, go to the official repo and click the release section, select the `fujpro
 Then rename it to `fujprog.exe` and move it under your homework directory path.
 You can use `./fujprog -h` command to see if `fujprog` is properly working.
 
-Secondly, connect FPGA to your pc through `usb1` on board. 
+Secondly, connect the FPGA to your PC through the `us1` micro-USB connector on the board. See the picture below.
+
 Run `./fujprog -i` to see if your pc can detect any port. 
-If not, it means that you probably need to install some driver dependencies.
+If not, it means that you probably need to install some drivers.
 Go [here](https://ftdichip.com/drivers/d2xx-drivers/) and download FTDI drivers. The setup executable noted in the comments column may be the easiest way to install the drivers.
-After you download and install the drivers, reboot your machine and windows will automatically use these drivers when a new ULXS3 (our board type) is plugged in.
-You can also open your device manager and check COM port to see if the FPGA is connected and is using the right driver.
+After you download and install the drivers, reboot your machine and Windows will automatically use these drivers when your ULXS3 board is plugged in.
+You can also open your device manager and check the COM port to see if the FPGA is connected and is using the right driver.
 
 Lastly, run `./fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
 
@@ -87,8 +91,15 @@ On macOS, we use `openFPGALoader` to program the FPGA.
 
 First, open a terminal and run: `brew install openfpgaloader`. 
 
-Then, ensure your ULX3S FPGA is recognized by your Mac: - Open **System Information** → **USB**, and check for a device named **ULX3S FPGA**. - Alternatively, run: `ls /dev/cu.*`. Look for a device with the pattern `/dev/cu.usbserial-*`.
+Then, connect the FPGA to your Mac through the `us1` micro-USB connector on the board. See the picture below.
 
-Lastly, run `openFPGALoader --freq 3000000 --board ulx3s path/to/your/bitstream`  to program your FPGA. If everything is set up correctly, you should see relevant prompts confirming the programming process. 
+Ensure your ULX3S FPGA is recognized by your Mac: - Open **System Information** → **USB**, and check for a device named **ULX3S FPGA**. - Alternatively, run: `ls /dev/cu.*`. Look for a device with the pattern `/dev/cu.usbserial-*`.
 
-The demo code is in the `system/System.sv` module, and it uses your adder to add 26 to a 5-digit binary number represented by four of the board's buttons (B1, B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs.
+Lastly, run `make program` from the homework folder to program your FPGA. If everything is set up correctly, you should see a progress bar as the FPGA is programmed.
+
+
+### Connecting to the FPGA
+
+Use a USB cable to connect `us1` on the board to your computer. Don't use `us2`, as the FPGA can only be programmed via `us1`.
+
+![](../images/ulx3s.png)
