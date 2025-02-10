@@ -6,6 +6,8 @@ This homework has two main components. First, you will pipeline your divider fro
 
 Your `divu_1iter` code can be recycled verbatim from HW2A. Then you should start from your `divider_unsigned` code and convert it to have 8 pipeline stages. Each stage should complete 4 "iterations" of the division algorithm, and your divider should support starting a new division operation on each cycle.
 
+The `stall` input can be ignored for now. Later in HW6, you will need to utilize this input.
+
 We have provided an initial set of divider tests for you in `pytest --exitfirst --capture=no -k runCocotbTestsDivider testbench.py`. 
 
 ## Datapath Integration

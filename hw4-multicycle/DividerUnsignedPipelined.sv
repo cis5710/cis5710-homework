@@ -5,7 +5,7 @@
 // quotient = dividend / divisor
 
 module DividerUnsignedPipelined (
-    input wire clk, rst,
+    input wire clk, rst, stall,
     input  wire  [31:0] i_dividend,
     input  wire  [31:0] i_divisor,
     output logic [31:0] o_remainder,
