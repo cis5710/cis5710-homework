@@ -10,7 +10,7 @@ ZIP_FILE=multi.zip
 include ../common/make/fpga.mk
 
 ifndef CLOCK_FREQUENCY
-CLOCK_FREQUENCY=20
+CLOCK_FREQUENCY=15
 endif
 
 CLOCK_GEN_NAME=MyClockGen
