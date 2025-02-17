@@ -73,17 +73,17 @@ We use `fujprog` to program our lattice FPGA, the official github page of `fujpr
 
 First, go to the official repo and click the release section, select the `fujprog-v48-win64.exe` and download it.
 Then rename it to `fujprog.exe` and move it under your homework directory path.
-You can use `./fujprog -h` command to see if `fujprog` is properly working.
+You can use `fujprog.exe -h` command to see if `fujprog` is properly working.
 
 Secondly, connect the FPGA to your PC through the `us1` micro-USB connector on the board. See the picture below.
 
-Run `./fujprog -i` to see if your pc can detect any port. 
+Run `fujprog.exe -i` to see if your pc can detect any port. 
 If not, it means that you probably need to install some drivers.
 Go [here](https://ftdichip.com/drivers/d2xx-drivers/) and download FTDI drivers. The setup executable noted in the comments column may be the easiest way to install the drivers.
 After you download and install the drivers, reboot your machine and Windows will automatically use these drivers when your ULXS3 board is plugged in.
 You can also open your device manager and check the COM port to see if the FPGA is connected and is using the right driver.
 
-Lastly, run `./fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
+Lastly, run `fujprog.exe path\to\your\bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
 
 ### Mac
 
