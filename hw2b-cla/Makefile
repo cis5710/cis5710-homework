@@ -6,3 +6,7 @@ TOP_MODULE_DEMO=SystemDemo
 CONSTRAINTS=../common/constraints/ulx3s.lpf
 
 include ../common/make/fpga.mk
+
+
+formal:
+	sby -f check-cla.sby

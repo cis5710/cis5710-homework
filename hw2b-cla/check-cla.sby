@@ -1,0 +1,14 @@
+[options]
+mode prove
+depth 3
+skip 2
+
+[engines]
+smtbmc boolector
+
+[script]
+read -formal cla.sv
+prep -top cla
+
+[files]
+cla.sv
