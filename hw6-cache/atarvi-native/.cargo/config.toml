@@ -10,5 +10,9 @@ target = "riscv32im-unknown-none-elf"
 # specify a linker script
 linker = "rust-lld"
 rustflags = [
-    "-C", "link-arg=-Tsmallmemory.x"
+    #"-C", "link-arg=-Tsmallestmemory.x",
+    #"-C", "link-arg=-Tsmallmemory.x",
+    "-C", "link-arg=-Tmemory.x",
+    "-C", "no-redzone",
+    "-C", "llvm-args=-unroll-threshold=0",
 ]
