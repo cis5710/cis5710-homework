@@ -214,9 +214,10 @@ pub fn main() -> ! {
 
     unsafe { write_volatile(MMAP_LEDS, 4); }
 
-    let mut gamepad = UsbGamepadInput::from(0);
     let mut gamepad_prior = UsbGamepadInput::from(0);
     loop {
+        let mut gamepad = UsbGamepadInput::from(0);
+
         // check for gamepad button presses
         let gamepad_now = UsbGamepadInput::from(unsafe {read_volatile(MMAP_USB)});
         if !gamepad_prior.up() && gamepad_now.up() {
@@ -272,19 +273,15 @@ pub fn main() -> ! {
 
         // move cursor
         if gamepad.left() && selected_x > 0 {
-            gamepad.set_left(false); // clear button press event
             selected_x -= 1;
         }
         if gamepad.right() && selected_x < GRID_WIDTH-1 {
-            gamepad.set_right(false); // clear button press event
             selected_x += 1;
         }
         if gamepad.up() && selected_y > 0 {
-            gamepad.set_up(false); // clear button press event
             selected_y -= 1;
         }
         if gamepad.down() && selected_y < GRID_HEIGHT-1 {
-            gamepad.set_down(false); // clear button press event
             selected_y += 1;
         }
 
