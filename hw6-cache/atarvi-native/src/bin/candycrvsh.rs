@@ -409,8 +409,7 @@ pub fn main() -> ! {
 
             }
             wait_for_millis(250);
-            let erase_move_score: &[u8] = &[0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01];
-            render_text(unsafe { core::str::from_utf8_unchecked(erase_move_score) }, WHITE, &mut screen, MOVE_SCORE0_LOCATION);
+            erase_text(4, WHITE, &mut screen, MOVE_SCORE0_LOCATION);
 
             // update grid
             for y in 0..GRID_HEIGHT {
@@ -442,8 +441,7 @@ pub fn main() -> ! {
                     (X_MARGIN, Y_MARGIN));
 
         // render the score
-        let erase_score: &[u8] = &[0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01];
-        render_text(unsafe { core::str::from_utf8_unchecked(erase_score) }, WHITE, &mut screen, SCORE_VALUE_LOCATION);
+        erase_text(8, WHITE, &mut screen, SCORE_VALUE_LOCATION);
         let mut buffer = itoa::Buffer::new();
         let score_str = buffer.format(score);
         render_text(score_str, BLACK, &mut screen, SCORE_VALUE_LOCATION);
@@ -553,9 +551,18 @@ fn render_text(s: &str, color: u8, screen: &mut FrameBuffer, render_start: (usiz
             for bx in (0..8).rev() {
                 let bit = (bitmap_row >> bx) & 1;
                 if 1 == bit {
-                    screen[render_start.1 + by][render_start.0 + (ci * 8) + bx] = color;
+                    write_byte(color, &mut screen[render_start.1 + by][render_start.0 + (ci * 8) + bx]);
                 }
             }
+        }
+    }
+}
+
+/// Erase one line of text by writing `num_chars` 8x8 blocks of `color` pixels, starting at `render_start`
+fn erase_text(num_chars: usize, color: u8, screen: &mut FrameBuffer, render_start: (usize,usize)) {
+    for y in render_start.1..(render_start.1+8) {
+        for x in render_start.0..(num_chars*8) {
+            write_byte(color, &mut screen[y][x]);
         }
     }
 }
