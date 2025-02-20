@@ -6,6 +6,7 @@ use core::cmp::{max, min};
 use core::panic::PanicInfo;
 use core::ptr::{read_volatile, write_volatile};
 use core::hint;
+use ascii::AsciiStr;
 
 use bitfield_struct::bitfield;
 
@@ -162,9 +163,17 @@ const GRID_WIDTH: usize = 6;
 const GRID_HEIGHT: usize = 7;
 const X_MARGIN: usize = 0;
 const Y_MARGIN: usize = (SCREEN_HEIGHT - (TILE_SIZE * GRID_HEIGHT)) / 2;
+const TITLE0_LOCATION: (usize,usize) = (210,Y_MARGIN + 32);
+const TITLE1_LOCATION: (usize,usize) = (TITLE0_LOCATION.0,Y_MARGIN + 32 + 8);
+const SCORE_LABEL_LOCATION: (usize,usize) = (TITLE0_LOCATION.0,TITLE1_LOCATION.1 + (3*8));
+const SCORE_VALUE_LOCATION: (usize,usize) = (TITLE0_LOCATION.0,SCORE_LABEL_LOCATION.1 + 8);
+const MOVE_SCORE0_LOCATION: (usize,usize) = (TITLE0_LOCATION.0,SCORE_VALUE_LOCATION.1 + 8);
+const MOVE_SCORE1_LOCATION: (usize,usize) = (TITLE0_LOCATION.0 + 8,SCORE_VALUE_LOCATION.1 + 8);
+
 const BLACK: u8 = 0x00;
 const WHITE: u8 = 0xFF;
-const INIT_COLOR: u8 = 0b101_110_11; // light blue
+const BACKGROUND_COLOR: u8 = WHITE;
+const CURSOR_COLOR: u8 = BLACK;
 
 type FrameBuffer = [[u8; SCREEN_WIDTH]; SCREEN_HEIGHT];
 type TileGrid = [[Tile; GRID_WIDTH]; GRID_HEIGHT];
@@ -177,16 +186,17 @@ pub fn main() -> ! {
     // frame buffer
     let mut screen: &mut FrameBuffer = unsafe { &mut *(MMAP_HDMI as *mut FrameBuffer) };
 
-    unsafe { write_volatile(MMAP_LEDS, 1); }
-
     // clear screen
     for y in 0..SCREEN_HEIGHT {
         for x in 0..SCREEN_WIDTH {
-            write_byte(INIT_COLOR, &mut screen[y as usize][x as usize]);
+            write_byte(BACKGROUND_COLOR, &mut screen[y as usize][x as usize]);
         }
     }
 
-    unsafe { write_volatile(MMAP_LEDS, 2); }
+    // render title
+    render_text(" Welcome to", BLACK, &mut screen, TITLE0_LOCATION);
+    render_text("Candy Crvsh!", BLACK, &mut screen, TITLE1_LOCATION);
+    render_text("score:", BLACK, &mut screen, SCORE_LABEL_LOCATION);
 
     // game data structures
     let mut grid: TileGrid = [[Tile::Yellow; GRID_WIDTH]; GRID_HEIGHT];
@@ -194,8 +204,6 @@ pub fn main() -> ! {
     let mut selected_x: usize = 3;
     let mut selected_y: usize = 3;
     let mut score: usize = 0;
-
-    unsafe { write_volatile(MMAP_LEDS, 3); }
 
     // initialize grid
     for y in 0..GRID_HEIGHT {
@@ -211,8 +219,6 @@ pub fn main() -> ! {
             grid[y][x] = Tile::random(above, left);
         }
     }
-
-    unsafe { write_volatile(MMAP_LEDS, 4); }
 
     let mut gamepad_prior = UsbGamepadInput::from(0);
     loop {
@@ -338,7 +344,6 @@ pub fn main() -> ! {
         unsafe { write_volatile(MMAP_LEDS, 6); }
 
         while check_matches(&grid, Some(&mut matches)) {
-        // if check_matches(&grid, Some(&mut matches)) {
             let mut match_xmin: usize = GRID_WIDTH * 2;
             let mut match_xmax: usize = 0;
             let mut match_ymin: usize = GRID_HEIGHT * 2;
@@ -355,30 +360,59 @@ pub fn main() -> ! {
                     }
                 }
             }
-            score += num_tiles_matches * num_tiles_matches * num_tiles_matches;
-            // println!("score: {score} points");
+            let move_score = match num_tiles_matches {
+                3 => 1,
+                4 => 2,
+                5 => 3,
+                _ => 4,
+            };
+            score += move_score;
 
-            // TODO: animation is broken because we can't read from frame buffer...
-            // if match_ymin > 0 {
-            //     render_grid(&grid, &mut screen, selected_x, selected_y);
-            //
-            //     // match was not in the top row, animate a region of falling tiles
-            //     let minx = (match_xmin * TILE_SIZE) + X_MARGIN;
-            //     let maxx = (match_xmax * TILE_SIZE) + X_MARGIN + TILE_SIZE;
-            //     let miny = 0;
-            //     let maxy = match_ymin * TILE_SIZE;
-            //     let shift = ((match_ymax - match_ymin) + 1) * TILE_SIZE;
-            //     for y_shift in 1..=shift {
-            //         for y in (miny..maxy).rev() {
-            //             for x in minx..maxx {
-            //                 screen[Y_MARGIN-1 + y + y_shift][x] = screen[Y_MARGIN-1 + y + y_shift - 1][x];
-            //             }
-            //         }
-            //         wait_for_millis(10);
-            //     }
-            //     wait_for_millis(500);
-            // }
+            // render grid with tiles swapped
+            render_grid(&grid,
+                        Some((selected_x,selected_y)),
+                        (0,0),
+                        (GRID_WIDTH,GRID_HEIGHT),
+                        &mut screen,
+                        (X_MARGIN, Y_MARGIN));
 
+            // render move score
+            let mut buffer = itoa::Buffer::new();
+            let move_score_str = buffer.format(move_score);
+            render_text("+", BLACK, &mut screen, MOVE_SCORE0_LOCATION);
+            render_text(move_score_str, BLACK, &mut screen, MOVE_SCORE1_LOCATION);
+
+            let y_shift = ((match_ymax - match_ymin) + 1) * TILE_SIZE;
+            let fb_xmin = (match_xmin * TILE_SIZE) + X_MARGIN;
+
+            if match_ymin == 0 {
+                // match includes top row, show white pixels overwriting candies
+                let fb_xmax = (match_xmax * TILE_SIZE) + X_MARGIN + TILE_SIZE;
+                for ys in 0..=y_shift {
+                    for x in fb_xmin..fb_xmax {
+                        write_byte(WHITE, &mut screen[Y_MARGIN + ys][x]);
+                    }
+                    wait_for_millis(5);
+                }
+
+            } else {
+                // match was not in the top row, animate a region of falling tiles
+                for ys in 1..=y_shift {
+                    render_grid(&grid,
+                                None,
+                                (match_xmin, 0),
+                                (match_xmax+1, match_ymin),
+                                &mut screen,
+                                (fb_xmin, Y_MARGIN + ys));
+                    wait_for_millis(5);
+                }
+
+            }
+            wait_for_millis(250);
+            let erase_move_score: &[u8] = &[0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01];
+            render_text(unsafe { core::str::from_utf8_unchecked(erase_move_score) }, WHITE, &mut screen, MOVE_SCORE0_LOCATION);
+
+            // update grid
             for y in 0..GRID_HEIGHT {
                 for x in 0..GRID_WIDTH {
                     if matches[y][x] {
@@ -397,14 +431,22 @@ pub fn main() -> ! {
                     matches[y][x] = false;
                 }
             }
-        }
+        } // end check_match() loop
 
-        unsafe { write_volatile(MMAP_LEDS, 7); }
+        // render the grid
+        render_grid(&grid,
+                    Some((selected_x,selected_y)),
+                    (0,0),
+                    (GRID_WIDTH,GRID_HEIGHT),
+                    &mut screen,
+                    (X_MARGIN, Y_MARGIN));
 
-        // Render the grid
-        render_grid(&grid, &mut screen, selected_x, selected_y);
-
-        unsafe { write_volatile(MMAP_LEDS, 8); }
+        // render the score
+        let erase_score: &[u8] = &[0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01];
+        render_text(unsafe { core::str::from_utf8_unchecked(erase_score) }, WHITE, &mut screen, SCORE_VALUE_LOCATION);
+        let mut buffer = itoa::Buffer::new();
+        let score_str = buffer.format(score);
+        render_text(score_str, BLACK, &mut screen, SCORE_VALUE_LOCATION);
 
     } // end main loop
 }
@@ -444,66 +486,74 @@ fn check_matches(grid: &TileGrid,
 }
 
 include!("../../images/candies-8b.rs");
+include!("../../images/font.rs");
 
+/// # Arguments
+/// * `grid_selected` x,y grid coordinates of the selected candy
+/// * `grid_tl` x,y grid coordinates of the top left region of the grid to render
+/// * `grid_br` x,y grid coordinates of the bottom right region of the grid to render
+/// * `render_start` the x,y screen coordinates where we should start drawing
+#[inline(never)]
 fn render_grid(grid: &TileGrid,
+               grid_selected: Option<(usize,usize)>,
+               grid_tl: (usize,usize),
+               grid_br: (usize,usize),
                screen: &mut FrameBuffer,
-               selected_x: usize,
-               selected_y: usize) {
-    let draw_candies = true;
-
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            if draw_candies {
-                let tile_pixels = match grid[y][x] {
-                    Tile::Red => RED,
-                    Tile::Orange => ORANGE,
-                    Tile::Yellow => YELLOW,
-                    Tile::Green => GREEN,
-                    Tile::Blue => BLUE,
-                    Tile::Purple => PURPLE,
-                };
-                for ty in 0..TILE_SIZE {
-                    for tx in 0..TILE_SIZE {
-                        let px = x * TILE_SIZE + tx;
-                        let py = y * TILE_SIZE + ty;
-                        if px < SCREEN_WIDTH && py < SCREEN_HEIGHT {
-                            write_byte(tile_pixels[ty][tx], &mut screen[Y_MARGIN + py as usize][X_MARGIN + px as usize]);
-                        }
-                    }
+               render_start: (usize,usize),
+) {
+    for y in grid_tl.1..grid_br.1 {
+        for x in grid_tl.0..grid_br.0 {
+            let tile_pixels = match grid[y][x] {
+                Tile::Red => RED,
+                Tile::Orange => ORANGE,
+                Tile::Yellow => YELLOW,
+                Tile::Green => GREEN,
+                Tile::Blue => BLUE,
+                Tile::Purple => PURPLE,
+            };
+            for ty in 0..TILE_SIZE {
+                for tx in 0..TILE_SIZE {
+                    let px = ((x - grid_tl.0) * TILE_SIZE) + tx;
+                    let py = ((y - grid_tl.1) * TILE_SIZE) + ty;
+                    assert!(px < SCREEN_WIDTH && py < SCREEN_HEIGHT);
+                    write_byte(tile_pixels[ty][tx], &mut screen[render_start.1 + py][render_start.0 + px]);
                 }
-            } else {
-                let color = match grid[y][x] {
-                    Tile::Red => 0b111_000_00,
-                    Tile::Orange => 0b111_101_00,
-                    Tile::Yellow => 0b111_111_00,
-                    Tile::Green => 0b000_111_00,
-                    Tile::Blue => 0b000_000_11,
-                    Tile::Purple => 0b100_000_10,
-                    _ => BLACK,
-                };
+            }
+            if grid_selected.is_some() && (x,y) == grid_selected.unwrap() {
+                // draw cursor border
                 for ty in 0..TILE_SIZE {
                     for tx in 0..TILE_SIZE {
-                        let px = x * TILE_SIZE + tx;
-                        let py = y * TILE_SIZE + ty;
-                        if X_MARGIN + px < SCREEN_WIDTH && Y_MARGIN + py < SCREEN_HEIGHT {
-                            write_byte(color, &mut screen[Y_MARGIN + py as usize][X_MARGIN + px as usize]);
+                        if ty <= 2 || ty >= TILE_SIZE - 3 || tx <= 2 || tx >= TILE_SIZE - 3 {
+                            let px = ((x - grid_tl.0) * TILE_SIZE) + tx;
+                            let py = ((y - grid_tl.1) * TILE_SIZE) + ty;
+                            assert!(render_start.0 + px < SCREEN_WIDTH && render_start.1 + py < SCREEN_HEIGHT);
+                            // screen[render_start.1 + py][render_start.0 + px] = CURSOR_COLOR;
+                            write_byte(CURSOR_COLOR, &mut screen[render_start.1 + py][render_start.0 + px])
                         }
                     }
                 }
             }
-            if y == selected_y && x == selected_x {
-                // draw selection border
-                for ty in 0..TILE_SIZE {
-                    for tx in 0..TILE_SIZE {
-                        if ty <= 2 || ty >= TILE_SIZE - 3 || tx <= 2 || tx >= TILE_SIZE - 3 {
-                            let px = x * TILE_SIZE + tx;
-                            let py = y * TILE_SIZE + ty;
-                            if X_MARGIN + px < SCREEN_WIDTH && Y_MARGIN + py < SCREEN_HEIGHT {
-                                // screen[Y_MARGIN + py][X_MARGIN + px] = BLACK;
-                                write_byte(BLACK, &mut screen[Y_MARGIN + py as usize][X_MARGIN + px as usize]);
-                            }
-                        }
-                    }
+        }
+    }
+}
+
+/// Render the given string in a single horizontal line.
+/// # Arguments
+/// * `s` must contain only ASCII characters
+/// * `color` color to use for text pixels
+/// * `screen` frame buffer to write to
+/// * `render_start` (x,y) coordinates of the top-left corner at which to start rendering.
+fn render_text(s: &str, color: u8, screen: &mut FrameBuffer, render_start: (usize,usize)) {
+    let astr = AsciiStr::from_ascii(s).unwrap();
+    for ci in 0..astr.len() {
+        let achar = astr.as_bytes()[ci];
+        let bitmap = FONT8X8[achar as usize];
+        for by in 0..8 {
+            let bitmap_row = bitmap[by];
+            for bx in (0..8).rev() {
+                let bit = (bitmap_row >> bx) & 1;
+                if 1 == bit {
+                    screen[render_start.1 + by][render_start.0 + (ci * 8) + bx] = color;
                 }
             }
         }

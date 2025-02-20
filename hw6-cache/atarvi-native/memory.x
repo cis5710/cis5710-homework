@@ -6,8 +6,8 @@ the code (PCs, global variables) match up with what our processor provides.
 MEMORY
 {
     START : ORIGIN = 0x00000000, LENGTH = 64
-    CODE : ORIGIN = 0x00000040, LENGTH = 16K
-    DATA : ORIGIN = 0x00005000, LENGTH = 8K
+    CODE : ORIGIN = 0x00000040, LENGTH = 14K
+    DATA : ORIGIN = 0x00005000, LENGTH = 10K
 }
 
 SECTIONS
