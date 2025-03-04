@@ -34,5 +34,6 @@ clock-gen: Makefile
 
 # compile demo code and extract into mem_initial_contents.hex
 demo-code:
-	cd ledrop && cargo build --release
+#	cd ledrop-rust && cargo build --release # Rust version
+	cd ledrop-c && $(MAKE) ledrop.bin  # C version
 	python3 make-mem-contents.py
