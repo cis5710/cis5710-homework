@@ -20,6 +20,11 @@ ifdef ZIP_SOURCES
 $(call check_defined, ZIP_SOURCES ZIP_FILE, Each homework Makefile where a zip file is submitted should define this)
 endif
 
+TIMING_FAILURE=
+ifdef ALLOW_TIMING_FAILURE
+TIMING_FAILURE=--timing-allow-fail
+endif
+
 # shorthand variables for commonly-referenced things
 BACKEND_OUTPUT_DIR=fpga_build
 
@@ -68,12 +73,12 @@ synth-yosys-fast: $(VERILOG_SYNTH_SOURCE)
 
 # run pnr to generate a bitstream
 pnr: $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json
-	bash -c "set -o pipefail; $(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $< --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --lpf $(CONSTRAINTS) 2>&1 | tee $(BACKEND_OUTPUT_DIR)/pnr.log"
+	bash -c "set -o pipefail; $(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $< --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --lpf $(CONSTRAINTS) $(TIMING_FAILURE) 2>&1 | tee $(BACKEND_OUTPUT_DIR)/pnr.log"
 	python3 -m json.tool $(BACKEND_OUTPUT_DIR)/report.json > $(BACKEND_OUTPUT_DIR)/resource-report.json
 	bash -c "set -o pipefail; ecppack --compress --freq 62.0 --input $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --bit $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).bit 2>&1 | tee $(BACKEND_OUTPUT_DIR)/ecppack.log"
 
 pnr-fast: $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json
-	bash -c "set -o pipefail; $(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $< --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --lpf $(CONSTRAINTS) --no-tmdriv --placer heap 2>&1 | tee $(BACKEND_OUTPUT_DIR)/pnr.log"
+	bash -c "set -o pipefail; $(time) nextpnr-ecp5 --report $(BACKEND_OUTPUT_DIR)/report.json --85k --package CABGA381 --json $< --textcfg $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --lpf $(CONSTRAINTS) $(TIMING_FAILURE) --no-tmdriv --placer heap 2>&1 | tee $(BACKEND_OUTPUT_DIR)/pnr.log"
 	python3 -m json.tool $(BACKEND_OUTPUT_DIR)/report.json > $(BACKEND_OUTPUT_DIR)/resource-report.json
 	bash -c "set -o pipefail; ecppack --compress --freq 62.0 --input $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).config --bit $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE).bit 2>&1 | tee $(BACKEND_OUTPUT_DIR)/ecppack.log"
 
