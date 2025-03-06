@@ -12,7 +12,9 @@ We have provided an initial set of divider tests for you in `pytest --exitfirst 
 
 ## Datapath Integration
 
-After your divider is working, you will need to integrate it into your datapath. Your datapath is almost entirely unchanged from HW3, except that `div`, `divu`, `rem` and `remu` instructions will take 8 cycles instead of one. We'll refer to these 4 kinds of instructions as "divide operations" for simplicity.
+After your divider is working, you will need to integrate it into your datapath. You can start by copying your HW3 datapath code into `DatapathMultiCycle.sv`. Note that the CLA code will be automatically pulled from the hw2b-cla/ directory. You may also need to update the paths in some `include` statements, e.g., you need to reference the `RvDisassembler.sv` file that lives in HW3 via `../hw3-singlecycle/RvDisassembler.sv` instead.
+
+Your datapath is almost entirely unchanged from HW3, except that `div`, `divu`, `rem` and `remu` instructions will take 8 cycles instead of one. We'll refer to these 4 kinds of instructions as "divide operations" for simplicity.
 
 Your divider module is pipelined and so, theoretically, you could start back-to-back independent divide operations on consecutive cycles for improved performance. However, your datapath will not (yet) take advantage of this and so consecutive divide operations will take 8 cycles each. Thus, *k* consecutive divide operations will take *8k* cycles.
 
