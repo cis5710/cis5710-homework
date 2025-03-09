@@ -65,7 +65,7 @@ synth: synth-yosys
 
 synth-yosys: $(VERILOG_SYNTH_SOURCE)
 	mkdir -p $(BACKEND_OUTPUT_DIR)
-	bash -c "set -o pipefail; $(time) yosys -p \"verilog_defines -DSYNTHESIS; read -vlog2k $^; synth_ecp5 -top $(TOP_MODULE) -json $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
+	bash -c "set -o pipefail; $(time) yosys -p \"verilog_defines -DSYNTHESIS; read -vlog2k $^; synth_ecp5 -noabc9 -top $(TOP_MODULE) -json $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
 
 synth-yosys-fast: $(VERILOG_SYNTH_SOURCE)
 	mkdir -p $(BACKEND_OUTPUT_DIR)
