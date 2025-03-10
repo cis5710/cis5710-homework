@@ -59,6 +59,12 @@ async def preTestSetup(dut):
 
     return
 
+async def postTestCleanup(dut):
+    """Cleanup the DUT. MUST be called at the end of EACH test."""
+    # wait raise `rst` signal for two rising edge
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 2)
+
 def runCocotbTestsProcessor(pytestconfig):
     """run processor tests"""
 
@@ -110,6 +116,7 @@ async def testLui(dut):
 
     await ClockCycles(dut.clk, 6)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testLuiLui(dut):
@@ -121,6 +128,7 @@ async def testLuiLui(dut):
     await ClockCycles(dut.clk, 7)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(0x6789A000, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testAddi3(dut):
@@ -133,6 +141,7 @@ async def testAddi3(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(3, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testMX1(dut):
@@ -144,6 +153,7 @@ async def testMX1(dut):
 
     await ClockCycles(dut.clk, 7)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testMX2(dut):
@@ -155,6 +165,7 @@ async def testMX2(dut):
 
     await ClockCycles(dut.clk, 7)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testWX1(dut):
@@ -167,6 +178,7 @@ async def testWX1(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testWX2(dut):
@@ -179,6 +191,7 @@ async def testWX2(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testWD1(dut):
@@ -192,6 +205,7 @@ async def testWD1(dut):
 
     await ClockCycles(dut.clk, 9)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testWD2(dut):
@@ -205,6 +219,7 @@ async def testWD2(dut):
 
     await ClockCycles(dut.clk, 9)
     assertEquals(42, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testX0Bypassing(dut):
@@ -223,6 +238,7 @@ async def testX0Bypassing(dut):
     assertEquals(0, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(0, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(1, dut.datapath.rf.regs[4].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testBneNotTaken(dut):
@@ -236,6 +252,7 @@ async def testBneNotTaken(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test()
@@ -250,6 +267,7 @@ async def testBeqNotTaken(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test()
@@ -267,6 +285,7 @@ async def testBneTaken(dut):
 
     await ClockCycles(dut.clk, 9)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test()
@@ -284,17 +303,20 @@ async def testBeqTaken(dut):
 
     await ClockCycles(dut.clk, 9)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test()
 async def testTraceRvLui(dut):
     "Use the LUI riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lui', TRACING_MODE)
+    await postTestCleanup(dut)
 
 @cocotb.test()
 async def testTraceRvBeq(dut):
     "Use the BEQ riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-beq', TRACING_MODE)
+    await postTestCleanup(dut)
 
 
 #########################
@@ -312,6 +334,7 @@ async def testLoadUse1(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(0x0000_2083, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -325,6 +348,7 @@ async def testLoadUse2(dut):
 
     await ClockCycles(dut.clk, 8)
     assertEquals(0x0000_2083, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -338,6 +362,7 @@ async def testLoadFalseUse(dut):
 
     await ClockCycles(dut.clk, 7)
     assertEquals(0xFE00_7000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -351,6 +376,7 @@ async def testWMData(dut):
 
     await ClockCycles(dut.clk, 7)
     assertEquals(0x0000_2083, dut.memory.mem_array[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -367,6 +393,7 @@ async def testWMAddress(dut):
     assertEquals(0, dut.memory.mem_array[int(loadValue / 4)].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     await ClockCycles(dut.clk, 1) # sb reaches M stage, writes to memory
     assertEquals(0x8300_0000, dut.memory.mem_array[int(loadValue / 4)].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -383,6 +410,7 @@ async def testFence(dut):
 
     await ClockCycles(dut.clk, 12)
     assertEquals(0xFFFF_F000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -395,6 +423,7 @@ async def testDiv(dut):
 
     await ClockCycles(dut.clk, 6 + DIVIDER_STAGES)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def test2Div(dut):
@@ -408,6 +437,7 @@ async def test2Div(dut):
     await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 1)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(1, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivNonDiv(dut):
@@ -425,6 +455,7 @@ async def testDivNonDiv(dut):
     await ClockCycles(dut.clk, 1)
     # now addi has written back
     assertEquals(7, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivUse(dut):
@@ -439,6 +470,7 @@ async def testDivUse(dut):
     await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 2)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(2, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDivToStore(dut):
@@ -454,6 +486,7 @@ async def testDivToStore(dut):
     assertEquals(1, dut.memory.mem_array[4].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     await ClockCycles(dut.clk, 1) # one more cycle for x2 to update
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await postTestCleanup(dut)
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testTraceRvLw(dut):
@@ -490,6 +523,7 @@ async def riscvTest(dut, binaryPath=None, tracingMode=None):
                 with open(f'trace-{binaryPath.name}.json', 'w', encoding='utf-8') as f:
                     json.dump(trace, f, indent=2)
                     pass
+            await postTestCleanup(dut)
             return
         pass
     raise SimTimeoutError()
