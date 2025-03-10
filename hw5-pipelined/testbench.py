@@ -43,13 +43,12 @@ async def preTestSetup(dut, insns, isBinary):
 
     # raise `rst` signal for one rising edge
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 2)
     # load the instruction
     if isBinary == False:
         riscv_binary_utils.asm(dut,insns)
     else:
         riscv_binary_utils.loadBinaryIntoMemory(dut,insns)
-    await ClockCycles(dut.clk, 1)
     # lower `rst` signal
     dut.rst.value = 0
     # design should be reset now

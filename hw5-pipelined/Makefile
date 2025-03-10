@@ -11,7 +11,7 @@ ZIP_FILE=pipelined.zip
 include ../common/make/fpga.mk
 
 ifndef CLOCK_FREQUENCY
-CLOCK_FREQUENCY=30
+CLOCK_FREQUENCY=20
 endif
 
 CLOCK_GEN_NAME=MyClockGen
