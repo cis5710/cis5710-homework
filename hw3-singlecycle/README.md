@@ -97,15 +97,12 @@ For both HW3A and HW3B, run `make resource-check` and `make zip` and then submit
 
 # FPGA Demo
 
-The demo for this homework is a small reaction-time game, written [in Rust](ledrop/src/main.rs). In this game, a "ball" travels along the LEDs on the board and you have to "catch" it by pressing button B2 once LED D0 (red) is lit and holding it until the next LED would be lit. If you caught the ball, a blue "success" LED (D7) will briefly illuminate, and the ball will start moving faster. If you press B2 at any other time, however, you will lose and must reset the processor (via button B0/PWR).
+The demo for this homework is a small reaction-time game. In this game, a "ball" travels along the LEDs on the board and you have to "catch" it by pressing button B2 once LED D0 (red) is lit and holding it until the next LED would be lit. If you caught the ball, a blue "success" LED (D7) will briefly illuminate, and the ball will start moving faster. If you press B2 at any other time, however, you will lose and must reset the processor (via button B0/PWR).
 
 The machine code for the demo is pre-compiled in `mem_initial_contents.hex`. You can build your bitstream via `make demo` (this will take a couple minutes). It is very important that your design meets timing closure, otherwise timing glitches will likely corrupt the gameplay. You are free to adjust `CLOCK_FREQUENCY` as necessary (see above).
 
-> You can also edit the game code if you want, to adjust the gameplay or even create a new game. Recompile the game code via `make demo-code`. Be sure to also then regenerate your bitstream via `make demo` so that the board runs the latest version of your game.
+> You can also edit the game code if you want, to adjust the gameplay or even create a new game. We have provided the source code for the game, both [in Rust](ledrop-rust) and [in C](ledrop-c), that you can use as a starting point. Recompile the game code via `make demo-code` (this builds only the C code by default, edit `Makefile` to switch to Rust). Be sure to also then regenerate your bitstream via `make demo` so that the board runs the latest version of your game.
 
-## Programming the FPGA
-
-TODO: board programming instructions...
 
 ## TA Sign-off
 
