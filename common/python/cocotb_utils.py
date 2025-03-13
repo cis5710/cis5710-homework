@@ -29,7 +29,10 @@ POINTS_FILE = 'points.json'
 def assertEquals(expected, actual, msg=''):
     """Wrapper around regular assert, with automatic formatting of values in hex"""
     if expected != actual:
-        assert_msg = f'expected 0x{int(expected):X} but was 0x{int(actual):X}'
+        if isinstance(expected,int):
+            assert_msg = f'expected 0x{int(expected):X} but was 0x{int(actual):X}'
+        else:
+            assert_msg = f'expected {expected} but was {actual}'
         if msg != '':
             assert_msg += f': {msg}'
             pass
