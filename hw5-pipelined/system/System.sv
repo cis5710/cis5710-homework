@@ -2,7 +2,7 @@
 `include "DatapathPipelined.sv"
 `include "txuartlite.v"
 `include "rxuartlite.v"
-`include "rx2cpu_bridge.sv"
+//`include "rx2cpu_bridge.sv"
 
 module SystemResourceCheck (
     input wire external_clk_25MHz,
