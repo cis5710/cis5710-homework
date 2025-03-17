@@ -13,7 +13,7 @@ void _start() {
 
     //char input_done = 'n';
     char new_char = 0;
-    char old_char = 0;
+    //char old_char = 0;
     int input_len = 0;
     char buffer[MAX_LEN];
     for(int i = 0; i < MAX_LEN; i++) {
@@ -36,9 +36,13 @@ void _start() {
             input_len = 0;
             continue;
         }
-        old_char = new_char;
+        //old_char = new_char;
         new_char = *INPUT;
-        if(old_char != new_char) { //New character posedge
+        if(new_char != 0) { //New character posedge
+            for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
+                    __asm__ volatile ("nop");
+            }
+            *INPUT = 0;
             buffer[input_len] = new_char;
             input_len++;
         }
