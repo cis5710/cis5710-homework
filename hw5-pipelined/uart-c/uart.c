@@ -32,6 +32,10 @@ void _start() {
             for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
                     __asm__ volatile ("nop");
             }
+            *OUTPUT = '\r';
+            for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
+                    __asm__ volatile ("nop");
+            }
             *OUTPUT = 0;
             input_len = 0;
             continue;
