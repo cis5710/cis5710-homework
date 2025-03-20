@@ -1,5 +1,5 @@
 #define MAX_LEN 8
-#define INTERVAL_BETWEEN_WRITE 350 //Hand-tune result, 333 is the magic number
+#define INTERVAL_BETWEEN_WRITE 333 //Hand-tune result, 333 is the magic number
 
 // memory-mapped device addresses are volatile so the compiler doesn't register-allocate them
 volatile char* const OUTPUT = (volatile char* const) 0xFF001000;
