@@ -63,5 +63,10 @@ For this homework, you will again run `make resource-check` to see how pipelinin
 
 ## Submitting
 
-Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource
-leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
+Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
+
+## HW5 Demo: Communication between PC and softcore on FPGA
+
+After you have finished your 5-stage pipelined CPU, you can start working on HW5 demo. In this demo, we will establish communication between your laptop and the FPGA. You can send a string of characters using keyboard to the softcore on the FPGA and the softcore will process it and send a reversed string back to your laptop. 
+
+Run `make demo-code` first to generate the assmebly code running on your softcore. And then run `make demo` to generate the bitstream. 
