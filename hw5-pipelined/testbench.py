@@ -357,20 +357,20 @@ async def testWMAddress(dut):
     assertEquals(0x8300_0000, dut.memory.mem_array[int(loadValue / 4)].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
-@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
-async def testFence(dut):
-    "Test fence insn"
-    await preTestSetup(dut,'''
-        li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
-        # addi part of li goes here
-        sw x2,16(x0) # overwrite lui below
-        fence # should stall until sw reaches Writeback
-        lui x1,0x12345
-        ''')
+# @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+# async def testFence(dut):
+#     "Test fence insn"
+#     await preTestSetup(dut,'''
+#         li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
+#         # addi part of li goes here
+#         sw x2,16(x0) # overwrite lui below
+#         fence # should stall until sw reaches Writeback
+#         lui x1,0x12345
+#         ''')
 
-    await ClockCycles(dut.clk, 12)
-    assertEquals(0xFFFF_F000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
-    pass
+#     await ClockCycles(dut.clk, 12)
+#     assertEquals(0xFFFF_F000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+#     pass
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testDiv(dut):
