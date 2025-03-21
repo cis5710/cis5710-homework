@@ -364,7 +364,7 @@ async def testWMAddress(dut):
 #         li x2,0xfffff0b7 # machine code for `lui x1,0xfffff`. NB: li needs 2 insn lui+addi sequence
 #         # addi part of li goes here
 #         sw x2,16(x0) # overwrite lui below
-#         fence # should stall until sw reaches Writeback
+#         fence.i # should stall until sw reaches Writeback
 #         lui x1,0x12345
 #         ''')
 
