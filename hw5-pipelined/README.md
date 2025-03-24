@@ -80,3 +80,12 @@ After programming your FPGA, you can use any application that support serial com
 Click `Session -> Serial` and choose the valid serial port and set the baud rate to be **115200**. Then click `OK`.
 
 Try to type in 8 characters using your keyboard and you are expected to see the reversed string being shown the serial terminal.
+
+
+### Mac 
+
+After programming your FPGA (run `make program` on your machine), run `screen /dev/cu.usbserial-* 115200` on local terminal to monitor the serial communication between your FPGA board and your Mac.
+
+Once connected, type 8 characters using your keyboard. You should see the string displayed in reverse order on the serial terminal.
+
+Lastly, to exit the session, press: `Control + a + k`. Confirm the termination by selecting `y` when prompted.
