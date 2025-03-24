@@ -30,7 +30,7 @@ async def preTestSetup(dut):
                           dut.ACLK, 
                           dut.ARESETn, 
                           reset_active_level=False, 
-                          size=32)
+                          size=0x400)  # 1024 bytes, more ram for running the last 2 Consecutive_XXXX_Misses_WriteBack
 
     dut.ARESETn.value = 0
     # wait for first rising edge
@@ -167,3 +167,102 @@ async def testConsecutiveReadMisses(dut):
         pass
 
 # TODO: test consecutive writes
+
+@cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
+async def testConsecutiveWriteMisses(dut):
+    axil_cache, axil_ram = await preTestSetup(dut)
+
+    addr = 0x4
+    extent = 16
+    scale = 0x0101_0101  
+    
+    # here we just care about data in cache, do not need to init in axil_ram?
+    # for a in range(addr, addr + extent, 4):
+    #     axil_ram.write_dword(a, 0xDEAD_BEEF)  # garbage value, will overwrite by cache value once write_miss_write_back
+
+    writes = []
+    for a in range(addr, addr + extent, 4):
+        new_value = a * scale 
+        writes.append(axil_cache.init_write(a, new_value.to_bytes(4, byteorder='little')))
+        await ClockCycles(dut.ACLK, 1)
+
+    for a in range(addr, addr + extent, 4):
+        w = writes.pop(0)
+        await w.wait()
+
+    for a in range(addr, addr + extent, 4):
+        r = axil_cache.init_read(a, 4)
+        await ClockCycles(dut.ACLK, 1)
+        await r.wait()
+        mem_value = int.from_bytes(r.data.data, byteorder='little')
+
+        dut._log.info(f"Checking cache at {a:#x}: Expected {a * scale:#x}, Got {mem_value:#x}")
+        assertEquals(a * scale, mem_value)
+
+
+@cocotb.test(timeout_time=4*TIMEOUT_NS, timeout_unit="ns")
+async def testConsecutiveWriteMissesWriteBack(dut):
+    axil_cache, axil_ram = await preTestSetup(dut)
+
+    addr = 0x4
+    step = 0x10    # addr will be 4, 14, 24, having same index but different tag
+    scale = 0x0101_0101
+
+    written_data = {}
+
+    # init RAM
+    for i in range(4):
+        axil_ram.write_dword(addr + i * step, 0xDEADBEEF) 
+    
+    # write operation to cache, overwrite happens, dirty cache line
+    for i in range(4):
+        value = (i + 1) * scale
+        written_data[addr + i * step] = value
+
+        dut._log.info(f"Write miss {i+1}: Writing {value:#x} to {(addr + i * step):#x}")
+        await axil_cache.write_dword(addr + i * step, value)
+        await ClockCycles(dut.ACLK, 1)
+
+    # WRITE again, same index but different tag, still write miss and have write back here! 
+    for i in range(4):
+        confict_addr = addr + 0x100 + i * step
+        await axil_cache.write_dword(confict_addr, 0xB0BA_CAFE) # data here doesn't matter, just dirty data
+        await ClockCycles(dut.ACLK, 1)
+
+    for addr, expected_value in written_data.items():
+        actual_value = axil_ram.read_dword(addr)
+        dut._log.info(f"RAM[{addr:#x}] = {actual_value:#x}, expected {expected_value:#x}")
+        assertEquals(expected_value, actual_value)
+
+@cocotb.test(timeout_time=4*TIMEOUT_NS, timeout_unit="ns")
+async def testConsecutiveReadMissesWriteBack(dut):
+
+    axil_cache, axil_ram = await preTestSetup(dut)
+
+    addr = 0x4
+    step = 0x10
+    scale = 0x0101_0101
+
+    written_data = {}
+
+    for i in range(4):
+        axil_ram.write_dword(addr + i * step, 0xDEADBEEF)
+
+    for i in range(4):
+        value = (i + 1) * scale
+        written_data[addr + i * step] = value
+
+        dut._log.info(f"Write {i+1}: Writing {value:#x} to {addr + i * step:#x}")
+        await axil_cache.write_dword(addr + i * step, value)
+        await ClockCycles(dut.ACLK, 1)
+
+    # READ again, same index but different tag, still write miss and have write back here! 
+    for i in range(4):
+        conflict_addr = addr + 0x100 + i * step  
+        await axil_cache.read_dword(conflict_addr)
+        await ClockCycles(dut.ACLK, 1)
+
+    for a, expected_value in written_data.items():
+        actual_value = axil_ram.read_dword(a)
+        dut._log.warning(f"RAM[{a:#x}] = {actual_value:#x}, expected {expected_value:#x}")
+        assertEquals(expected_value, actual_value)
