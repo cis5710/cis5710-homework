@@ -207,3 +207,67 @@ async def testLazyManager2(dut):
     await ClockCycles(dut.ACLK, 1)
     assertEquals(0, dut.CACHE_RVALID.value)
     assertEquals(1, dut.CACHE_ARREADY.value)
+
+
+@cocotb.test(timeout_time=4*TIMEOUT_NS, timeout_unit="ns")
+async def testRandomReadWrite(dut):
+
+    axil_cache = await preTestSetup(dut)
+
+    # Compute the accessible address range
+    block_size_bytes = int(dut.BLOCK_SIZE_BITS.value // 8)
+    blocks = dut.BLOCKS_PER_WAY.value
+    ways = dut.WAYS.value
+    total_cache_size_bytes = blocks * ways * block_size_bytes
+
+    dut._log.info(f"Total cache size in bytes: {total_cache_size_bytes}")
+
+    local_model = {}
+
+    #  Initialize cache
+    base_val = 0x1111_1111
+    for addr in range(0, total_cache_size_bytes, 4):
+        dword_index = (addr // 4) + 1
+        init_val = dword_index * base_val
+        local_model[addr] = init_val
+
+    # Nums of operations
+    num_ops = 20
+    for i in range(num_ops):
+        addr = random.randrange(0, total_cache_size_bytes, 4)
+        is_write = random.choice([True, False])
+
+        if is_write:
+            new_data_32 = random.getrandbits(32)
+            data_bytes = new_data_32.to_bytes(4, byteorder='little')
+
+            # write transaction
+            wtrans = axil_cache.init_write(address=addr, data=data_bytes)
+
+            # Wait for 1 to 3 clock cycles to simulate pipeline/concurrent behavior
+            await ClockCycles(dut.ACLK, random.randint(1,3))
+            
+            await wtrans.wait()
+
+            # Update the local reference model
+            local_model[addr] = new_data_32
+
+        else:
+            # read transaction
+            rtrans = axil_cache.init_read(addr, 4)
+            await ClockCycles(dut.ACLK, random.randint(1,3))
+            await rtrans.wait()
+
+            # Retrieve the read value and verify correctness
+            actual_bytes = rtrans.data.data
+            actual_val = int.from_bytes(actual_bytes, byteorder='little')
+            expected_val = local_model[addr]
+            assertEquals(expected_val, actual_val, 
+                f"[READ] Addr=0x{addr:X} mismatch: expected 0x{expected_val:X}, got 0x{actual_val:X}")
+
+    # Perform a full read-back verification on all addresses
+    for addr, exp_val in local_model.items():
+        read_data = await axil_cache.read_dword(addr)
+        assertEquals(exp_val, read_data,
+            f"[FINAL] Addr=0x{addr:X} mismatch: expected=0x{exp_val:X}, got=0x{read_data:X}")
+
