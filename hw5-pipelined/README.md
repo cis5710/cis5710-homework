@@ -33,7 +33,24 @@ With the presence of load instructions comes the possibility of load-use depende
 
 You will also need to add WM bypassing to your pipeline.
 
-You will need to support divide and remainder operations - for simplicity we'll discuss only divide as remainder is handled identically. Your divide operations should use the pipelined divider from HW4. Since a divide takes 8 cycles, its quotient will not be available until much later than other ALU operations. You will need to add a "divide-to-use" stall if there is a dependent instruction immediately following the divide.
+### Divide/remainder operations
+
+You will need to support divide and remainder operations - for simplicity we'll discuss only divide as remainder is handled identically. Your divide operations should use the pipelined divider from HW4. Since a divide takes 8 cycles, its quotient will not be available until much later than other ALU operations.
+
+Divide operations should proceed to the M stage after they complete the divider pipeline. This keeps divides similar to other insns and allows for regular MX bypassing in cases like the one below where a (non-divide) consumer insn immediately follows a divide insn:
+```
+div x1,x2,x3
+addi x4,x1,0
+```
+
+When the M stage is waiting for a divide insn to complete, the resulting stalls should have `CYCLE_DIV` status.
+
+Your divide pipeline should also permit back-to-back execution of consecutive independent divide insns. For dependent divide insns, the younger insn must stall until the older insn completes the entire divide pipeline - the resulting stalls should use status `CYCLE_DIV2USE`.
+
+```
+div x1,x2,x3
+div x4,x5,x1 // dependcy via x1
+```
 
 Cycle-level tracing is also enabled for this milestone, this time for the LW and dhrystone tests.
 
@@ -63,5 +80,4 @@ For this homework, you will again run `make resource-check` to see how pipelinin
 
 ## Submitting
 
-Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource
-leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
+Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.

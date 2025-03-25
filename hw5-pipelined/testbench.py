@@ -383,8 +383,8 @@ async def testDiv(dut):
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
-async def test2Div(dut):
-    "Run 2 div insns"
+async def test2DivIndependent(dut):
+    "Run 2 independent div insns"
     await preTestSetup(dut,'''
         lui x1,0x12345
         div x2,x1,x1
@@ -392,6 +392,39 @@ async def test2Div(dut):
 
     await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 1)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(1, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def test8DivIndependent(dut):
+    "Run 8 independent div insns"
+    await preTestSetup(dut,'''
+        lui x1,0x12345
+        div x2,x1,x1
+        div x3,x1,x1
+        div x4,x1,x1
+        div x5,x1,x1
+        div x6,x1,x1
+        div x7,x1,x1
+        div x8,x1,x1
+        div x9,x1,x1''')
+
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES)
+    for i in range(8):
+        await ClockCycles(dut.clk, 1)
+        assertEquals(1, dut.datapath.rf.regs[2+i].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def test2DivDependent(dut):
+    "Run 2 dependent div insns"
+    await preTestSetup(dut,'''
+        lui x1,0x12345
+        div x2,x1,x1
+        div x3,x2,x2''')
+
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES + 1)
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(0, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    await ClockCycles(dut.clk, DIVIDER_STAGES + 1)
     assertEquals(1, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
@@ -416,15 +449,15 @@ async def testDivUse(dut):
     await preTestSetup(dut,'''
         lui x1,0x12345
         div x2,x1,x1
-        add x3,x2,x2 # needs stall + WX bypass
+        add x3,x2,x2 # uses MX bypass
         ''')
 
-    await ClockCycles(dut.clk, 6 + DIVIDER_STAGES + 2)
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES + 2)
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     assertEquals(2, dut.datapath.rf.regs[3].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
-async def testDivToStore(dut):
+async def testDivToStoreData(dut):
     "Run div + dependent insn"
     await preTestSetup(dut,'''
         lui x1,0x12345
@@ -432,10 +465,22 @@ async def testDivToStore(dut):
         sw x2,16(x0) # uses WM bypass to avoid stall
         ''')
 
-    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES) # sw is in M stage, div is in W
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES + 1) # sw is in M stage, div is in W
     assertEquals(1, dut.memory.mem_array[4].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
-    await ClockCycles(dut.clk, 1) # one more cycle for x2 to update
     assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def testDivToStoreAddress(dut):
+    "Run div + dependent insn"
+    await preTestSetup(dut,'''
+        lui x1,0x12345
+        div x2,x1,x1
+        sw x2,23(x2) # uses MX bypass
+        ''')
+
+    await ClockCycles(dut.clk, 5 + DIVIDER_STAGES + 1) # sw is in M stage, div is in W
+    assertEquals(1, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    assertEquals(1, dut.memory.mem_array[6].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testTraceRvLw(dut):
