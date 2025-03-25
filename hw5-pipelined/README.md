@@ -45,11 +45,16 @@ addi x4,x1,0
 
 When the M stage is waiting for a divide insn to complete, the resulting stalls should have `CYCLE_DIV` status.
 
-Your divide pipeline should also permit back-to-back execution of consecutive independent divide insns. For dependent divide insns, the younger insn must stall until the older insn completes the entire divide pipeline - the resulting stalls should use status `CYCLE_DIV2USE`.
+Your divide pipeline should also permit back-to-back execution of consecutive *independent* divide insns. If the first `div` insn enters Fetch in cycle 0, the code below will execute as follows:
+```
+div x1,x2,x3 // writes back in cycle 11
+div x4,x5,x6 // writes back in cycle 12
+```
 
+For *dependent* divide insns, the younger insn must stall until the older insn completes the entire divide pipeline. The resulting stalls should use status `CYCLE_DIV2USE`. Note that these stalls do not arise in any of our trace tests, so you can technically ignore this status if you want.
 ```
 div x1,x2,x3
-div x4,x5,x1 // dependcy via x1
+div x4,x5,x1 // dependency via x1
 ```
 
 Cycle-level tracing is also enabled for this milestone, this time for the LW and dhrystone tests.
