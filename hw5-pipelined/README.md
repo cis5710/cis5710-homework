@@ -51,7 +51,7 @@ div x1,x2,x3 F D X0 X1 X2 X3 X4 X5 X6 X7 M  W
 div x4,x5,x6   F D  X0 X1 X2 X3 X4 X5 X6 X7 M W
 ```
 
-For *dependent* divide insns, the younger insn must stall until the older insn completes the entire divide pipeline. The resulting stalls should use status `CYCLE_DIV2USE`. Note that these stalls do not arise in any of our trace tests, so you can technically ignore this status if you want.
+For *dependent* divide insns, the younger insn must stall until the older insn completes the entire divide pipeline. The resulting stalls should also use status `CYCLE_DIV`.
 ```
 div x1,x2,x3 F D X0 X1 X2 X3 X4 X5 X6 X7 M  W
 div x4,x5,x1   F D  *  *  *  *  *  *  *  X0 X1 X2 X3 X4 X5 X6 X7 M W

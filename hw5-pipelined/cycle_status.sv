@@ -25,7 +25,7 @@ typedef enum {
   CYCLE_DIV = 8,
   /** a stall cycle that arose from a load-to-use stall */
   CYCLE_LOAD2USE = 16,
-  /** a stall cycle that arose from dependent div/rem insns */
+  /** NOT CURRENTLY USED */
   CYCLE_DIV2USE = 32,
   /** NOT CURRENTLY USED: a stall cycle that arose from a fence.i insn */
   CYCLE_FENCEI = 64,
