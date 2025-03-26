@@ -1,4 +1,4 @@
-import cocotb, sys
+import cocotb, math, sys
 from pathlib import Path
 
 from cocotb.clock import Clock
@@ -30,7 +30,8 @@ async def preTestSetup(dut):
                           dut.ACLK, 
                           dut.ARESETn, 
                           reset_active_level=False, 
-                          size=0x400)  # 1024 bytes, more ram for running the last 2 Consecutive_XXXX_Misses_WriteBack
+                          size=0x2000)
+    emptyCache(dut)
 
     dut.ARESETn.value = 0
     # wait for first rising edge
@@ -45,7 +46,21 @@ async def preTestSetup(dut):
     await ClockCycles(dut.ACLK, 1)
 
     return (axil_cache, axil_ram)
-    
+
+def emptyCache(dut):
+    "initialize the cache with all zeroes"
+    for i in range(dut.cache.NUM_SETS.value):
+        dut.cache.data[i].value  = 0
+        dut.cache.tag[i].value   = 0
+        dut.cache.valid[i].value = 0
+        dut.cache.dirty[i].value = 0
+        pass
+    pass
+
+def makeConflictingAddr(dut, addr):
+    block_offset_bits = math.log2(dut.cache.BLOCK_SIZE_BITS.value/8)
+    index_bits = math.log2(dut.cache.NUM_SETS.value)
+    return addr + (1 << int(block_offset_bits + index_bits))
 
 #########################
 ## TEST CASES ARE HERE ##
@@ -53,6 +68,7 @@ async def preTestSetup(dut):
 
 @cocotb.test(timeout_time=TIMEOUT_NS, timeout_unit="ns")
 async def testReadMiss(dut):
+    "single read miss"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
@@ -65,6 +81,7 @@ async def testReadMiss(dut):
 
 @cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
 async def testReadMissHit(dut):
+    "read miss, then hit"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
@@ -74,7 +91,7 @@ async def testReadMissHit(dut):
     cache_value = await axil_cache.read_dword(addr)
     assertEquals(expected_value, cache_value)
 
-    # cache_value = await axil_cache.read_dword(addr)
+    # ensure that hit is faster
     r = axil_cache.init_read(addr, 4)
     await ClockCycles(dut.ACLK, 1)
     start_ns = get_sim_time()
@@ -86,6 +103,7 @@ async def testReadMissHit(dut):
 
 @cocotb.test(timeout_time=TIMEOUT_NS, timeout_unit="ns")
 async def testWriteMiss(dut):
+    "write miss"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
@@ -100,6 +118,7 @@ async def testWriteMiss(dut):
 
 @cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
 async def testReadMissWriteback(dut):
+    "write miss, then read miss that triggers writeback"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
@@ -111,7 +130,7 @@ async def testReadMissWriteback(dut):
     await axil_cache.write_dword(addr, value1)
 
     # conflicting read miss, triggers writeback
-    conflicting_addr = 0x14
+    conflicting_addr = makeConflictingAddr(dut, addr)
     await axil_cache.read_dword(conflicting_addr)
 
     # check that dirty value was written back to memory
@@ -121,6 +140,7 @@ async def testReadMissWriteback(dut):
 
 @cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
 async def testWriteMissWriteback(dut):
+    "write miss, then another write miss that triggers writeback"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
@@ -132,7 +152,7 @@ async def testWriteMissWriteback(dut):
     await axil_cache.write_dword(addr, value1)
 
     # conflicting write miss, triggers writeback
-    conflicting_addr = 0x14
+    conflicting_addr = makeConflictingAddr(dut, addr)
     await axil_cache.write_dword(conflicting_addr, 0xBAAD_C0DE)
 
     # check that dirty value was written back to memory
@@ -162,11 +182,9 @@ async def testConsecutiveReadMisses(dut):
         r = reads.pop(0)
         await r.wait()
         actual = int.from_bytes(r.data.data, byteorder='little')
-        dut._log.warning(f"{value0+a:#x} == {actual:#x}")
+        dut._log.info(f"{value0+a:#x} == {actual:#x}")
         assertEquals((a * scale), actual)
         pass
-
-# TODO: test consecutive writes
 
 @cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
 async def testConsecutiveWriteMisses(dut):
@@ -175,10 +193,6 @@ async def testConsecutiveWriteMisses(dut):
     addr = 0x4
     extent = 16
     scale = 0x0101_0101  
-    
-    # here we just care about data in cache, do not need to init in axil_ram?
-    # for a in range(addr, addr + extent, 4):
-    #     axil_ram.write_dword(a, 0xDEAD_BEEF)  # garbage value, will overwrite by cache value once write_miss_write_back
 
     writes = []
     for a in range(addr, addr + extent, 4):
@@ -202,16 +216,18 @@ async def testConsecutiveWriteMisses(dut):
 
 @cocotb.test(timeout_time=4*TIMEOUT_NS, timeout_unit="ns")
 async def testConsecutiveWriteMissesWriteBack(dut):
+    "consecutive write misses, then conflicting write misses that trigger writebacks"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
-    step = 0x10    # addr will be 4, 14, 24, having same index but different tag
+    step = int(dut.cache.BLOCK_SIZE_BITS.value / 8)
     scale = 0x0101_0101
 
     written_data = {}
 
     # init RAM
     for i in range(4):
+        dut._log.warning(f'JLD {addr + i * step}')
         axil_ram.write_dword(addr + i * step, 0xDEADBEEF) 
     
     # write operation to cache, overwrite happens, dirty cache line
@@ -219,14 +235,14 @@ async def testConsecutiveWriteMissesWriteBack(dut):
         value = (i + 1) * scale
         written_data[addr + i * step] = value
 
-        dut._log.info(f"Write miss {i+1}: Writing {value:#x} to {(addr + i * step):#x}")
+        dut._log.warning(f"Write miss {i+1}: Writing {value:#x} to {(addr + i * step):#x}")
         await axil_cache.write_dword(addr + i * step, value)
         await ClockCycles(dut.ACLK, 1)
 
-    # WRITE again, same index but different tag, still write miss and have write back here! 
+    # write again, same index but different tag, to force a writeback 
     for i in range(4):
-        confict_addr = addr + 0x100 + i * step
-        await axil_cache.write_dword(confict_addr, 0xB0BA_CAFE) # data here doesn't matter, just dirty data
+        confict_addr = makeConflictingAddr(dut, addr + i * step)
+        await axil_cache.write_dword(confict_addr, 0xB0BA_CAFE)
         await ClockCycles(dut.ACLK, 1)
 
     for addr, expected_value in written_data.items():
@@ -236,11 +252,11 @@ async def testConsecutiveWriteMissesWriteBack(dut):
 
 @cocotb.test(timeout_time=4*TIMEOUT_NS, timeout_unit="ns")
 async def testConsecutiveReadMissesWriteBack(dut):
-
+    "consecutive write misses, then conflicting read misses that trigger writebacks"
     axil_cache, axil_ram = await preTestSetup(dut)
 
     addr = 0x4
-    step = 0x10
+    step = int(dut.cache.BLOCK_SIZE_BITS.value / 8)
     scale = 0x0101_0101
 
     written_data = {}
@@ -258,7 +274,7 @@ async def testConsecutiveReadMissesWriteBack(dut):
 
     # READ again, same index but different tag, still write miss and have write back here! 
     for i in range(4):
-        conflict_addr = addr + 0x100 + i * step  
+        conflict_addr = makeConflictingAddr(dut, addr + i*step) #addr + 0x100 + i * step  
         await axil_cache.read_dword(conflict_addr)
         await ClockCycles(dut.ACLK, 1)
 
