@@ -39,22 +39,22 @@ You will need to support divide and remainder operations - for simplicity we'll 
 
 Divide operations should proceed to the M stage after they complete the divider pipeline. This keeps divides similar to other insns and allows for regular MX bypassing in cases like the one below where a (non-divide) consumer insn immediately follows a divide insn:
 ```
-div x1,x2,x3
-addi x4,x1,0
+div x1,x2,x3 F D X0 X1 X2 X3 X4 X5 X6 X7 M W
+addi x4,x1,0   F D  *  *  *  *  *  *  *  X M W
 ```
 
 When the M stage is waiting for a divide insn to complete, the resulting stalls should have `CYCLE_DIV` status.
 
 Your divide pipeline should also permit back-to-back execution of consecutive *independent* divide insns. If the first `div` insn enters Fetch in cycle 0, the code below will execute as follows:
 ```
-div x1,x2,x3 // writes back in cycle 11
-div x4,x5,x6 // writes back in cycle 12
+div x1,x2,x3 F D X0 X1 X2 X3 X4 X5 X6 X7 M  W
+div x4,x5,x6   F D  X0 X1 X2 X3 X4 X5 X6 X7 M W
 ```
 
 For *dependent* divide insns, the younger insn must stall until the older insn completes the entire divide pipeline. The resulting stalls should use status `CYCLE_DIV2USE`. Note that these stalls do not arise in any of our trace tests, so you can technically ignore this status if you want.
 ```
-div x1,x2,x3
-div x4,x5,x1 // dependency via x1
+div x1,x2,x3 F D X0 X1 X2 X3 X4 X5 X6 X7 M  W
+div x4,x5,x1   F D  *  *  *  *  *  *  *  X0 X1 X2 X3 X4 X5 X6 X7 M W
 ```
 
 Cycle-level tracing is also enabled for this milestone, this time for the LW and dhrystone tests.
