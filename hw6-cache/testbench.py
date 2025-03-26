@@ -177,6 +177,21 @@ def runCocotbTestsDmCacheMissBig(pytestconfig):
     )
     pass
 
+def runCocotbTestsDmCache(pytestconfig):
+    """calculate scores for autograder"""
+    test_results = cu.aggregateTestResults(
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheHitSmall.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheHitBig.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheMissSmall.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheMissBig.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open('points.json', 'w') as f:
+        json.dump(points, f, indent=2)
+        pass
+    pass
+
 def runCocotbTestsProcessorNoCaches(pytestconfig):
     """run processor tests without caches"""
 
