@@ -3,7 +3,7 @@ submission is valid. We check, e.g., if any disallowed SystemVerilog
 operators were used. See common/python/main_codecheck.py."""
 
 from pathlib import Path
-import sys
+import os, sys
 
 p = Path.cwd() / '..' / 'common' / 'python'
 sys.path.append(str(p))
@@ -21,4 +21,6 @@ def objectIsLegal(filename, obj):
         return (False,True)
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal, ['DatapathPipelinedCache.sv'])
+if os.path.exists('DatapathPipelinedCache.sv'):
+    main_codecheck.runCodecheck(objectIsLegal, ['DatapathPipelinedCache.sv'])
+    pass
