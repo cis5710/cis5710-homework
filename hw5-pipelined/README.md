@@ -106,7 +106,7 @@ Try to type in 8 characters using your keyboard and you are expected to see the 
 
 ### Mac 
 
-After programming your FPGA (run `make program` on your machine), run `screen /dev/cu.usbserial-* 115200` on local terminal to monitor the serial communication between your FPGA board and your Mac.
+After programming your FPGA (run `make program` on your machine), open another local terminal and run `screen /dev/cu.usbserial-* 115200` to monitor the serial communication between your FPGA board and your Mac.
 
 Once connected, type 8 characters using your keyboard. You should see the string displayed in reverse order on the serial terminal.
 
