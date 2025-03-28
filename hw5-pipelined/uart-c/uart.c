@@ -1,5 +1,5 @@
 #define MAX_LEN 8
-#define INTERVAL_BETWEEN_WRITE 350 //Hand-tune result, 333 is the magic number
+#define INTERVAL_BETWEEN_WRITE 333 //Hand-tune result, 333 is the magic number
 
 // memory-mapped device addresses are volatile so the compiler doesn't register-allocate them
 volatile char* const OUTPUT = (volatile char* const) 0xFF001000;
@@ -13,7 +13,7 @@ void _start() {
 
     //char input_done = 'n';
     char new_char = 0;
-    char old_char = 0;
+    //char old_char = 0;
     int input_len = 0;
     char buffer[MAX_LEN];
     for(int i = 0; i < MAX_LEN; i++) {
@@ -32,13 +32,21 @@ void _start() {
             for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
                     __asm__ volatile ("nop");
             }
+            *OUTPUT = '\r';
+            for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
+                    __asm__ volatile ("nop");
+            }
             *OUTPUT = 0;
             input_len = 0;
             continue;
         }
-        old_char = new_char;
+        //old_char = new_char;
         new_char = *INPUT;
-        if(old_char != new_char) { //New character posedge
+        if(new_char != 0) { //New character posedge
+            for(int j = 0; j < INTERVAL_BETWEEN_WRITE; j++) {
+                    __asm__ volatile ("nop");
+            }
+            *INPUT = 0;
             buffer[input_len] = new_char;
             input_len++;
         }
