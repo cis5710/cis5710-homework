@@ -87,21 +87,21 @@ For this homework, you will again run `make resource-check` to see how pipelinin
 
 Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
 
-## HW5 Demo: Communication between PC and softcore on FPGA
+## HW5 Demo: Communication between PC and FPGA processor
 
-After you have finished your 5-stage pipelined CPU, you can start working on HW5 demo. In this demo, we will establish communication between your laptop and the FPGA. You can send a string of characters using keyboard to the softcore on the FPGA and the softcore will process it and send a reversed string back to your laptop. 
+After you have finished your 5-stage pipelined datapath, you can start working on HW5 demo. In this demo, we will establish communication between your laptop and the FPGA. You can send a string of characters using the keyboard to your processor on the FPGA and the processor will send a reversed string back to your laptop. The code running on the CPU is [this small C program](uart-c/uart.c).
 
-Run `make demo-code` first to generate the assmebly code running on your softcore. And then run `make demo` to generate the bitstream. 
+Run `make demo-code` first to generate the assmebly code running on your processor. And then run `make demo` to generate the bitstream. 
 
 ### Windows
 
 Refer to hw2b demo on how to program your FPGA after successfully generating your bitstream. 
 
-After programming your FPGA, you can use any application that support serial communication. In this homework we use **Mobaxterm** as an example.
+After programming your FPGA, you can use any application that supports serial communication. In this homework we use **Mobaxterm** as an example.
 
 Click `Session -> Serial` and choose the valid serial port and set the baud rate to be **115200**. Then click `OK`.
 
-Try to type in 8 characters using your keyboard and you are expected to see the reversed string being shown the serial terminal.
+Type in 8 characters using your keyboard and you should see the reversed string being shown the serial terminal.
 
 
 ### Mac 
@@ -110,4 +110,4 @@ After programming your FPGA (run `make program` on your machine), open another l
 
 Once connected, type 8 characters using your keyboard. You should see the string displayed in reverse order on the serial terminal.
 
-Lastly, to exit the session, press: `Control + a + k`. Confirm the termination by selecting `y` when prompted.
+To exit the session, press: `Control + a + k`. Confirm the termination by selecting `y` when prompted.
