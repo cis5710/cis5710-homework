@@ -182,8 +182,8 @@ module AxilCache #(
   // main cache structures: do not rename as tests reference these names
   logic [BLOCK_SIZE_BITS-1:0] data[NUM_SETS];
   logic [TagBits-1:0] tag[NUM_SETS];
-  logic valid[NUM_SETS];
-  logic dirty[NUM_SETS];
+  logic [0:0] valid[NUM_SETS];
+  logic [0:0] dirty[NUM_SETS];
 
   // initialize cache state to all zeroes
   genvar seti;
