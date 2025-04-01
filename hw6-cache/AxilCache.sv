@@ -138,7 +138,18 @@ module AxilMemory #(
       end
 
       if (port_rw.AWVALID && port_rw.AWREADY && port_rw.WVALID && port_rw.WREADY) begin
-        mem_array[port_rw.AWADDR[AddrMsb:AddrLsb]] <= port_rw.WDATA;
+        if (port_rw.WSTRB[0]) begin
+          mem_array[port_rw.AWADDR[AddrMsb:AddrLsb]][7:0] <= port_rw.WDATA[7:0];
+        end
+        if (port_rw.WSTRB[1]) begin
+          mem_array[port_rw.AWADDR[AddrMsb:AddrLsb]][15:8] <= port_rw.WDATA[15:8];
+        end
+        if (port_rw.WSTRB[2]) begin
+          mem_array[port_rw.AWADDR[AddrMsb:AddrLsb]][23:16] <= port_rw.WDATA[23:16];
+        end
+        if (port_rw.WSTRB[3]) begin
+          mem_array[port_rw.AWADDR[AddrMsb:AddrLsb]][31:24] <= port_rw.WDATA[31:24];
+        end
         port_rw.BVALID <= True;
       end else if (port_rw.BVALID) begin
         port_rw.BVALID <= False;
