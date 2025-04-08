@@ -80,6 +80,40 @@ async def testReadMiss(dut):
     assertEquals(expected_value, cache_value)
 
 @cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
+async def testReadMissWait(dut):
+    "single read miss"
+    axil_cache, axil_ram = await preTestSetup(dut)
+
+    addr = 0x4
+    expected_value = 0x1234_5678
+    axil_ram.write_dword(addr, expected_value)
+
+    await ClockCycles(dut.ACLK, 1)
+    dut.CACHE_ARVALID.value = 1
+    dut.CACHE_ARADDR.value = addr
+    dut.CACHE_RREADY.value = 1
+    assertEquals(0, dut.CACHE_RDATA.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    # the datapath isn't ready to recieve the data yet
+    dut.CACHE_ARVALID.value = 0
+    dut.CACHE_ARADDR.value = 0
+    dut.CACHE_RREADY.value = 0
+
+    await ClockCycles(dut.ACLK, 2)
+    dut.CACHE_RREADY.value = 1
+    assertEquals(expected_value, dut.CACHE_RDATA.value)
+    assertEquals(1, dut.CACHE_RVALID.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    assertEquals(expected_value, dut.CACHE_RDATA.value)
+    assertEquals(1, dut.CACHE_RVALID.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    assertEquals(0, dut.CACHE_RDATA.value)
+    assertEquals(0, dut.CACHE_RVALID.value)
+
+@cocotb.test(timeout_time=2*TIMEOUT_NS, timeout_unit="ns")
 async def testReadMissHit(dut):
     "read miss, then hit"
     axil_cache, axil_ram = await preTestSetup(dut)
@@ -100,6 +134,57 @@ async def testReadMissHit(dut):
     assertEquals(expected_value, actual)
     elapsed_ns = get_sim_time() - start_ns
     assertEquals(2*CLOCK_PERIOD_NS, elapsed_ns)
+
+@cocotb.test(timeout_time=3*TIMEOUT_NS, timeout_unit="ns")
+async def testReadMissAfterWaitingHit(dut):
+    "read miss, then a waiting hit, then miss again"
+    axil_cache, axil_ram = await preTestSetup(dut)
+
+    addr = 0x4
+    expected_value = 0x1234_5678
+    axil_ram.write_dword(addr, expected_value)
+
+    addr2 = 0x8
+    expected_value2 = 0x8765_4321
+    axil_ram.write_dword(addr2, expected_value2)
+
+    cache_value = await axil_cache.read_dword(addr)
+    assertEquals(expected_value, cache_value)
+
+    # read hit
+    await ClockCycles(dut.ACLK, 1)
+    dut.CACHE_ARVALID.value = 1
+    dut.CACHE_ARADDR.value = addr
+    dut.CACHE_RREADY.value = 1
+    assertEquals(0, dut.CACHE_RDATA.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    # the datapath isn't ready to recieve the data yet
+    dut.CACHE_RREADY.value = 0
+    # at the same time, another read miss happens
+    dut.CACHE_ARVALID.value = 1
+    dut.CACHE_ARADDR.value = addr2
+    assertEquals(0, dut.CACHE_RDATA.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    # the datapath is ready for response
+    dut.CACHE_RREADY.value = 1
+    dut.CACHE_ARVALID.value = 0
+    dut.CACHE_ARADDR.value = 0
+    assertEquals(expected_value, dut.CACHE_RDATA.value)
+    assertEquals(1, dut.CACHE_RVALID.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    assertEquals(expected_value, dut.CACHE_RDATA.value)
+    assertEquals(1, dut.CACHE_RVALID.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    assertEquals(0, dut.CACHE_RDATA.value)
+    assertEquals(0, dut.CACHE_RVALID.value)
+
+    await ClockCycles(dut.ACLK, 1)
+    assertEquals(expected_value2, dut.CACHE_RDATA.value)
+    assertEquals(1, dut.CACHE_RVALID.value)
 
 @cocotb.test(timeout_time=TIMEOUT_NS, timeout_unit="ns")
 async def testWriteMiss(dut):
