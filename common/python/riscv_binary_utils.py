@@ -46,7 +46,7 @@ def loadBinaryIntoMemory(dut, binaryPath):
     """Read the given binary's sections, and load them into memory at the appropriate addresses."""
     
     sectionInfo = getSectionInfo(binaryPath)
-    sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss']
+    sectionsToLoad = ['.text.init','.text','.text.startup','.data','.tohost','.rodata','.rodata.str1.4','.sbss','.bss','.tbss','.srodata','.sdata']
 
     for sectionName in sectionsToLoad:
         if sectionName not in sectionInfo:
@@ -61,7 +61,9 @@ def loadBinaryIntoMemory(dut, binaryPath):
         if isinstance(dut, cocotb.handle.HierarchyObject):
             memBaseAddr >>= 2 # convert to word address
             pass
-        LOG.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
+        if len(words) > 0:
+            LOG.info(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
+            pass
         for i in range(len(words)):
             if isinstance(dut, cocotb.handle.HierarchyObject):
                 # NB: doesn't work if we try to pass dut.memory.mem_array as an argument, need top-level dut
@@ -79,7 +81,7 @@ def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxWords=0):
     
     sectionInfo = getSectionInfo(binaryPath)
     # print(sectionInfo)
-    sectionsToLoad = ['.start', '.text', '.rodata', '.eh_frame']
+    sectionsToLoad = ['.start', '.text', '.rodata', '.srodata', '.sdata', '.eh_frame']
 
     with open(hexfilePath,'w') as fd:
         micByteOffset = 0
