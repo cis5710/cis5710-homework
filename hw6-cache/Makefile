@@ -5,7 +5,7 @@ TOP_MODULE_RESOURCE_CHECK=SystemResourceCheck
 TOP_MODULE_DEMO=SystemDemo
 CONSTRAINTS=../common/constraints/ulx3s.lpf
 
-ZIP_SOURCES=DatapathPipelinedCache.sv AxilCache.sv ../hw2b-cla/cla.sv ../hw4-multicycle/DividerUnsignedPipelined.sv
+ZIP_SOURCES=DatapathPipelinedCache.sv AxilCache.sv ../hw2b-cla/cla.sv ../hw4-multicycle/DividerUnsignedPipelined.sv fpga_build/resource-report.json
 ZIP_FILE=cache.zip
 
 include ../common/make/fpga.mk
