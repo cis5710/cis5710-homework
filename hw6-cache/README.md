@@ -59,23 +59,23 @@ To keep up with the datapath, our cache needs to be able to handle consecutive m
 
 Timing for 1 read hit: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.3x..%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.10..%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27one%20read%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
 
-![](waveforms/1read.png)
+![](images/1read.png)
 
 Timing for consecutive read hits: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.345x%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1..0%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27consecutive%20reads%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
 
-![](waveforms/3reads.png)
+![](images/3reads.png)
 
 Timing for 1 write hit: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27AWADDR%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27AWVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27AWREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27WDATA%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xD%27%2C%270xE%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WSTRB%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xF%27%2C%270xF%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27WREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27BVALID%27%2C%20%20wave%3A%20%270.30..%27%7D%2C%0A%20%20%7Bname%3A%20%27BREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27one%20write%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
 
-![](waveforms/1write.png)
+![](images/1write.png)
 
 Timing for consecutive write hits: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27AWADDR%27%2C%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27AWVALID%27%2C%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27AWREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27WDATA%27%2C%20%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270xD%27%2C%270xE%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WSTRB%27%2C%20%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270x1%27%2C%270x1%27%2C%270x1%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WVALID%27%2C%20%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27WREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27BVALID%27%2C%20%20wave%3A%20%270.3450%27%7D%2C%0A%20%20%7Bname%3A%20%27BREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27consecutive%20writes%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
 
-![](waveforms/3writes.png)
+![](images/3writes.png)
 
 Buffering one request is required as the manager may not be initially ready to receive the response: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345..%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701.0..%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.3...%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1...%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%27010...%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27read%20of%200xB%20must%20be%20buffered%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
 
-![](waveforms/buffering-required.png)
+![](images/buffering-required.png)
 
 ### Tips
 
@@ -89,11 +89,65 @@ To give you a rough guide to the complexity of the cache, our reference cache im
 
 ## Milestone B: Datapath Integration
 
-TBD
+Now it is time to integrate the cache into your pipeline. As a first step, you will replace the `MemorySingleCycle` with the `AxilMemory` module we have provided. `AxilMemory` behaves like an `AxilCache` that always hits.
 
+The most significant change with `AxilMemory` over `MemorySingleCycle` is that `AxilMemory` runs on the positive edge, instead of running in the middle of each cycle on the negative edge. The ramification is that the Fetch stage is now responsible for calculating a PC and sending it to the imem (via `ARADDR` et al.), but the fetched instruction bits won't come back until the *next* positive edge and thus they are only accessible in the Decode stage (via `RDATA`). So, you can't disassemble the Fetch instruction anymore, because there are no instruction bits in Fetch to disassemble - we only have a PC.
+
+You will need to update your branch misprediction squash logic as well, to account for the fact that the mis-predicted Fetch instruction similarly arrives later, too. With HW5, that mispredicted Fetch instruction was already in the Fetch stage and so could be squashed when going into the registers at the start of the Decode stage. Now with `AxilMemory`, the mispredicted Fetch instruction arrives "directly" in the Decode stage (so it does not go into those Decode registers) and needs to be ignored accordingly. You will need to perform similar updates in the Memory stage, as load results now arrive in the Writeback stage.
+
+To prepare to handle variable-latency memory accesses once the cache is integrated, your design should stall load-dependent insns in Decode until the load is in Writeback and has a response from the memory. Here is the required timing:
+```
+lw x1,0(x2)   FDXMW
+addi x1,x1,x1  FD**XMW
+```
+
+We have updated the parent `Processor` module to allow for a configurable memory hierarchy. To start with, it will connect your datapath with `AxilMemory` acting as both the insn and data caches (since `AxilMemory` has both a read-only port and a read-write port). You can run the tests in this configuration via:
+
+```
+MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorNoCaches testbench.py
+```
+
+### Data Cache Integration
+
+Your next task is to integrate your `AxilCache` with the datapath as a data cache, with `AxilMemory` acting as both the insn memory and as the data memory behind your cache (see diagram below).
+
+![](images/hw6b-memory-hierarchy.png)
+
+With a D$, loads and stores now have *variable* latency depending on whether they hit or miss in the cache (and additionally, whether a writeback was required or not).
+
+Here is the timing with a D$ clean (no writeback) miss. `m` indicates a cycle waiting for a D$ miss.
+```
+lw x1,0(x2)   FDXMmmW
+addi x1,x1,x1  FD****XMW
+```
+
+For simplicity, a D$ miss should stall *all* prior stages of the pipeline. This includes any in-progress divisions in the divider pipeline, which should utilize the `stall` input on the `DividerUnsignedPipelined` module.
+```
+lw x1,0(x2)   FDXMmmW
+addi x3,x3,x3  FDX***MW
+lui x2,0        FD***XMW
+lui x4,0         F***DXMW
+```
+
+Here's how you run the tests with the D$ configuration:
+```
+MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorDataCache testbench.py
+```
+
+The autograder runs all cache tests from HW6A as well as the processor tests in both the no-cache and D$ configurations, via `pytest testbench.py`.
+
+## Tips
+
+This assignment does not require writing a lot of new code, but rather many small changes throughout your existing datapath.
 
 ## Submitting
 
 For HW6A, submit your `AxilCache.sv` file on Gradescope.
 
 For HW6B, run `make resource-check` and then `make zip` and submit the `cache.zip` file on Gradescope.
+
+There is a resource leaderboard for HW6B, but it is strictly informational - no points are awarded based on the leaderboard results.
+
+## Demo
+
+TBD
