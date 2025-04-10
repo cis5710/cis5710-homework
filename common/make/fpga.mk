@@ -60,6 +60,9 @@ check-logs:
 
 $(VERILOG_SYNTH_SOURCE): $(SV_SYNTH_SOURCES) clock-gen
 	sv2v -DSYNTHESIS $(SV_SYNTH_SOURCES) --write=$(VERILOG_SYNTH_SOURCE) --top=$(TOP_MODULE) --incdir=`pwd`
+	sed -i'' -e 's/function static/function/g' $(VERILOG_SYNTH_SOURCE)
+	sed -i'' -e 's/[.]subord//g' $(VERILOG_SYNTH_SOURCE)
+	sed -i'' -e 's/[.]manager//g' $(VERILOG_SYNTH_SOURCE)
 
 synth: synth-yosys
 
