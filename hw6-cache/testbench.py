@@ -1,6 +1,8 @@
 import cocotb
 import json
 import os
+import pytest
+
 
 from pathlib import Path
 from cocotb.clock import Clock
@@ -194,8 +196,13 @@ def runCocotbTestsDmCacheMissBig(pytestconfig):
     )
     pass
 
-def runCocotbTestsDmCache(pytestconfig):
+def runCocotbTestsDmCache(request):
     """calculate scores for autograder"""
+
+    if any(item for item in request.session.items if 'hw6b' in item.keywords):
+        pytest.skip("Skipping because we're in HW6B.")
+    pass
+
     test_results = cu.aggregateTestResults(
         get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheHitSmall.None')),
         get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheHitBig.None')),
@@ -261,6 +268,7 @@ def runCocotbTestsProcessorDataCache(pytestconfig):
     )
     pass
 
+@pytest.mark.hw6b
 def runCocotbTests(pytestconfig):
     """calculate scores for autograder"""
     test_results = cu.aggregateTestResults(
