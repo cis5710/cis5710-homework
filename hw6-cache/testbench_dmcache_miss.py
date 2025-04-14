@@ -312,8 +312,8 @@ async def testConsecutiveWriteMissesWriteBack(dut):
 
     # init RAM
     for i in range(4):
-        dut._log.warning(f'JLD {addr + i * step}')
-        axil_ram.write_dword(addr + i * step, 0xDEADBEEF) 
+        axil_ram.write_dword(addr + i * step, 0xDEADBEEF)
+        pass
     
     # write operation to cache, overwrite happens, dirty cache line
     for i in range(4):
