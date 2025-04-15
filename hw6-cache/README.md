@@ -33,7 +33,7 @@ To handle misses, your cache will need to implement a state machine. We have a r
 These miss tests can be run via:
 ```
 pytest -xs -k runCocotbTestsDmCacheMissSmall testbench.py
-pytest -xs -k runCocotbTestsDmCacheMissLarge testbench.py
+pytest -xs -k runCocotbTestsDmCacheMissBig testbench.py
 ```
 
 The autograder will run all the cache tests via:
@@ -104,7 +104,7 @@ addi x1,x1,x1  FD**XMW
 We have updated the parent `Processor` module to allow for a configurable memory hierarchy. To start with, it will connect your datapath with `AxilMemory` acting as both the insn and data caches (since `AxilMemory` has both a read-only port and a read-write port). You can run the tests in this configuration via:
 
 ```
-MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorNoCaches testbench.py
+MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorNoCache testbench.py
 ```
 
 ### Data Cache Integration
