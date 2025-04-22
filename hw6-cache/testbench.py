@@ -276,7 +276,7 @@ def runCocotbTestsProcessor(pytestconfig):
         # get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheHitBig.None')),
         # get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheMissSmall.None')),
         # get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsDmCacheMissBig.None')),
-        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsProcessorNoCaches.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsProcessorNoCache.None')),
         get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsProcessorDataCache.None')),
     )
     # 1 point per cocotb test
