@@ -92,15 +92,11 @@ module AxilMemory #(
   logic [31:0] ro_araddr;
   logic ro_araddr_valid;
 
-  initial begin
-
 `ifdef SYNTHESIS
-// TODO: fix this absolute path
-    $readmemh(
-        "/Users/devietti/Classes/perennial-comparch/cis5710-homework/hw6-cache/mem_initial_contents.hex",
-        mem_array);
-`endif
+  initial begin
+    $readmemh("mem_initial_contents.hex",mem_array);
   end
+`endif
 
   assign port_ro.RRESP = `RESP_OK;
   assign port_ro.BRESP = `RESP_OK;
