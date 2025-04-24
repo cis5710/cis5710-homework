@@ -462,12 +462,10 @@ async def testLoadJalr(dut):
 Timing without D$:
 FDXMW
  FD**XMW
-  F**DXMW
     
 Timing with D$:
 FDXMddW
  FD****XMW
-  F****DXMW
 """
     await preTestSetup(dut, '''
         lw x1,0(x0)    # loads bits of the lw insn itself
