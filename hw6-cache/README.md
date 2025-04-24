@@ -150,4 +150,6 @@ There is a resource leaderboard for HW6B, but it is strictly informational - no 
 
 ## Demo
 
-TBD
+The demo for this homework is CandyCrvsh, a simplified version of the game for your processor. The Rust source code for the game [is provided](atarvi-native/src/bin/candycrvsh.rs). It is also pre-compiled into `mem_initial_contents.hex`, which Verilog's `readmemh()` function uses to initialize the `AxilMemory` in your design. This is coupled with some hardware devices for generating HDMI video and reading USB gamepad input to turn your processor into a small video game console.
+
+Run `make demo` to build the demo bitstream, then program the board as usual. If all goes well, you should see some candies waiting to be crushed! We've noticed that sometimes the USB gamepad does not work after initial programming, but resetting the design (B0/PWR button) helps. You can also use this button to reset the game if you reach a state without any possible matches.
