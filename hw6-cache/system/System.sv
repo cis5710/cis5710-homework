@@ -47,7 +47,7 @@ axi_if axi_data_cache ();
 axi_if axi_mem_ro ();
 axi_if axi_mem_rw ();
 
-AxilMemory #(.NUM_WORDS(8192)) memory (
+AxilMemory #(.NUM_WORDS(128)) memory (
   .ACLK(clk),
   .ARESETn(~rst),
   .port_ro(axi_mem_ro.subord),
@@ -56,7 +56,8 @@ AxilMemory #(.NUM_WORDS(8192)) memory (
 
   AxilCache #(
     .BLOCK_SIZE_BITS(32),
-    .NUM_SETS(16)) dcache (
+    .NUM_SETS(8))
+    dcache (
     .ACLK(clk),
     .ARESETn(~rst),
     .proc(axi_data_cache.subord),
