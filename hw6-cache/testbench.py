@@ -268,6 +268,32 @@ def runCocotbTestsProcessorDataCache(pytestconfig):
     )
     pass
 
+def runCocotbTestsProcessorBothCaches(pytestconfig):
+    """run processor tests with I$ and D$"""
+
+    verilog_sources = [ PROJECT_PATH / "DatapathPipelinedCache.sv" ]
+    toplevel_module = "Processor"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}','-DENABLE_DATA_CACHE','-DENABLE_INSN_CACHE'],
+    )
+    runr.test(
+        seed=12345,
+        waves=True,
+        extra_env={'CACHES_ENABLED':'Both'}, # see MISS_LATENCY below
+        hdl_toplevel=toplevel_module,
+        test_module=Path(__file__).stem, # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
 @pytest.mark.hw6b
 def runCocotbTestsProcessor(pytestconfig):
     """calculate scores for autograder"""
