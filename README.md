@@ -1,3 +1,7 @@
+# WORK IN PROGRESS
+
+> This repository is in the process of being updated for Spring 2026. Many details are subject to change.
+
 This repository contains the documentation and starter code for the homework assignments in [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/). Below we describe some of the important computing tools you'll need to use this semester.
 
 # Git
