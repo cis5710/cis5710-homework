@@ -1,67 +1,138 @@
-import cocotb, json, os
+import cocotb, json, os, sys, random
 
 from pathlib import Path
 from cocotb.runner import get_runner, get_results
 from cocotb.triggers import Timer
 
-# directory where our simulator will compile our tests + code
-SIM_BUILD_DIR = "sim_build"
+# directory for this homework
+PROJECT_PATH = Path(__file__).resolve().parent
 
+p = Path.cwd() / '..' / 'common' / 'python'
+sys.path.append(str(p))
+import cocotb_utils as cu
+from cocotb_utils import assertEquals
+
+# for deterministic random numbers
+random.seed(12345)
+
+def runCocotbTestsHalfAdder(pytestconfig):
+    """run half adder tests"""
+
+    verilog_sources = [ PROJECT_PATH / "rca.sv" ]
+    toplevel_module = "halfadder"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from the current file
+        testcase="test_" + toplevel_module
+    )
+    pass
+
+def runCocotbTestsFullAdder1(pytestconfig):
+    """run fulladder1 tests"""
+
+    verilog_sources = [ PROJECT_PATH / "rca.sv" ]
+    toplevel_module = "fulladder1"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from the current file
+        testcase="test_" + toplevel_module
+    )
+    pass
+
+def runCocotbTestsFullAdder2(pytestconfig):
+    """run fulladder2 tests"""
+
+    verilog_sources = [ PROJECT_PATH / "rca.sv" ]
+    toplevel_module = "fulladder2"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from the current file
+        testcase="test_" + toplevel_module
+    )
+    pass
+
+def runCocotbTestsRca4(pytestconfig):
+    """run rca4 tests"""
+
+    verilog_sources = [ PROJECT_PATH / "rca.sv" ]
+    toplevel_module = "rca4"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS,
+    )
+
+    runr.test(
+        seed=12345,
+        waves=True,
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from the current file
+        testcase="test_" + toplevel_module
+    )
+    pass
 
 def runCocotbTests(pytestconfig):
-    """setup cocotb tests, based on https://docs.cocotb.org/en/stable/runner.html"""
-
-    sim = os.getenv("SIM", "verilator")
-    proj_path = Path(__file__).resolve().parent
-    verilog_sources = [proj_path / "rca.sv" ]
-
-    # by default, run all tests
-    all_tests = ["halfadder", "fulladder", "fulladder2", "rca4"]
-    tests_to_run = all_tests
-
-    if pytestconfig.option.tests != "":
-        tests_to_run = []
-        # filter the tests to run
-        tests_requested = pytestconfig.option.tests.split(",")
-        for tr in tests_requested:
-            assert tr in all_tests, f'Invalid test "{tr}" requested, expecting a comma-separated list from {all_tests}'
-            tests_to_run.append(tr)
-            pass
+    """calculate scores for autograder"""
+    test_results = cu.aggregateTestResults(
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsHalfAdder.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsFullAdder1.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsFullAdder2.None')),
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsRca4.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open(cu.POINTS_FILE, 'w') as f:
+        json.dump(points, f, indent=2)
         pass
-
-    pointsEarned = 0
-    try:
-        for top_module in tests_to_run:
-            runr = get_runner(sim)
-            runr.build(
-                verilog_sources=verilog_sources,
-                vhdl_sources=[],
-                hdl_toplevel=top_module,
-                includes=[proj_path],
-                build_dir=SIM_BUILD_DIR,
-                always=True,
-                waves=True,
-                build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace-fst','--trace-structs']
-            ),
-
-            results_file = runr.test(
-                seed=12345,
-                waves=True,
-                hdl_toplevel=top_module, 
-                test_module=Path(__file__).stem, # use tests from this file
-                testcase="test_"+top_module,
-            )
-            total_failed = get_results(results_file)
-            # 1 point per test
-            pointsEarned += total_failed[0] - total_failed[1]
-            pass
-    finally:
-        points = { 'pointsEarned': pointsEarned, 'pointsPossible': len(all_tests) }
-        with open('points.json', 'w') as f:
-            json.dump(points, f, indent=2)
-            pass
-        pass
-
+    pass
 
 
 #########################
@@ -78,23 +149,23 @@ async def test_halfadder(dut):
             await Timer(1, "ns")
             if a == 0 and b == 0:
                 # 0 + 0 == 0
-                assert 0 == dut.s.value
-                assert 0 == dut.cout.value
+                assertEquals(0, dut.s.value)
+                assertEquals(0, dut.cout.value)
             elif a == 1 and b == 1:
                 # 1 + 1 == 2'b10
-                assert 0 == dut.s.value
-                assert 1 == dut.cout.value
+                assertEquals(0, dut.s.value)
+                assertEquals(1, dut.cout.value)
             else:
                 # 1+0 (or 0+1) == 1
-                assert 1 == dut.s.value
-                assert 0 == dut.cout.value
+                assertEquals(1, dut.s.value)
+                assertEquals(0, dut.cout.value)
                 pass
             pass
         pass
     pass
 
 @cocotb.test()
-async def test_fulladder(dut):
+async def test_fulladder1(dut):
     for a in [0,1]:
         for b in [0,1]:
             for c in [0,1]:
@@ -105,17 +176,17 @@ async def test_fulladder(dut):
                 await Timer(1, "ns")
                 sum = a + b + c
                 if 0 == sum:
-                    assert 0 == dut.s.value
-                    assert 0 == dut.cout.value
+                    assertEquals(0, dut.s.value)
+                    assertEquals(0, dut.cout.value)
                 elif 1 == sum:
-                    assert 1 == dut.s.value
-                    assert 0 == dut.cout.value
+                    assertEquals(1, dut.s.value)
+                    assertEquals(0, dut.cout.value)
                 elif 2 == sum:
-                    assert 0 == dut.s.value
-                    assert 1 == dut.cout.value
+                    assertEquals(0, dut.s.value)
+                    assertEquals(1, dut.cout.value)
                 else:
-                    assert 1 == dut.s.value
-                    assert 1 == dut.cout.value
+                    assertEquals(1, dut.s.value)
+                    assertEquals(1, dut.cout.value)
                     pass
                 pass
             pass
@@ -134,7 +205,7 @@ async def test_fulladder2(dut):
                 await Timer(1, "ns")
                 expected_sum = a + b + c
                 actual_sum = dut.s.value + (dut.cout.value << 2)
-                assert expected_sum == actual_sum, f'expected {a}+{b}+{c} == {expected_sum} but it was {dut.s.value} + {dut.cout.value} == {actual_sum}'
+                assertEquals(expected_sum, actual_sum, f'expected {a}+{b}+{c} == {expected_sum} but it was {dut.s.value} + {dut.cout.value} == {actual_sum}')
                 pass
             pass
         pass
@@ -153,8 +224,8 @@ async def test_rca4(dut):
                 expected_cout = ((a + b) & 0x10) >> 4
                 actual_sum = dut.sum.value
                 actual_cout = dut.carry_out.value
-                assert expected_sum == actual_sum, f'expected {a}+{b} == {expected_sum} but it was {actual_sum}'
-                assert expected_cout == actual_cout, f'expected carry-out of {a}+{b} to be {expected_cout} but it was {actual_cout}'
+                assertEquals(expected_sum, actual_sum, f'expected {a}+{b} == {expected_sum} but it was {actual_sum}')
+                assertEquals(expected_cout, actual_cout, f'expected carry-out of {a}+{b} to be {expected_cout} but it was {actual_cout}')
                 pass
             pass
         pass

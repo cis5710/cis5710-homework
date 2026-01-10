@@ -15,9 +15,9 @@ module halfadder(input wire  a,
    assign cout = a & b;
 endmodule
 
-/* A full adder adds three 1-bit numbers (a, b, carry-in) and produces a 2-bit
+/* A 1-bit full adder adds three 1-bit numbers (a, b, carry-in) and produces a 2-bit
  * result (as sum and carry-out) */
-module fulladder(input wire  cin,
+module fulladder1(input wire  cin,
                  input wire  a,
                  input wire  b,
                  output wire s,
@@ -35,8 +35,8 @@ module fulladder2(input wire        cin,
                   output wire [1:0] s,
                   output wire       cout);
    wire cout_tmp;
-   fulladder a0(.cin(cin), .a(a[0]), .b(b[0]), .s(s[0]), .cout(cout));
-   fulladder a1(.cin(cout_tmp), .a(a[1]), .b(b[1]), .s(s[0]), .cout(cout_tmp));
+   fulladder1 a0(.cin(cin), .a(a[0]), .b(b[0]), .s(s[0]), .cout(cout));
+   fulladder1 a1(.cin(cout_tmp), .a(a[1]), .b(b[1]), .s(s[0]), .cout(cout_tmp));
 endmodule
 
 /* 4-bit ripple-carry adder that adds two 4-bit numbers */

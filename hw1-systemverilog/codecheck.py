@@ -10,8 +10,8 @@ sys.path.append(str(p))
 import main_codecheck
 
 def objectIsLegal(filename, obj):
-    """Returns a tuple. First parameter is True if this object describes a legal code construct, False if an illegal one. 
-Second parameter is True if we should continue to iterate into descendent objects, False if we should not."""
+    """Returns a tuple. First element is True if this object describes a legal code construct, False if an illegal one. 
+Second element is True if we should continue to iterate into descendent objects, False if we should not."""
     
     if 'tag' not in obj:
         return (True,True)
