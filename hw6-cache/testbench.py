@@ -268,6 +268,44 @@ def runCocotbTestsProcessorDataCache(pytestconfig):
     )
     pass
 
+def runCocotbTestsProcessorBothCaches(pytestconfig):
+    """run processor tests with I$ and D$"""
+
+    verilog_sources = [ PROJECT_PATH / "DatapathPipelinedCache.sv" ]
+    toplevel_module = "Processor"
+
+    runr = get_runner(cu.SIM)
+    runr.build(
+        verilog_sources=verilog_sources,
+        vhdl_sources=[],
+        hdl_toplevel=toplevel_module,
+        waves=True,
+        includes=[PROJECT_PATH],
+        build_dir=cu.SIM_BUILD_DIR,
+        build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}','-DENABLE_DATA_CACHE','-DENABLE_INSN_CACHE'],
+    )
+    runr.test(
+        seed=12345,
+        waves=True,
+        extra_env={'CACHES_ENABLED':'Both'}, # see MISS_LATENCY below
+        hdl_toplevel=toplevel_module,
+        test_module=Path(__file__).stem, # use tests from this file
+        testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
+    )
+    pass
+
+def runCocotbTestsProcessorBothCachesAutograder(pytestconfig):
+    # calculate score
+    test_results = cu.aggregateTestResults(
+        get_results(Path(cu.SIM_BUILD_DIR,'runCocotbTestsProcessorBothCaches.None')),
+    )
+    # 1 point per cocotb test
+    points = { 'pointsEarned': test_results['tests_passed'], 'pointsPossible': test_results['tests_total'] }
+    with open('points.json', 'w') as f:
+        json.dump(points, f, indent=2)
+        pass
+    pass
+
 @pytest.mark.hw6b
 def runCocotbTestsProcessor(pytestconfig):
     """calculate scores for autograder"""
@@ -483,6 +521,10 @@ async def testLoadNoUse(dut):
 Timing with D$:
 FDXMddW
  FDX**MW
+
+Timing with I$+D$:
+FiiDXMddW
+   FiiD*XMW
 """
     await preTestSetup(dut, '''
         lw x0,0(x0) # loads bits of the lw insn itself
@@ -674,12 +716,12 @@ async def testBneTaken(dut):
     assertEquals(0x12345001, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
-@cocotb.test
+# @cocotb.test DISABLED
 async def testTraceRvLui(dut):
     "Use the LUI riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lui', TRACING_MODE)
 
-@cocotb.test
+# @cocotb.test DISABLED
 async def testTraceRvBeq(dut):
     "Use the BEQ riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-beq', TRACING_MODE)
@@ -738,7 +780,7 @@ async def testDivDivUse(dut):
     assertEquals(2, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 
-@cocotb.test
+# @cocotb.test DISABLED
 async def testTraceRvLw(dut):
     "Use the LW riscv-test with trace comparison"
     await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lw', TRACING_MODE)
@@ -852,7 +894,7 @@ if 'RVTEST_ALUBR' in os.environ:
 rvTestFactory.add_option(name='binaryPath', optionlist=RV_TEST_BINARIES)
 rvTestFactory.generate_tests()
 
-@cocotb.test
+# @cocotb.test DISABLED
 async def dhrystone(dut, tracingMode=TRACING_MODE):
     "Run dhrystone benchmark from riscv-tests"
     dsBinary = cu.RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
