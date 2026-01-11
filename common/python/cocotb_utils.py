@@ -94,22 +94,22 @@ _CYCLE_STATUS_ENUM = None
 def handleTrace(dut, trace, traceIdx, tracingMode):
     global _CYCLE_STATUS_ENUM
     if _CYCLE_STATUS_ENUM is None:
-        _CYCLE_STATUS_ENUM = extractSVEnum('../../hw5-pipelined/cycle_status.sv', 'cycle_status_e')
+        _CYCLE_STATUS_ENUM = extractSVEnum('../../hw3-singlecycle/cycle_status.sv', 'cycle_status_e')
         pass
     if tracingMode == 'generate':
         traceElem = {}
         traceElem['cycle'] = dut.datapath.cycles_current.value.integer
-        traceElem['trace_writeback_pc'] = f'0x{dut.datapath.trace_writeback_pc.value.integer:x}'
-        traceElem['trace_writeback_insn'] = f'0x{dut.datapath.trace_writeback_insn.value.integer:08x}'
-        status_int = dut.datapath.trace_writeback_cycle_status.value.integer
-        traceElem['trace_writeback_cycle_status'] = intToEnumString(status_int, _CYCLE_STATUS_ENUM)
+        traceElem['trace_completed_pc'] = f'0x{dut.datapath.trace_completed_pc.value.integer:x}'
+        traceElem['trace_completed_insn'] = f'0x{dut.datapath.trace_completed_insn.value.integer:08x}'
+        status_int = dut.datapath.trace_completed_cycle_status.value.integer
+        traceElem['trace_completed_cycle_status'] = intToEnumString(status_int, _CYCLE_STATUS_ENUM)
         trace.append(traceElem)
     elif tracingMode == 'compare':
         traceElem = trace[traceIdx]
         msg = f'trace validation error at cycle {traceElem["cycle"]}'
-        assertEquals(int(traceElem['trace_writeback_pc'],16), dut.datapath.trace_writeback_pc.value.integer, msg)
-        assertEquals(int(traceElem['trace_writeback_insn'],16), dut.datapath.trace_writeback_insn.value.integer, msg)
-        actual_status = intToEnumString(dut.datapath.trace_writeback_cycle_status.value.integer, _CYCLE_STATUS_ENUM)
-        assertEquals(traceElem['trace_writeback_cycle_status'], actual_status, msg)
+        assertEquals(int(traceElem['trace_completed_pc'],16), dut.datapath.trace_completed_pc.value.integer, msg)
+        assertEquals(int(traceElem['trace_completed_insn'],16), dut.datapath.trace_completed_insn.value.integer, msg)
+        actual_status = intToEnumString(dut.datapath.trace_completed_cycle_status.value.integer, _CYCLE_STATUS_ENUM)
+        assertEquals(traceElem['trace_completed_cycle_status'], actual_status, msg)
         pass
     return

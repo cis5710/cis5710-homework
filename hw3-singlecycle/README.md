@@ -30,12 +30,16 @@ You will need to use your CLA adder from HW2B to implement the `addi`, `add` and
 
 The assembly code for each RV test is available to help you understand what each test is doing. For example, the assembly for the `rv32ui-p-lui` test is in the file [`../riscv-tests/isa/rv32ui-p-lui.dump`](../riscv-tests/isa/rv32ui-p-lui.dump), which you can view with a text editor. While these RV tests contain a relatively small number of instructions, you may find it helpful to also create your own test cases that produce shorter waveforms and allow for quicker debugging. You can follow the template of the existing tests in `testbench.py` to write your own tests in RV assembly, which will get assembled into machine code and loaded into the processor's memory for execution.
 
+### Datapath trace outputs
+
+To validate your design more fully and to ease debugging on longer tests, we have also introduced cycle-level test traces in this homework. Your datapath will need to set the `trace_*` output signals to identify, in each cycle, what instruction your datapath is working on. See the documentation in `DatapathSingleCycle.sv` on these ports for details. We have provided cycle-by-cycle traces of the expected behavior for your processor in the `trace-*.json` files. The testbench will compare your processor's output against these traces for the LUI and BEQ riscv-tests (see `testTraceRvLui` and `testTraceRvBeq` in `testbench.py`). For the other riscv-tests we check only functional correctness, not cycle-level timing.
+
 
 ## HW3B: Remaining Instructions
 
 In this second milestone, you will need to support the remaining rv32im instructions. The memory instructions, with multi-byte loads and stores, will likely be where you spend the most time. Note that your processor does not need to support misaligned memory accesses, and we don't run the `rv32ui-p-ma_data` test that would exercise these cases.
 
-You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest --exitfirst --capture=no testbench.py` to run all of the RV tests against your processor. This will also run the larger [Dhrystone benchmark](https://en.wikipedia.org/wiki/Dhrystone) ([source code here](https://github.com/cis5710/riscv-tests/tree/master/benchmarks/dhrystone)) which runs about 190k instructions through your processor, and will allow us to make performance comparisons across the processors we build.
+You should instantiate your divider from HW2A and use it to implement the divide and remainder instructions. You can use the `*` operator for multiply. For this milestone, the autograder will run `pytest --exitfirst --capture=no testbench.py` to run all of the RV tests against your processor. This will also run the larger [Dhrystone benchmark](https://en.wikipedia.org/wiki/Dhrystone) ([source code here](https://github.com/cis5710/riscv-tests/tree/master/benchmarks/dhrystone)) which runs about 190k instructions through your processor, and will allow us to make performance comparisons across the processors we build. Dhrystone is another trace test, where we compare your datapath's output cycle-by-cycle against the trace from our reference code.
 
 All told, your implementation should need around 300-400 lines of code.
 

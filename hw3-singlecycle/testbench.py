@@ -245,28 +245,20 @@ async def testEcall(dut):
     assertEquals(0, dut.datapath.halt.value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
     pass
 
-@cocotb.test()  
-async def testOneRiscvTest(dut):
-    "Use this to run one particular riscv test"
-    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-simple')
+@cocotb.test()
+async def testTraceRvLui(dut):
+    "Use the LUI riscv-test with trace comparison"
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lui', TRACING_MODE)
 
-async def riscvTest(dut, binaryPath=None):
-    "Run the official RISC-V test whose binary lives at `binaryPath`"
-    assert binaryPath is not None
-    assert binaryPath.exists(), f'Could not find RV test binary {binaryPath}, have you built riscv-tests?'
-    await preTestSetup(dut, binaryPath)
+@cocotb.test()
+async def testTraceRvBeq(dut):
+    "Use the BEQ riscv-test with trace comparison"
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-beq', TRACING_MODE)
 
-    dut._log.info(f'Running RISC-V test at {binaryPath}')
-    for cycles in range(TIMEOUT_CYCLES):
-        await RisingEdge(dut.clock_proc)
-        if dut.halt.value == 1:
-            # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
-            assertEquals(93, dut.datapath.rf.regs[17].value.integer) # magic value from pass/fail functions
-            resultCode = dut.datapath.rf.regs[10].value.integer
-            assertEquals(0, resultCode, f'failed test {resultCode >> 1} at cycle {dut.datapath.cycles_current.value.integer}')
-            return
-        pass
-    raise SimTimeoutError()
+
+#########################
+## FULL ISA TEST CASES ##
+#########################
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testStoreLoad(dut):
@@ -281,31 +273,43 @@ async def testStoreLoad(dut):
     assertEquals(0x12345000, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
 
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
-async def dhrystone(dut):
-    "Run dhrystone benchmark from riscv-tests"
-    dsBinary = cu.RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
-    assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
-    await preTestSetup(dut, dsBinary)
+async def testTraceRvLw(dut):
+    "Use the LW riscv-test with trace comparison"
+    await riscvTest(dut, cu.RISCV_TESTS_PATH / 'rv32ui-p-lw', TRACING_MODE)
+    
+# tracingMode argument is one of `generate`, `compare` or None
+async def riscvTest(dut, binaryPath=None, tracingMode=None):
+    "Run the official RISC-V test whose binary lives at `binaryPath`"
+    assert binaryPath is not None
+    assert binaryPath.exists(), f'Could not find RV test binary {binaryPath}, have you built riscv-tests?'
+    await preTestSetup(dut, binaryPath)
 
-    dut._log.info(f'Running Dhrystone benchmark (takes 193k cycles)...')
-    for cycles in range(210_000):
-        await RisingEdge(dut.clock_proc)
-        if cycles > 0 and 0 == cycles % 10_000:
-            dut._log.info(f'ran {int(cycles/1000)}k cycles...')
+    trace = []
+    if tracingMode == 'compare':
+        # use ../ since we run from the sim_build directory
+        with open(f'../trace-{binaryPath.name}.json', 'r', encoding='utf-8') as f:
+            trace = json.load(f)
             pass
+        pass
+
+    dut._log.info(f'Running RISC-V test at {binaryPath} with tracingMode == {tracingMode}')
+    for cycles in range(TIMEOUT_CYCLES):
+        await RisingEdge(dut.clock_proc)
+
+        cu.handleTrace(dut, trace, cycles, tracingMode)
         if dut.halt.value == 1:
-            # there are 22 output checks, each sets 1 bit
-            expectedValue = (1<<22) - 1
-            assertEquals(expectedValue, dut.datapath.rf.regs[5].value.integer)
-            latency_millis = (cycles / 5_000_000) * 1000
-            dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 5MHz clock')
+            # see RVTEST_PASS and RVTEST_FAIL macros in riscv-tests/env/p/riscv_test.h
+            assertEquals(93, dut.datapath.rf.regs[17].value.integer) # magic value from pass/fail functions
+            resultCode = dut.datapath.rf.regs[10].value.integer
+            assert 0 == resultCode, f'failed test {resultCode >> 1} at cycle {dut.datapath.cycles_current.value.integer}'
+            if tracingMode == 'generate':
+                with open(f'trace-{binaryPath.name}.json', 'w', encoding='utf-8') as f:
+                    json.dump(trace, f, indent=2)
+                    pass
             return
         pass
     raise SimTimeoutError()
 
-#RISCV_TESTS_PATH = Path('../riscv-tests/isa')
-
-#assert cu.RISCV_TESTS_PATH.relative_to('.').exists(), f"Couldn't read riscv-tests from {cu.RISCV_TESTS_PATH}"
 RV_TEST_BINARIES = [
     cu.RISCV_TESTS_PATH / 'rv32ui-p-simple', # 1
     cu.RISCV_TESTS_PATH / 'rv32ui-p-lui',
@@ -375,3 +379,42 @@ if 'RVTEST_ALUBR' in os.environ:
     pass
 rvTestFactory.add_option(name='binaryPath', optionlist=RV_TEST_BINARIES)
 rvTestFactory.generate_tests()
+
+@cocotb.test(skip='RVTEST_ALUBR' in os.environ)
+async def dhrystone(dut, tracingMode=TRACING_MODE):
+    "Run dhrystone benchmark from riscv-tests"
+    dsBinary = cu.RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
+    assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
+    await preTestSetup(dut, dsBinary)
+
+    trace = []
+    if tracingMode == 'compare':
+        # use ../ since we run from the sim_build directory
+        with open(f'../trace-{dsBinary.name}.json', 'r', encoding='utf-8') as f:
+            trace = json.load(f)
+            pass
+        pass
+
+    dut._log.info(f'Running Dhrystone benchmark (takes 260k cycles)... with tracingMode == {tracingMode}')
+    for cycles in range(280_000):
+        await RisingEdge(dut.clock_proc)
+
+        cu.handleTrace(dut, trace, cycles, tracingMode)
+        if cycles > 0 and 0 == cycles % 10_000:
+            dut._log.info(f'ran {int(cycles/1000)}k cycles...')
+            pass
+        if dut.halt.value == 1:
+            # there are 22 output checks, each sets 1 bit
+            expectedValue = (1<<22) - 1
+            assertEquals(expectedValue, dut.datapath.rf.regs[5].value.integer)
+            latency_millis = (cycles / 15_000_000) * 1000
+            dut._log.info(f'dhrystone passed after {cycles} cycles, {latency_millis} milliseconds with 15MHz clock')
+            
+            if tracingMode == 'generate':
+                with open(f'trace-{dsBinary.name}.json', 'w', encoding='utf-8') as f:
+                    json.dump(trace, f, indent=2)
+                    pass
+            
+            return
+        pass
+    raise SimTimeoutError()

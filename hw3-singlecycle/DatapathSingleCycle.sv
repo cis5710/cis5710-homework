@@ -3,11 +3,15 @@
 // registers are 32 bits in RV32
 `define REG_SIZE 31:0
 
+// insns are 32 bits in RV32IM
+`define INSN_SIZE 31:0
+
 // RV opcodes are 7 bits
 `define OPCODE_SIZE 6:0
 
 `include "../hw2a-divider/DividerUnsigned.sv"
 `include "../hw2b-cla/CarryLookaheadAdder.sv"
+`include "cycle_status.sv"
 
 module RegFile (
     input logic [4:0] rd,
@@ -29,16 +33,23 @@ module RegFile (
 endmodule
 
 module DatapathSingleCycle (
-    input wire clk,
-    input wire rst,
-    output logic halt,
-    output logic [`REG_SIZE] pc_to_imem,
-    input wire [`REG_SIZE] insn_from_imem,
-    // addr_to_dmem is a read-write port
-    output logic [`REG_SIZE] addr_to_dmem,
-    input logic [`REG_SIZE] load_data_from_dmem,
-    output logic [`REG_SIZE] store_data_to_dmem,
-    output logic [3:0] store_we_to_dmem
+    input wire                clk,
+    input wire                rst,
+    output logic              halt,
+    output logic [`REG_SIZE]  pc_to_imem,
+    input wire [`INSN_SIZE]   insn_from_imem,
+    // addr_to_dmem is used for both loads and stores
+    output logic [`REG_SIZE]  addr_to_dmem,
+    input logic [`REG_SIZE]   load_data_from_dmem,
+    output logic [`REG_SIZE]  store_data_to_dmem,
+    output logic [3:0]        store_we_to_dmem,
+
+    // the PC of the insn executing in the current cycle
+    output logic [`REG_SIZE]  trace_completed_pc,
+    // the machine code of the insn executing in the current cycle
+    output logic [`INSN_SIZE] trace_completed_insn,
+    // the cycle status of the current cycle: should always be CYCLE_NO_STALL
+    output cycle_status_e     trace_completed_cycle_status
 );
 
   // components of the instruction
@@ -234,7 +245,7 @@ module MemorySingleCycle #(
     input wire [`REG_SIZE] pc_to_imem,
 
     // the value at memory location pc_to_imem
-    output logic [`REG_SIZE] insn_from_imem,
+    output logic [`INSN_SIZE] insn_from_imem,
 
     // must always be aligned to a 4B boundary
     input wire [`REG_SIZE] addr_to_dmem,
@@ -310,13 +321,17 @@ prepare register/PC updates, which occur at @posedge clock_proc.
  mem:  ___|    |___
 */
 module Processor (
-    input  wire  clock_proc,
-    input  wire  clock_mem,
-    input  wire  rst,
-    output logic halt
+    input wire               clock_proc,
+    input wire               clock_mem,
+    input wire               rst,
+    output wire [`REG_SIZE]  trace_completed_pc,
+    output wire [`INSN_SIZE] trace_completed_insn,
+    output cycle_status_e    trace_completed_cycle_status, 
+    output logic             halt
 );
 
-  wire [`REG_SIZE] pc_to_imem, insn_from_imem, mem_data_addr, mem_data_loaded_value, mem_data_to_write;
+  wire [`REG_SIZE] pc_to_imem, mem_data_addr, mem_data_loaded_value, mem_data_to_write;
+  wire [`INSN_SIZE] insn_from_imem;
   wire [3:0] mem_data_we;
 
   // This wire is set by cocotb to the name of the currently-running test, to make it easier
@@ -347,6 +362,9 @@ module Processor (
       .store_data_to_dmem(mem_data_to_write),
       .store_we_to_dmem(mem_data_we),
       .load_data_from_dmem(mem_data_loaded_value),
+      .trace_completed_pc(trace_completed_pc),
+      .trace_completed_insn(trace_completed_insn),
+      .trace_completed_cycle_status(trace_completed_cycle_status),
       .halt(halt)
   );
 
