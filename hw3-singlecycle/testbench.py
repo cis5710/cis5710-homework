@@ -193,6 +193,36 @@ async def testAddiAll(dut):
     pass
 
 @cocotb.test()
+async def testSlli(dut):
+    "Run slli"
+    await preTestSetup(dut, '''
+    addi x1,x0,8
+    slli x1,x1,2''')
+
+    await ClockCycles(dut.clock_proc, 3)
+    assertEquals(32, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test()
+async def testOri(dut):
+    "Run ori"
+    await preTestSetup(dut, '''
+    addi x1,x0,8
+    ori x1,x1,7''')
+
+    await ClockCycles(dut.clock_proc, 3)
+    assertEquals(15, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test()
+async def testOriSext(dut):
+    "Test ori sign-extension"
+    await preTestSetup(dut, '''
+    addi x1,x0,3
+    ori x1,x1,-4''')
+
+    await ClockCycles(dut.clock_proc, 3)
+    assertEquals(0xFFFF_FFFF, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+
+@cocotb.test()
 async def testBneNotTaken(dut):
     "bne which is not taken"
     await preTestSetup(dut, '''
@@ -224,6 +254,19 @@ async def testBneTaken(dut):
     await preTestSetup(dut, '''
         lui x1,0x12345
         bne x1,x0,target
+        lui x1,0x54321
+        target: lui x0,0''')
+
+    await ClockCycles(dut.clock_proc, 4)
+    assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
+    pass
+
+@cocotb.test()
+async def testBeqTaken(dut):
+    "beq which is taken"
+    await preTestSetup(dut, '''
+        lui x1,0x12345
+        beq x1,x1,target
         lui x1,0x54321
         target: lui x0,0''')
 
