@@ -18,8 +18,8 @@ random.seed(12345)
 def runCocotbTests1iter(pytestconfig):
     """run 1iter tests"""
 
-    verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
-    toplevel_module = "divu_1iter"
+    verilog_sources = [ PROJECT_PATH / "DividerUnsigned.sv" ]
+    toplevel_module = "DividerOneIter"
 
     runr = get_runner(cu.SIM)
     runr.build(
@@ -44,8 +44,8 @@ def runCocotbTests1iter(pytestconfig):
 def runCocotbTestsDivider(pytestconfig):
     """run divider tests"""
 
-    verilog_sources = [ PROJECT_PATH / "divider_unsigned.sv" ]
-    toplevel_module = "divider_unsigned"
+    verilog_sources = [ PROJECT_PATH / "DividerUnsigned.sv" ]
+    toplevel_module = "DividerUnsigned"
 
     runr = get_runner(cu.SIM)
     runr.build(

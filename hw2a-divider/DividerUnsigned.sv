@@ -4,7 +4,7 @@
 
 // quotient = dividend / divisor
 
-module divider_unsigned (
+module DividerUnsigned (
     input  wire [31:0] i_dividend,
     input  wire [31:0] i_divisor,
     output wire [31:0] o_remainder,
@@ -16,7 +16,7 @@ module divider_unsigned (
 endmodule
 
 
-module divu_1iter (
+module DividerOneIter (
     input  wire [31:0] i_dividend,
     input  wire [31:0] i_divisor,
     input  wire [31:0] i_remainder,

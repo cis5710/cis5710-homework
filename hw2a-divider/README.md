@@ -51,7 +51,7 @@ same checks yourself before submitting.
 
 ## Schematic
 
-Draw a detailed schematic (by hand or computerized) of your hardware design for the divider. You should include signal names, module names, port names and bus widths. You can leave a module as a black box to simplify things, but then you should show elsewhere on the schematic what that black box does. Simple modules (muxes and any SystemVerilog operators you are allowed to use) can be drawn as in the lecture slides or as a simple box with a label; they don't need further elaboration. For the `divider_unsigned` module, you don't need to draw all 32 instances of the `divu_1iter` module, but should show **the first two and the last one** to demonstrate that you know how to wire them together.
+Draw a detailed schematic (by hand or computerized) of your hardware design for the divider. You should include signal names, module names, port names and bus widths. You can leave a module as a black box to simplify things, but then you should show elsewhere on the schematic what that black box does. Simple modules (muxes and any SystemVerilog operators you are allowed to use) can be drawn as in the lecture slides or as a simple box with a label; they don't need further elaboration. For the `DividerUnsigned` module, you don't need to draw all 32 instances of the `DividerOneIter` module, but should show **the first two and the last one** to demonstrate that you know how to wire them together.
 
 See also [the example schematic for HW1](../hw1-systemverilog/hw1-schematic.pdf). Grading of the schematics will be on a full-credit/no-credit basis. We won't rigorously examine the correctness of your design, but instead aim to give you quick feedback about obvious flaws. Still, it behooves you to invest time in your schematic to catch bugs up-front, instead of looking at waveforms or code.
 
@@ -61,7 +61,7 @@ When your schematic is complete, you can translate it directly into SystemVerilo
 
 ## Writing your code
 
-Begin with the `divu_1iter` module that does one iteration of the division
+Begin with the `DividerOneIter` module that does one iteration of the division
 operation. You can then instantiate this module 32 times to form the full
 divider. Think about how each output value is computed from the inputs.
 
@@ -70,17 +70,17 @@ instances. It is quite tedious (and error-prone) to connect them by hand.
 
 ## Tests
 
-We have provided tests for both the `divu_1iter` and `divider_unsigned`
+We have provided tests for both the `DividerOneIter` and `DividerUnsigned`
 modules. You can run tests via the command
 
 ```
 MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py
 ```
 
-This runs the `divu_1iter` tests and then the `divider_unsigned` tests, exiting at the first failure.
+This runs the `DividerOneIter` tests and then the `DividerUnsigned` tests, exiting at the first failure.
 There are only a couple simple tests provided in the `testbench*.py` files, so you may find it useful to use
 these as a template for adding your own tests to cover various corner cases.
 
 ## Submitting your code
 
-Submit your `divider_unsigned.sv` file via Gradescope.
+Submit your `DividerUnsigned.sv` file via Gradescope.
