@@ -23,6 +23,10 @@ PROJECT_PATH = Path(__file__).resolve().parent
 
 TIMEOUT_CYCLES = 1_000
 
+TRACING_MODE = 'compare' # compare against the solution trace
+#TRACING_MODE = None # don't compare against or generate a trace
+#TRACING_MODE = 'generate' # generate a new trace (for staff only)
+
 def runCocotbTestsRegisterFile(pytestconfig):
     """run register file tests"""
 
@@ -104,7 +108,7 @@ async def memClock(dut):
 import inspect
 from cocotb.binary import BinaryValue
 
-async def preTestSetup(dut):
+async def preTestSetup(dut, insns_or_path):
     """Setup the DUT. MUST be called at the start of EACH test."""
     # Create processor clock
     proc_clock = Clock(dut.clock_proc, 4, units="ns")
@@ -116,7 +120,15 @@ async def preTestSetup(dut):
 
     # raise `rst` signal for one rising edge
     dut.rst.value = 1
-    await ClockCycles(dut.clock_proc, 2)
+    await ClockCycles(dut.clock_proc, 1)
+    # load the code
+    if isinstance(insns_or_path,Path):
+        riscv_binary_utils.loadBinaryIntoMemory(dut,insns_or_path)
+    else:
+        riscv_binary_utils.asm(dut,insns_or_path)
+        pass
+    await ClockCycles(dut.clock_proc, 1)
+        
     # lower `rst` signal
     dut.rst.value = 0
     # design should be reset now
@@ -140,8 +152,7 @@ async def preTestSetup(dut):
 @cocotb.test()
 async def testLui(dut):
     "Run one lui insn"
-    riscv_binary_utils.asm(dut, 'lui x1,0x12345')
-    await preTestSetup(dut)
+    await preTestSetup(dut, 'lui x1,0x12345')
 
     await ClockCycles(dut.clock_proc, 2)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -149,8 +160,7 @@ async def testLui(dut):
 @cocotb.test()
 async def testAddi(dut):
     "Run one addi insn"
-    riscv_binary_utils.asm(dut, 'addi x1,x0,9')
-    await preTestSetup(dut)
+    await preTestSetup(dut, 'addi x1,x0,9')
 
     await ClockCycles(dut.clock_proc, 2)
     assertEquals(9, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -158,10 +168,9 @@ async def testAddi(dut):
 @cocotb.test()
 async def testLuiAddi(dut):
     "Run two insns to check PC incrementing"
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         addi x1,x1,0x678''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 3)
     assertEquals(0x12345678, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -173,8 +182,7 @@ async def testAddiAll(dut):
     for imm in range(-2048,2048):
         code += f'addi x1,x0,{imm}\n'
         pass
-    riscv_binary_utils.asm(dut, code)
-    await preTestSetup(dut)
+    await preTestSetup(dut, code)
     await RisingEdge(dut.clock_proc)
 
     for imm in range(-2048,2047):
@@ -187,12 +195,11 @@ async def testAddiAll(dut):
 @cocotb.test()
 async def testBneNotTaken(dut):
     "bne which is not taken"
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         bne x0,x0,target
         lui x1,0x54321
         target: lui x0,0''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
     assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -201,12 +208,11 @@ async def testBneNotTaken(dut):
 @cocotb.test()
 async def testBeqNotTaken(dut):
     "beq which is not taken"
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         beq x1,x0,target
         lui x1,0x54321
         target: lui x0,0''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
     assertEquals(0x54321000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -215,12 +221,11 @@ async def testBeqNotTaken(dut):
 @cocotb.test()
 async def testBneTaken(dut):
     "bne which is taken"
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         bne x1,x0,target
         lui x1,0x54321
         target: lui x0,0''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
     assertEquals(0x12345000, dut.datapath.rf.regs[1].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -229,11 +234,10 @@ async def testBneTaken(dut):
 @cocotb.test()
 async def testEcall(dut):
     "ecall insn causes processor to halt"
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         ecall
         lui x1,0xABCDE''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 2) # check for halt *during* ecall
     assertEquals(1, dut.datapath.halt.value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -250,8 +254,7 @@ async def riscvTest(dut, binaryPath=None):
     "Run the official RISC-V test whose binary lives at `binaryPath`"
     assert binaryPath is not None
     assert binaryPath.exists(), f'Could not find RV test binary {binaryPath}, have you built riscv-tests?'
-    riscv_binary_utils.loadBinaryIntoMemory(dut, binaryPath)
-    await preTestSetup(dut)
+    await preTestSetup(dut, binaryPath)
 
     dut._log.info(f'Running RISC-V test at {binaryPath}')
     for cycles in range(TIMEOUT_CYCLES):
@@ -268,12 +271,11 @@ async def riscvTest(dut, binaryPath=None):
 @cocotb.test(skip='RVTEST_ALUBR' in os.environ)
 async def testStoreLoad(dut):
     "Check that a load can read a previously-stored value."
-    riscv_binary_utils.asm(dut, '''
+    await preTestSetup(dut, '''
         lui x1,0x12345
         sw x1,32(x0) # store x1 to address [32]. NB: code starts at address 0, don't overwrite it!
         lw x2,32(x0) # load address [32] into x2
         ''')
-    await preTestSetup(dut)
 
     await ClockCycles(dut.clock_proc, 4)
     assertEquals(0x12345000, dut.datapath.rf.regs[2].value, f'failed at cycle {dut.datapath.cycles_current.value.integer}')
@@ -283,8 +285,7 @@ async def dhrystone(dut):
     "Run dhrystone benchmark from riscv-tests"
     dsBinary = cu.RISCV_BENCHMARKS_PATH / 'dhrystone.riscv' 
     assert dsBinary.exists(), f'Could not find Dhrystone binary {dsBinary}, have you built riscv-tests?'
-    riscv_binary_utils.loadBinaryIntoMemory(dut, dsBinary)
-    await preTestSetup(dut)
+    await preTestSetup(dut, dsBinary)
 
     dut._log.info(f'Running Dhrystone benchmark (takes 193k cycles)...')
     for cycles in range(210_000):
