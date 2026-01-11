@@ -5,7 +5,7 @@ TOP_MODULE_RESOURCE_CHECK=SystemResourceCheck
 TOP_MODULE_DEMO=SystemDemo
 CONSTRAINTS=../common/constraints/ulx3s.lpf
 
-ZIP_SOURCES=DatapathSingleCycle.sv ../hw2a-divider/divider_unsigned.sv ../hw2b-cla/cla.sv fpga_build/resource-report.json
+ZIP_SOURCES=DatapathSingleCycle.sv ../hw2a-divider/DividerUnsigned.sv ../hw2b-cla/CarryLookaheadAdder.sv fpga_build/resource-report.json
 ZIP_FILE=single.zip
 
 include ../common/make/fpga.mk
