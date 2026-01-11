@@ -17,7 +17,7 @@ random.seed(12345)
 def runCocotbTestsGp4(pytestconfig):
     """run GP4 tests"""
 
-    verilog_sources = [PROJECT_PATH / "cla.sv" ]
+    verilog_sources = [PROJECT_PATH / "CarryLookaheadAdder.sv" ]
     toplevel_module = "gp4"
 
     runr = get_runner(cu.SIM)
@@ -42,8 +42,8 @@ def runCocotbTestsGp4(pytestconfig):
 def runCocotbTestsCla(pytestconfig):
     """run CLA tests"""
 
-    verilog_sources = [PROJECT_PATH / "cla.sv" ]
-    toplevel_module = "cla"
+    verilog_sources = [PROJECT_PATH / "CarryLookaheadAdder.sv" ]
+    toplevel_module = "CarryLookaheadAdder"
 
     runr = get_runner(cu.SIM)
     runr.build(

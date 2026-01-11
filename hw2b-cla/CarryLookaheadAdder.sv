@@ -40,7 +40,7 @@ module gp8(input wire [7:0] gin, pin,
 
 endmodule
 
-module cla
+module CarryLookaheadAdder
   (input wire [31:0]  a, b,
    input wire         cin,
    output wire [31:0] sum);

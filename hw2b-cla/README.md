@@ -15,7 +15,7 @@ When your schematic is complete, you can translate it directly into SystemVerilo
 
 ## gp4/gp8 modules
 
-We supply some skeleton code in `cla.sv`, including module port definitions and the simple `gp1` generate-propagate module at the leaf of the CLA hierarchy. You will need to implement three additional modules to have a complete 32-bit adder.
+We supply some skeleton code in `CarryLookaheadAdder.sv`, including module port definitions and the simple `gp1` generate-propagate module at the leaf of the CLA hierarchy. You will need to implement three additional modules to have a complete 32-bit adder.
 
 You should start with the `gp4` module, which computes aggregate g/p signals for a 4-bit slice of the addition. The module takes the bit-level g/p signals from `gp1` as input, and computes whether all 4 bits collectively generate/propagate a carry. The module also computes the actual carry-out values for the low-order 3b of its input. You should also think about why `gp4` doesn't compute 4b worth of carry-out 😉. The `gp4` module will form the top layer of your CLA hierarchy. Our `gp4` solution is about 30 lines of code.
 
@@ -38,17 +38,17 @@ You can run `gp4` tests via `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testb
 
 Once you have the `gp4` module working, you can move on to the `gp8` module which will form the base of your CLA hierarchy. The `gp8` logic is a generalization of `gp4` to a larger window size. Though it is harder, you may consider implementing a parameterized `gpn` module that computes generate/propagate/carry-out over an N-bit window. You can then instantiate this appropriately for both `gp4` and `gp8`.
 
-## cla module
+## CarryLookaheadAdder module
 
-Finally, you will build the 32-bit adder module `cla`. Use the `gp1`, `gp4` and `gp8` modules to build your CLA tree and to compute the final sum. Our `cla` solution is about 30 lines of code.
+Finally, you will build the 32-bit adder module `CarryLookaheadAdder`. Use the `gp1`, `gp4` and `gp8` modules to build your CLA tree and to compute the final sum. Our `CarryLookaheadAdder` solution is about 30 lines of code.
 
-You can test your `cla` module via `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py -k runCocotbTestsCla`.
+You can test your `CarryLookaheadAdder` module via `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py -k runCocotbTestsCla`.
 
 The autograder will run both the CLA and gp4 tests. You can do this yourself via the command `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py`
 
 ## Submitting your code
 
-Submit your `cla.sv` file on Gradescope.
+Submit your `CarryLookaheadAdder.sv` file on Gradescope.
 
 ## FPGA Demo
 

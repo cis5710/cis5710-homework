@@ -19,4 +19,4 @@ def objectIsLegal(filename, obj):
         return (False,True)
     return (True,True)
 
-main_codecheck.runCodecheck(objectIsLegal, ['cla.sv'])
+main_codecheck.runCodecheck(objectIsLegal, ['CarryLookaheadAdder.sv'])
