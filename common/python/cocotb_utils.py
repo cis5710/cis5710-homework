@@ -1,7 +1,10 @@
 """This file has code used across several testbenches."""
 
 from pathlib import Path
-import re
+import os, re
+
+# Use half the available cores for Verilator's parallel build
+os.environ['MAKEFLAGS'] = '-j%d' % int(os.cpu_count()/2)
 
 VERILATOR_FLAGS = [
     '--assert',

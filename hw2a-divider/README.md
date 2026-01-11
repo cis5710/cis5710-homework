@@ -74,7 +74,7 @@ We have provided tests for both the `DividerOneIter` and `DividerUnsigned`
 modules. You can run tests via the command
 
 ```
-MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py
+pytest --exitfirst --capture=no testbench.py
 ```
 
 This runs the `DividerOneIter` tests and then the `DividerUnsigned` tests, exiting at the first failure.

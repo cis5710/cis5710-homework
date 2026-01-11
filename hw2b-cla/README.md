@@ -34,7 +34,7 @@ assign or_reduction = (| w[2:0]);
 assign or_reduction = (w[2] | w[1] | w[0]); // equivalent to code above
 ```
 
-You can run `gp4` tests via `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py -k runCocotbTestsGp4`, though their coverage is low so we encourage you to add other test cases as well.
+You can run `gp4` tests via `pytest --exitfirst --capture=no testbench.py -k runCocotbTestsGp4`, though their coverage is low so we encourage you to add other test cases as well.
 
 Once you have the `gp4` module working, you can move on to the `gp8` module which will form the base of your CLA hierarchy. The `gp8` logic is a generalization of `gp4` to a larger window size. Though it is harder, you may consider implementing a parameterized `gpn` module that computes generate/propagate/carry-out over an N-bit window. You can then instantiate this appropriately for both `gp4` and `gp8`.
 
@@ -42,9 +42,9 @@ Once you have the `gp4` module working, you can move on to the `gp8` module whic
 
 Finally, you will build the 32-bit adder module `CarryLookaheadAdder`. Use the `gp1`, `gp4` and `gp8` modules to build your CLA tree and to compute the final sum. Our `CarryLookaheadAdder` solution is about 30 lines of code.
 
-You can test your `CarryLookaheadAdder` module via `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py -k runCocotbTestsCla`.
+You can test your `CarryLookaheadAdder` module via `pytest --exitfirst --capture=no testbench.py -k runCocotbTestsCla`.
 
-The autograder will run both the CLA and gp4 tests. You can do this yourself via the command `MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py`
+The autograder will run both the CLA and gp4 tests. You can do this yourself via the command `pytest --exitfirst --capture=no testbench.py`
 
 ## Submitting your code
 

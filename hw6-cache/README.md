@@ -104,7 +104,7 @@ addi x1,x1,x1  FD**XMW
 We have updated the parent `Processor` module to allow for a configurable memory hierarchy. To start with, it will connect your datapath with `AxilMemory` acting as both the insn and data caches (since `AxilMemory` has both a read-only port and a read-write port). You can run the tests in this configuration via:
 
 ```
-MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorNoCache testbench.py
+time pytest --exitfirst -k runCocotbTestsProcessorNoCache testbench.py
 ```
 
 ### Data Cache Integration
@@ -131,7 +131,7 @@ lui x4,0         F***DXMW
 
 Here's how you run the tests with the D$ configuration:
 ```
-MAKEFLAGS=-j4 time pytest --exitfirst -k runCocotbTestsProcessorDataCache testbench.py
+time pytest --exitfirst -k runCocotbTestsProcessorDataCache testbench.py
 ```
 
 The autograder runs all cache tests from HW6A as well as the processor tests in both the no-cache and D$ configurations, via `pytest testbench.py`.
