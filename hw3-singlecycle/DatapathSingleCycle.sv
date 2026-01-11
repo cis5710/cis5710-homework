@@ -6,8 +6,8 @@
 // RV opcodes are 7 bits
 `define OPCODE_SIZE 6:0
 
-`include "../hw2a-divider/divider_unsigned.sv"
-`include "../hw2b-cla/cla.sv"
+`include "../hw2a-divider/DividerUnsigned.sv"
+`include "../hw2b-cla/CarryLookaheadAdder.sv"
 
 module RegFile (
     input logic [4:0] rd,
