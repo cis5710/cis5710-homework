@@ -87,7 +87,7 @@ Clock frequency is specified in MHz, so the command above would request a 3.5 MH
 
 ### Reporting timing results
 
-The autograder will run `make resource-check` on your code after it runs the tests. This will cause autograding to take several minutes. This is much longer than in prior labs, so plan accordingly with respect to the deadline.
+The autograder will run `make resource-check` on your code after it runs the tests. This will cause autograding to take several minutes. This is **much slower** than in prior labs, so plan accordingly with respect to the deadline.
 
 Clock frequency results and LUT usage will be gathered in an anonymized leaderboard as well. Leaderboard results will not affect homework scores in this homework, though they may in a future one. Your resource report is automatically included in the .zip file you submit via Gradescope.
 
