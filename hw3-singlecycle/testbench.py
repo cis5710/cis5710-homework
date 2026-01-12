@@ -438,8 +438,8 @@ async def dhrystone(dut, tracingMode=TRACING_MODE):
             pass
         pass
 
-    dut._log.info(f'Running Dhrystone benchmark (takes 260k cycles)... with tracingMode == {tracingMode}')
-    for cycles in range(280_000):
+    dut._log.info(f'Running Dhrystone benchmark (takes 193k cycles)... with tracingMode == {tracingMode}')
+    for cycles in range(210_000):
         await RisingEdge(dut.clock_proc)
 
         cu.handleTrace(dut, trace, cycles, tracingMode)
