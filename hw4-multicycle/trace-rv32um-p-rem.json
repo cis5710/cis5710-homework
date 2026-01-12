@@ -1,0 +1,980 @@
+[
+  {
+    "cycle": 0,
+    "trace_completed_pc": "0x0",
+    "trace_completed_insn": "0x00000093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 1,
+    "trace_completed_pc": "0x4",
+    "trace_completed_insn": "0x00000113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 2,
+    "trace_completed_pc": "0x8",
+    "trace_completed_insn": "0x00000193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 3,
+    "trace_completed_pc": "0xc",
+    "trace_completed_insn": "0x00000213",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 4,
+    "trace_completed_pc": "0x10",
+    "trace_completed_insn": "0x00000293",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 5,
+    "trace_completed_pc": "0x14",
+    "trace_completed_insn": "0x00000313",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 6,
+    "trace_completed_pc": "0x18",
+    "trace_completed_insn": "0x00000393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 7,
+    "trace_completed_pc": "0x1c",
+    "trace_completed_insn": "0x00000413",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 8,
+    "trace_completed_pc": "0x20",
+    "trace_completed_insn": "0x00000493",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 9,
+    "trace_completed_pc": "0x24",
+    "trace_completed_insn": "0x00000513",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 10,
+    "trace_completed_pc": "0x28",
+    "trace_completed_insn": "0x00000593",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 11,
+    "trace_completed_pc": "0x2c",
+    "trace_completed_insn": "0x00000613",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 12,
+    "trace_completed_pc": "0x30",
+    "trace_completed_insn": "0x00000693",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 13,
+    "trace_completed_pc": "0x34",
+    "trace_completed_insn": "0x00000713",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 14,
+    "trace_completed_pc": "0x38",
+    "trace_completed_insn": "0x00000793",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 15,
+    "trace_completed_pc": "0x3c",
+    "trace_completed_insn": "0x00000813",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 16,
+    "trace_completed_pc": "0x40",
+    "trace_completed_insn": "0x00000893",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 17,
+    "trace_completed_pc": "0x44",
+    "trace_completed_insn": "0x00000913",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 18,
+    "trace_completed_pc": "0x48",
+    "trace_completed_insn": "0x00000993",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 19,
+    "trace_completed_pc": "0x4c",
+    "trace_completed_insn": "0x00000a13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 20,
+    "trace_completed_pc": "0x50",
+    "trace_completed_insn": "0x00000a93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 21,
+    "trace_completed_pc": "0x54",
+    "trace_completed_insn": "0x00000b13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 22,
+    "trace_completed_pc": "0x58",
+    "trace_completed_insn": "0x00000b93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 23,
+    "trace_completed_pc": "0x5c",
+    "trace_completed_insn": "0x00000c13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 24,
+    "trace_completed_pc": "0x60",
+    "trace_completed_insn": "0x00000c93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 25,
+    "trace_completed_pc": "0x64",
+    "trace_completed_insn": "0x00000d13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 26,
+    "trace_completed_pc": "0x68",
+    "trace_completed_insn": "0x00000d93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 27,
+    "trace_completed_pc": "0x6c",
+    "trace_completed_insn": "0x00000e13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 28,
+    "trace_completed_pc": "0x70",
+    "trace_completed_insn": "0x00000e93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 29,
+    "trace_completed_pc": "0x74",
+    "trace_completed_insn": "0x00000f13",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 30,
+    "trace_completed_pc": "0x78",
+    "trace_completed_insn": "0x00000f93",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 31,
+    "trace_completed_pc": "0x7c",
+    "trace_completed_insn": "0x00000193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 32,
+    "trace_completed_pc": "0x80",
+    "trace_completed_insn": "0x00200193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 33,
+    "trace_completed_pc": "0x84",
+    "trace_completed_insn": "0x01400093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 34,
+    "trace_completed_pc": "0x88",
+    "trace_completed_insn": "0x00600113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 35,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 36,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 37,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 38,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 39,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 40,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 41,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 42,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 43,
+    "trace_completed_pc": "0x8c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 44,
+    "trace_completed_pc": "0x90",
+    "trace_completed_insn": "0x00200393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 45,
+    "trace_completed_pc": "0x94",
+    "trace_completed_insn": "0x0c771463",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 46,
+    "trace_completed_pc": "0x98",
+    "trace_completed_insn": "0x00300193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 47,
+    "trace_completed_pc": "0x9c",
+    "trace_completed_insn": "0xfec00093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 48,
+    "trace_completed_pc": "0xa0",
+    "trace_completed_insn": "0x00600113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 49,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 50,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 51,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 52,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 53,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 54,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 55,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 56,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 57,
+    "trace_completed_pc": "0xa4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 58,
+    "trace_completed_pc": "0xa8",
+    "trace_completed_insn": "0xffe00393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 59,
+    "trace_completed_pc": "0xac",
+    "trace_completed_insn": "0x0a771863",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 60,
+    "trace_completed_pc": "0xb0",
+    "trace_completed_insn": "0x00400193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 61,
+    "trace_completed_pc": "0xb4",
+    "trace_completed_insn": "0x01400093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 62,
+    "trace_completed_pc": "0xb8",
+    "trace_completed_insn": "0xffa00113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 63,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 64,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 65,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 66,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 67,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 68,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 69,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 70,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 71,
+    "trace_completed_pc": "0xbc",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 72,
+    "trace_completed_pc": "0xc0",
+    "trace_completed_insn": "0x00200393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 73,
+    "trace_completed_pc": "0xc4",
+    "trace_completed_insn": "0x08771c63",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 74,
+    "trace_completed_pc": "0xc8",
+    "trace_completed_insn": "0x00500193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 75,
+    "trace_completed_pc": "0xcc",
+    "trace_completed_insn": "0xfec00093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 76,
+    "trace_completed_pc": "0xd0",
+    "trace_completed_insn": "0xffa00113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 77,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 78,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 79,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 80,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 81,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 82,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 83,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 84,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 85,
+    "trace_completed_pc": "0xd4",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 86,
+    "trace_completed_pc": "0xd8",
+    "trace_completed_insn": "0xffe00393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 87,
+    "trace_completed_pc": "0xdc",
+    "trace_completed_insn": "0x08771063",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 88,
+    "trace_completed_pc": "0xe0",
+    "trace_completed_insn": "0x00600193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 89,
+    "trace_completed_pc": "0xe4",
+    "trace_completed_insn": "0x800000b7",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 90,
+    "trace_completed_pc": "0xe8",
+    "trace_completed_insn": "0x00100113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 91,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 92,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 93,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 94,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 95,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 96,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 97,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 98,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 99,
+    "trace_completed_pc": "0xec",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 100,
+    "trace_completed_pc": "0xf0",
+    "trace_completed_insn": "0x00000393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 101,
+    "trace_completed_pc": "0xf4",
+    "trace_completed_insn": "0x06771463",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 102,
+    "trace_completed_pc": "0xf8",
+    "trace_completed_insn": "0x00700193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 103,
+    "trace_completed_pc": "0xfc",
+    "trace_completed_insn": "0x800000b7",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 104,
+    "trace_completed_pc": "0x100",
+    "trace_completed_insn": "0xfff00113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 105,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 106,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 107,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 108,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 109,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 110,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 111,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 112,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 113,
+    "trace_completed_pc": "0x104",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 114,
+    "trace_completed_pc": "0x108",
+    "trace_completed_insn": "0x00000393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 115,
+    "trace_completed_pc": "0x10c",
+    "trace_completed_insn": "0x04771863",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 116,
+    "trace_completed_pc": "0x110",
+    "trace_completed_insn": "0x00800193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 117,
+    "trace_completed_pc": "0x114",
+    "trace_completed_insn": "0x800000b7",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 118,
+    "trace_completed_pc": "0x118",
+    "trace_completed_insn": "0x00000113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 119,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 120,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 121,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 122,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 123,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 124,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 125,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 126,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 127,
+    "trace_completed_pc": "0x11c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 128,
+    "trace_completed_pc": "0x120",
+    "trace_completed_insn": "0x800003b7",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 129,
+    "trace_completed_pc": "0x124",
+    "trace_completed_insn": "0x02771c63",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 130,
+    "trace_completed_pc": "0x128",
+    "trace_completed_insn": "0x00900193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 131,
+    "trace_completed_pc": "0x12c",
+    "trace_completed_insn": "0x00100093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 132,
+    "trace_completed_pc": "0x130",
+    "trace_completed_insn": "0x00000113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 133,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 134,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 135,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 136,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 137,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 138,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 139,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 140,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 141,
+    "trace_completed_pc": "0x134",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 142,
+    "trace_completed_pc": "0x138",
+    "trace_completed_insn": "0x00100393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 143,
+    "trace_completed_pc": "0x13c",
+    "trace_completed_insn": "0x02771063",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 144,
+    "trace_completed_pc": "0x140",
+    "trace_completed_insn": "0x00a00193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 145,
+    "trace_completed_pc": "0x144",
+    "trace_completed_insn": "0x00000093",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 146,
+    "trace_completed_pc": "0x148",
+    "trace_completed_insn": "0x00000113",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 147,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 148,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 149,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 150,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 151,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 152,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 153,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 154,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_DIV"
+  },
+  {
+    "cycle": 155,
+    "trace_completed_pc": "0x14c",
+    "trace_completed_insn": "0x0220e733",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 156,
+    "trace_completed_pc": "0x150",
+    "trace_completed_insn": "0x00000393",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 157,
+    "trace_completed_pc": "0x154",
+    "trace_completed_insn": "0x00771463",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 158,
+    "trace_completed_pc": "0x158",
+    "trace_completed_insn": "0x00301e63",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 159,
+    "trace_completed_pc": "0x174",
+    "trace_completed_insn": "0x00100193",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 160,
+    "trace_completed_pc": "0x178",
+    "trace_completed_insn": "0x05d00893",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 161,
+    "trace_completed_pc": "0x17c",
+    "trace_completed_insn": "0x00000513",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  },
+  {
+    "cycle": 162,
+    "trace_completed_pc": "0x180",
+    "trace_completed_insn": "0x00000073",
+    "trace_completed_cycle_status": "CYCLE_NO_STALL"
+  }
+]
