@@ -26,7 +26,7 @@ def runCocotbTestsHalfAdder(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS,
@@ -34,7 +34,7 @@ def runCocotbTestsHalfAdder(pytestconfig):
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from the current file
         testcase="test_" + toplevel_module
@@ -52,7 +52,7 @@ def runCocotbTestsFullAdder1(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS,
@@ -60,7 +60,7 @@ def runCocotbTestsFullAdder1(pytestconfig):
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from the current file
         testcase="test_" + toplevel_module
@@ -78,7 +78,7 @@ def runCocotbTestsFullAdder2(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS,
@@ -86,7 +86,7 @@ def runCocotbTestsFullAdder2(pytestconfig):
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from the current file
         testcase="test_" + toplevel_module
@@ -104,7 +104,7 @@ def runCocotbTestsRca4(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS,
@@ -112,7 +112,7 @@ def runCocotbTestsRca4(pytestconfig):
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from the current file
         testcase="test_" + toplevel_module

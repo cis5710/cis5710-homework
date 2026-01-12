@@ -43,6 +43,14 @@ def assertEquals(expected, actual, msg=''):
         pass
     pass
 
+def shouldGenerateWaveforms():
+    """Returns True if simulator should generate waveforms, and False otherwise. Disable waveforms (only) when running autograder, for faster execution."""
+    insideAutograder = os.path.isdir('/autograder/submission')
+    if insideAutograder:
+        print('[cocotb_utils.py] autograder run detected, waveform generation disabled')
+        return False
+    return True
+
 def aggregateTestResults(*results):
     """Aggregates total/failed counts from all arguments, where each argument is a call to cocotb.runner.get_results()"""
     total_tests = sum([r[0] for r in results])

@@ -78,7 +78,7 @@ def runCocotbTestsProcessor(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}'],
@@ -86,7 +86,7 @@ def runCocotbTestsProcessor(pytestconfig):
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag

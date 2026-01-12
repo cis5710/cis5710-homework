@@ -41,13 +41,13 @@ def runCocotbTestsDivider(pytestconfig):
         hdl_toplevel=toplevel_module,
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={testbench_divider_pipelined.DIVIDER_STAGES}'],
     ),
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_divider_pipelined', # use tests from this file
         testcase=pytestconfig.option.tests,
@@ -67,13 +67,13 @@ def runCocotbTestsProcessor(pytestconfig):
         hdl_toplevel=toplevel_module,
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={testbench_divider_pipelined.DIVIDER_STAGES}'],
     )
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag

@@ -103,7 +103,7 @@ def runCocotbTestsDmCacheHitSmall(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         parameters={'NUM_SETS':4},
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
@@ -111,7 +111,7 @@ def runCocotbTestsDmCacheHitSmall(pytestconfig):
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_dmcache_hit', # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
@@ -129,7 +129,7 @@ def runCocotbTestsDmCacheHitBig(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         parameters={'NUM_SETS':512},
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
@@ -137,7 +137,7 @@ def runCocotbTestsDmCacheHitBig(pytestconfig):
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_dmcache_hit', # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
@@ -155,7 +155,7 @@ def runCocotbTestsDmCacheMissSmall(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         parameters={'NUM_SETS':4},
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
@@ -163,7 +163,7 @@ def runCocotbTestsDmCacheMissSmall(pytestconfig):
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_dmcache_miss', # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
@@ -181,7 +181,7 @@ def runCocotbTestsDmCacheMissBig(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         parameters={'NUM_SETS':512},
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
@@ -189,7 +189,7 @@ def runCocotbTestsDmCacheMissBig(pytestconfig):
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_dmcache_miss', # use tests from this file
         testcase=pytestconfig.option.tests, # filter tests via the `--tests` command-line flag
@@ -227,14 +227,14 @@ def runCocotbTestsProcessorNoCache(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}'],
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         extra_env={'CACHES_ENABLED':'None'}, # see MISS_LATENCY below
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from this file
@@ -253,14 +253,14 @@ def runCocotbTestsProcessorDataCache(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}','-DENABLE_DATA_CACHE'],
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         extra_env={'CACHES_ENABLED':'Data'}, # see MISS_LATENCY below
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from this file
@@ -279,14 +279,14 @@ def runCocotbTestsProcessorBothCaches(pytestconfig):
         verilog_sources=verilog_sources,
         vhdl_sources=[],
         hdl_toplevel=toplevel_module,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
         build_args=cu.VERILATOR_FLAGS+[f'-DDIVIDER_STAGES={DIVIDER_STAGES}','-DENABLE_DATA_CACHE','-DENABLE_INSN_CACHE'],
     )
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         extra_env={'CACHES_ENABLED':'Both'}, # see MISS_LATENCY below
         hdl_toplevel=toplevel_module,
         test_module=Path(__file__).stem, # use tests from this file

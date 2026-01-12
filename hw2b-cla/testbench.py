@@ -26,13 +26,13 @@ def runCocotbTestsGp4(pytestconfig):
         hdl_toplevel=toplevel_module,
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         build_args=cu.VERILATOR_FLAGS,
     ),
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module='testbench_gp4', # use tests from testbench_gp4.py
         testcase=pytestconfig.option.tests,
@@ -51,13 +51,13 @@ def runCocotbTestsCla(pytestconfig):
         hdl_toplevel=toplevel_module,
         includes=[PROJECT_PATH],
         build_dir=cu.SIM_BUILD_DIR,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         build_args=cu.VERILATOR_FLAGS,
     ),
 
     runr.test(
         seed=12345,
-        waves=True,
+        waves=cu.shouldGenerateWaveforms(),
         hdl_toplevel=toplevel_module, 
         test_module=Path(__file__).stem, # use tests from the current file
         testcase=pytestconfig.option.tests,
