@@ -62,50 +62,37 @@ git merge upstream/main
 You can pull in submodule changes via `git submodule update --recursive riscv-tests/`.
 
 
-# Docker
+# Development Environment
 
-All of the software tools needed to run and test your code are packaged into the `cis5710/hw-base:latest` Docker container which is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base). You can install Docker on your computer, and then grab this container to get all of the tools at once. This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
+The recommended way to work on your code is to use Visual Studio Code with the Dev Container we provide. The Dev Container automatically sets up VS Code with some useful extensions for working with System Verilog, and connects you to a Linux Docker container which has both your homework files and the required hardware simulators and compilers pre-installed.
 
-First, install Docker for your OS. For Windows/Mac users, you'll probably want to use [Docker Desktop](https://www.docker.com/get-started/). Linux users may prefer to install via your regular package manager.
+The first step is to visit the [VS Code Dev Containers tutorial](https://code.visualstudio.com/docs/devcontainers/tutorial). Follow the first part of the tutorial to:
 
-Then, you can pull the *container image*, which is the set of files that will be inside the running *container*. Pull the image via:
-```
-docker pull cis5710/hw-base:latest
-```
+1) install VS Code
+2) install Docker
+3) install the Dev Containers extension for VS Code
 
-The next step will be to launch a *container*, which is like a lighter-weight version of a virtual machine. Our container is an Ubuntu Linux command-line system.
+After [installing the Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/tutorial#_install-the-extension), stop following the tutorial.
 
-First, you should pick the *name* of your container (change it from `MY-CIS5710` in the `docker run` command below), which will make it easy to start, stop and distinguish from other containers you may be running.
+Open the folder that is the `cis5710-homework` repository you created and cloned above. A pop-up will appear in VS Code: click `Reopen in Container` (see below). This downloads the container image and launches the container. Inside the container, you can access all of the files in your `cis5710-homework` folder, and also run the homework tools via the VS Code terminal.
 
-The container has its own filesystem, separate from the files on your laptop. However, you can select a directory that you want to share between your laptop and the container. **Files outside of this shared directory do not persist if the container is restarted.** You may need to restart the container if you need to reboot your laptop or if we update the container image during the semester. So your cloned git repo should live on your laptop, not solely inside the container. In the `docker run` command below, replace `/PATH/ON/YOUR/LAPTOP` with the path to the laptop directory where you cloned your private github repo. This directory will appear inside the container at `/MYSTUFF`
+![](images/open-devcontainer.png)
 
-After editing this command appropriately, launch the container for the first time:
-```
-docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw-base:latest /bin/bash
-```
+For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base-gradescope). This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
 
-Once you've launched the container, you can keep it running in the background. If you want to free up more resources, however, you can **stop** your container with this command (substituting the name you gave your container previously):
+> Note that ours is an x86 container image, so on Apple Silicon machines programs are translated into ARM on-the-fly, at a modest performance cost. It is possible to install the various tools you need for this course directly on your laptop, to avoid Docker (and any ISA translation costs). You can follow our [Dockerfile](docker/Dockerfile) for guidance.
 
-```
-docker stop MY-CIS5710
-```
+### VS Code notes
 
-Stopping your container will end your shell session, but not lose any of the files inside the container. You can then start the container again and launch a new shell with:
+We've found that VS Code has decent support for SystemVerilog. I like the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL), the [VaporView waveform viewer](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) and the Python extension, as those are languages/tools you'll use a lot in this class. These are all installed in your Dev Container by default.
 
-```
-docker start MY-CIS5710
-docker exec -it MY-CIS5710 /bin/bash
-```
-
-It is also possible to install the various tools you need for this course directly on your laptop, which avoids the need for Docker. You can follow our [Dockerfile](docker/Dockerfile) for guidance.
-
-# VSCode
-
-We've found that VSCode has decent support for SystemVerilog. I recommend the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL) and the Python extension, as those are the languages you'll use most in this class. I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
+I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
 
 # Waveform Viewer
 
-While most of the tools we use run on the Linux command line, viewing waveforms is best done in a graphical environment. Thus, you will want to install the a waveform viewer directly on your laptop. In general, waveform files will be generated by running your design inside the container, and then you'll want to view those waveform files *outside* the container. GtkWave is a popular waveform viewer, which looks like this:
+While most of the tools we use run on the Linux command line, viewing waveforms is best done in a graphical environment. Our Dev Container includes the VaporView extension, which allows you to view waveforms directly in VS Code.
+
+While Dev Containers hide the details, it's good to know that waveform files will be generated by running your design inside the container, and then you'll want to view those waveform files *outside* the container. There are many waveform viewers you can use outside of VS Code as well. GtkWave is an old but popular choice, which looks like this:
 
 ![GtkWave screenshot](images/gtkwave-screenshot.png)
 
@@ -138,14 +125,28 @@ brew install surfer
 
 Download the Windows version of Gtkwave from [SourceForge](https://sourceforge.net/projects/gtkwave/files/): choose one of the win64 `.zip` files. After you unzip the archive, you can find `gtkwave.exe` inside its `bin` directory, and double-click to launch GtkWave from there. There is no need to install anything.
 
-### General GtkWave tips
+### Waveform viewing tips
 
-The list of signals in the bottom left shows only those for the currently-selected module instance in top-left box. There is also a `filter` box at the bottom you can use to quickly narrow down the list.
+**Use formatting options**
+
+With lots of signals on the screen, they can start to blend together. Assign different signals different colors, and group related signals by color.
+
+**Search, don't scroll**
+
+The list of signals in your design can become quite long. Use search features to quickly locate the signal you're looking for.
+
+In GtkWave, the list of signals in the bottom left shows only those for the currently-selected module instance in top-left box. There is also a `filter` box at the bottom you can use to quickly narrow down the list.
 
 **Save your waveform view**
 
-You can use `File => Write Save File` to save a `.gtkw` file that records the signals you have opened, along with radix and color. You can then reload this via `File => Read Save File` when viewing a new waveform to quickly pull up all the useful signals in an organized way.
+Most waveform viewers can save your current view (the signals you were viewing and their colors, formatting, etc.) to make it easy to load up again later. This can save a huge amount of time compared to adding your signals again from scratch.
+
+In GtkWave, you can use `File => Write Save File` to save a `.gtkw` file that records the signals you have opened, along with radix and color. You can then reload this via `File => Read Save File` when viewing a new waveform to quickly pull up all the useful signals in an organized way.
 
 **Use markers to remember important places**
 
-With `Markers => Drop named marker` you can leave a mark at a particular time to make it easier to find again after you scroll away. This is especially helpful in long traces.
+In GtkWave, with `Markers => Drop named marker` you can leave a mark at a particular time to make it easier to find again after you scroll away. This is especially helpful in long traces.
+
+**Make yourself at home**
+
+As you debug your design, you will spend a significant amount of time looking at waveforms to understand what your design is doing. It is worth exploring the features of your waveform viewer to become proficient with finding the signals you need, moving throughout the timeline and organizing signals in a useful way.

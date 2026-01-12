@@ -1,3 +1,7 @@
+# NB: this container image is the exact one used by the Gradescope
+# autograder. It is x86-only, however, and thus incurs ISA translation overheads
+# on Apple Silicon.
+
 FROM gradescope/autograder-base:ubuntu-22.04-jdk17 AS base
 
 # Set a build argument with a default value
