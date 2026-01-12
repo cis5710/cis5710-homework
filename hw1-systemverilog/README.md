@@ -34,10 +34,12 @@ A good place to start when you have a failing test case is to look at the testbe
 
 Once your code passes all the tests, you are ready to submit your fixed `rca.sv` file **via Gradescope**.
 
-
 ## FPGA Demo
 
-Now that your code works in simulation, you can run the FPGA board demo to see it run in real life! 
+Now that your code works in simulation, you can run the FPGA board demo to see it run in real life!
+
+The demo code is in the `rca4_demo` module, and it uses your adder to add 2 to a 4-digit binary number represented by four of the board's buttons (B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs D0-D5.
+
 
 ### Generating a bitstream
 
@@ -47,8 +49,41 @@ When this completes, you will have your bitstream file in `fpga_build/rca4_demo.
 
 ### Programming the FPGA
 
-TODO: update! see if we can program from container
+Since we are programming the FPGA outside of the container, this step is dependent on the host computer platform you use.
 
-You can use `make program` to download your bitstream onto the FPGA, a process known as "programming the FPGA". Once the FPGA is programmed, your design is running in hardware!
+### Windows
 
-The demo code is in the `rca4_demo` module, and it uses your adder to add 2 to a 4-digit binary number represented by four of the board's buttons (B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs D0-D5.
+We use `fujprog` to program our lattice FPGA, the official github page of `fujprog` is [here](https://github.com/kost/fujprog). 
+
+First, go to the official repo and click the release section, select the `fujprog-v48-win64.exe` and download it.
+Then rename it to `fujprog.exe` and move it under your homework directory path.
+You can use `fujprog.exe -h` command to see if `fujprog` is properly working.
+
+Secondly, connect the FPGA to your PC through the `us1` micro-USB connector on the board. See the picture below.
+
+Run `fujprog.exe -i` to see if your pc can detect any port. 
+If not, it means that you probably need to install some drivers.
+Go [here](https://ftdichip.com/drivers/d2xx-drivers/) and download FTDI drivers. The setup executable noted in the comments column may be the easiest way to install the drivers.
+After you download and install the drivers, reboot your machine and Windows will automatically use these drivers when your ULXS3 board is plugged in.
+You can also open your device manager and check the COM port to see if the FPGA is connected and is using the right driver.
+
+Lastly, run `fujprog.exe path\to\your\bitstream` to program your FPGA. If everything goes right, you will see messages about the device being programmed.
+
+### Mac
+
+On macOS, we use `openFPGALoader` to program the FPGA.
+
+First, open a terminal and run: `brew install openfpgaloader`. 
+
+Then, connect the FPGA to your Mac through the `us1` micro-USB connector on the board. See the picture below.
+
+Ensure your ULX3S FPGA is recognized by your Mac: - Open **System Information** → **USB**, and check for a device named **ULX3S FPGA**. - Alternatively, run: `ls /dev/cu.*`. Look for a device with the pattern `/dev/cu.usbserial-*`.
+
+Lastly, run `make program` from the homework folder to program your FPGA. If everything is set up correctly, you should see a progress bar as the FPGA is programmed.
+
+
+### Connecting to the FPGA
+
+Use a USB cable to connect `us1` on the board to your computer. Don't use `us2`, as the FPGA can only be programmed via `us1`.
+
+![](../images/ulx3s.png)
