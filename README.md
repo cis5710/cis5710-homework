@@ -80,7 +80,13 @@ Open the folder that is the `cis5710-homework` repository you created and cloned
 
 For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base-gradescope). This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
 
-> Note that ours is an x86 container image, so on Apple Silicon machines programs are translated into ARM on-the-fly, at a modest performance cost. It is possible to install the various tools you need for this course directly on your laptop, to avoid Docker (and any ISA translation costs). You can follow our [Dockerfile](docker/Dockerfile.gradescope) for guidance.
+### Apple Silicon
+
+The `hw-base-gradescope` image is an x86 (Intel/AMD) image. If you are running on Apple Silicon, there is some overhead from translating x86 instructions to ARM instructions on-the-fly. You may want to switch to our ARM container image instead, though it is in "beta" status and not as well-tested as the x86 container. Please do let us know about your experience using it, however, so we can improve it.
+
+To switch, simply edit the [`.devcontainer.json`](.devcontainer.json) file to reference the `cis5710/hw-base-arm:latest` image instead of the `cis5710/hw-base-gradescope:latest` image. When you re-open VS Code, it should ask you if you want to switch to the new image.
+
+It is also possible to install the various tools you need for this course directly on your laptop. You can follow our [Dockerfile](docker/Dockerfile.gradescope) for guidance.
 
 ### VS Code notes
 
