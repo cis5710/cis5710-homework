@@ -8,7 +8,7 @@ Your `divu_1iter` code can be recycled verbatim from HW2A. Then you should start
 
 The `stall` input can be ignored for now. Later in HW6, you will need to utilize this input.
 
-We have provided an initial set of divider tests for you in `pytest --exitfirst --capture=no -k runCocotbTestsDivider testbench.py`. 
+We have provided an initial set of divider tests for you in `pytest --exitfirst --capture=no testbench.py -k runCocotbTestsDivider`. 
 
 ## Datapath Integration
 
@@ -18,7 +18,7 @@ Your datapath is almost entirely unchanged from HW3, except that `div`, `divu`, 
 
 Your divider module is pipelined and so, theoretically, you could start back-to-back independent divide operations on consecutive cycles for improved performance. However, your datapath will not (yet) take advantage of this and so consecutive divide operations will take 8 cycles each. Thus, *k* consecutive divide operations will take *8k* cycles.
 
-You can run the processor tests via `pytest --exitfirst --capture=no -k runCocotbTestsProcessor testbench.py`. These include some simple assembly test cases as well as all of the riscv-tests and dhrystone.
+You can run the processor tests via `pytest --exitfirst --capture=no testbench.py -k runCocotbTestsProcessor`. These include some simple assembly test cases as well as all of the riscv-tests and dhrystone.
 
 All told, the datapath changes amount to around a dozen lines of code.
 
