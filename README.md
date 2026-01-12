@@ -75,7 +75,7 @@ Open the folder that is the `cis5710-homework` repository you created and cloned
 
 ![](images/open-devcontainer.png)
 
-For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com/r/cis5710/hw-base-gradescope). This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
+For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com/r/cis5710). This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
 
 ### Apple Silicon
 
