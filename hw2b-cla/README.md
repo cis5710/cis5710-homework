@@ -54,6 +54,8 @@ Submit your `CarryLookaheadAdder.sv` file on Gradescope.
 
 Now that your code works in simulation, you can run the FPGA board demo to see it run in real life!
 
-The demo code is in the `system/System.sv` module, and it uses your adder to add 26 to a 5-digit binary number represented by four of the board's buttons (B1, B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs.
+The demo for this homework is the **CLA Challenge**, which checks your CLA against all possible 16-bit inputs (2<sup>32</sup> total). Progress is shown via the LEDs on the board, with a blinking LED indicating that a section (1/8th of the input space) is in progress, and a solid LED indicating that a section was checked successfully. If all 8 LEDs are solid at the end of the test, your design has succesfully passed the CLA Challenge! If an error is detected, the blinking stops and shows solid LEDs for the completed sections; the first (rightmost) unlit LED indicates the failed section.
+
+The design runs at 25 MHz, so the challenge takes a little under 3 minutes to complete.
 
 [Just as in HW1](../hw1-systemverilog/README.md#fpga-demo), run `make demo` inside the Docker container to build your bitstream (in `fpga_build/SystemDemo.bit`). Then, outside the container, connect the FPGA via USB and program it to see the demo run!
