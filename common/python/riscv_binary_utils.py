@@ -76,7 +76,7 @@ def loadBinaryIntoMemory(dut, binaryPath):
         pass
     pass
 
-def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxWords=0):
+def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxAddress=0):
     """Read the given binary's sections, and write them out to a file for $readmemh"""
     
     sectionInfo = getSectionInfo(binaryPath)
@@ -96,11 +96,11 @@ def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxWords=0):
             #     print(['0x%x' % w for w in words])
             #     pass
             memBaseAddr = sectionInfo[sectionName]['address']
-            if memBaseAddr + len(words) > maxWords:
-                print(f"code reaches address {memBaseAddr + len(words)} but we can only handle up to {maxWords}")
+            print(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
+            if memBaseAddr + (len(words)*4) >= maxAddress:
+                print(f"code reaches address {memBaseAddr + (len(words)*4)} but we can only handle up to {maxAddress}")
                 sys.exit(1)
 
-            print(f"loading {sectionName} section ({len(words)} words) into memory starting at 0x{memBaseAddr:x}")
             if memBaseAddr > 0 and memBaseAddr != micByteOffset:
                 fd.write(f'@{memBaseAddr:x}\n')
                 pass
