@@ -2,7 +2,7 @@
 
 In this assignment, you will write a simple program in RISC-V (RV) assembly to familiarize yourself with the ISA. Starting with the code given in `uppercase.S`, your program must take as input a NUL-terminated ASCII string located in memory, and convert the string into uppercase (in-place). When the conversion is complete, use a `j end_program` instruction to jump into an infinite loop.
 
-This [table of ASCII character codes](https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html) will be useful.
+This [table of ASCII character codes](https://en.wikipedia.org/wiki/ASCII#Printable_character_table) will be useful.
 
 ### Setup
 
