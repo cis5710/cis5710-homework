@@ -63,6 +63,9 @@ RUN sudo chown penn /tools/oss-cad-suite/bin/pytest
 
 ENV PATH="$PATH:/tools/oss-cad-suite/bin"
 WORKDIR /tools/oss-cad-suite
+# downgrade to cocotb 1.9.2, which is what our testbenches use
+RUN bash -c "source environment && pip3 uninstall cocotb -y"
+RUN bash -c "source environment && pip3 install cocotb==1.9.2"
 RUN bash -c "source environment && pip3 install git+https://github.com/cis5710/cocotbext-axi.git"
 WORKDIR /home/penn
 RUN echo "source /tools/oss-cad-suite/environment" >> /home/penn/.bashrc

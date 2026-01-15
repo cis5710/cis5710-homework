@@ -2,7 +2,7 @@
 # the Docker image. Students do not need to build the container image but should
 # instead follow [our Docker instructions](../README.md).
 
-GS_VERSION=v1
+GS_VERSION=v2
 
 build-gs:
 	docker buildx build --platform=linux/amd64 --target base -t cis5710/hw-base-gradescope:latest --file Dockerfile.gradescope .
