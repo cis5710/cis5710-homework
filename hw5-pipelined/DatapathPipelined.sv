@@ -16,9 +16,9 @@
 `ifndef SYNTHESIS
 `include "../hw3-singlecycle/RvDisassembler.sv"
 `endif
-`include "../hw2b-cla/cla.sv"
+`include "../hw2b-cla/CarryLookaheadAdder.sv"
 `include "../hw4-multicycle/DividerUnsignedPipelined.sv"
-`include "cycle_status.sv"
+`include "../hw3-singlecycle/cycle_status.sv"
 
 module Disasm #(
     byte PREFIX = "D"
@@ -85,11 +85,11 @@ module DatapathPipelined (
     output logic halt,
 
     // The PC of the insn currently in Writeback. 0 if not a valid insn.
-    output logic [`REG_SIZE] trace_writeback_pc,
+    output logic [`REG_SIZE] trace_completed_pc,
     // The bits of the insn currently in Writeback. 0 if not a valid insn.
-    output logic [`INSN_SIZE] trace_writeback_insn,
+    output logic [`INSN_SIZE] trace_completed_insn,
     // The status of the insn (or stall) currently in Writeback. See the cycle_status.sv file for valid values.
-    output cycle_status_e trace_writeback_cycle_status
+    output cycle_status_e trace_completed_cycle_status
 );
 
   // opcodes - see section 19 of RiscV spec
@@ -267,9 +267,9 @@ module Processor (
     input  wire  clk,
     input  wire  rst,
     output logic halt,
-    output wire [`REG_SIZE] trace_writeback_pc,
-    output wire [`INSN_SIZE] trace_writeback_insn,
-    output cycle_status_e trace_writeback_cycle_status
+    output wire [`REG_SIZE] trace_completed_pc,
+    output wire [`INSN_SIZE] trace_completed_insn,
+    output cycle_status_e trace_completed_cycle_status
 );
 
   wire [`INSN_SIZE] insn_from_imem;
@@ -305,9 +305,9 @@ module Processor (
       .store_we_to_dmem(mem_data_we),
       .load_data_from_dmem(mem_data_loaded_value),
       .halt(halt),
-      .trace_writeback_pc(trace_writeback_pc),
-      .trace_writeback_insn(trace_writeback_insn),
-      .trace_writeback_cycle_status(trace_writeback_cycle_status)
+      .trace_completed_pc(trace_completed_pc),
+      .trace_completed_insn(trace_completed_insn),
+      .trace_completed_cycle_status(trace_completed_cycle_status)
   );
 
 endmodule

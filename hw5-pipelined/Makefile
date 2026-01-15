@@ -5,7 +5,7 @@ TOP_MODULE_RESOURCE_CHECK=SystemResourceCheck
 TOP_MODULE_DEMO=SystemDemo
 CONSTRAINTS=../common/constraints/ulx3s.lpf
 
-ZIP_SOURCES=DatapathPipelined.sv ../hw4-multicycle/DividerUnsignedPipelined.sv ../hw2b-cla/cla.sv fpga_build/resource-report.json
+ZIP_SOURCES=DatapathPipelined.sv ../hw4-multicycle/DividerUnsignedPipelined.sv ../hw2b-cla/CarryLookaheadAdder.sv fpga_build/resource-report.json
 ZIP_FILE=pipelined.zip
 
 include ../common/make/fpga.mk
