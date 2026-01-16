@@ -5,5 +5,5 @@
     "vscode": {
         "extensions": ["mshr-h.veriloghdl", "lramseyer.vaporview", "ms-python.python"]
     }
-  },
+  }
 }
