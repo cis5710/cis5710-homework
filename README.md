@@ -77,11 +77,17 @@ Open the folder that is the `cis5710-homework` repository you created and cloned
 
 For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com/r/cis5710). This is the same image that the Gradescope autograder uses, so you should see the same results in Docker as you see with the autograder.
 
+### Updating your Dev Container
+
+Occasionally, we will ship an update to the Dev Container image. You will pull the updated [`.devcontainer.json`](.devcontainer.json) file from our `upstream` GitHub repo, and then need to rebuild your Dev Container. With the Dev Container running in VS Code, open the Command Palette (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on Mac), type `Rebuild` and select the `Dev Containers: Rebuild Container` option (see screenshot below). This will fetch the new image and re-launch your container.
+
+![](images/rebuild-devcontainer.png)
+
 ### Apple Silicon
 
 The `hw-base-gradescope` image is an x86 (Intel/AMD) image. If you are running on Apple Silicon, there is some overhead from translating x86 instructions to ARM instructions on-the-fly. You may want to switch to our ARM container image instead, though it is in "beta" status and not as well-tested as the x86 container. Please do let us know about your experience using it, however, so we can improve it.
 
-To switch, simply edit the [`.devcontainer.json`](.devcontainer.json) file to reference the `cis5710/hw-base-arm:latest` image instead of the `cis5710/hw-base-gradescope:latest` image. When you re-open VS Code, it should ask you if you want to switch to the new image.
+To switch, simply edit the [`.devcontainer.json`](.devcontainer.json) file to reference the `cis5710/hw-base-arm:TODO-VERSION` image instead of the `cis5710/hw-base-gradescope:TODO-VERSION` image. Note that `TODO-VERSION` is a placeholder, you should check [our account on DockerHub](https://hub.docker.com/u/cis5710) to see what the latest ARM image version is. Then, follow the instructions above for *Updating your Dev Container* to switch to the ARM image.
 
 It is also possible to install the various tools you need for this course directly on your laptop. You can follow our [Dockerfile](docker/Dockerfile.gradescope) for guidance.
 
@@ -90,6 +96,47 @@ It is also possible to install the various tools you need for this course direct
 We've found that VS Code has decent support for SystemVerilog. I like the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL), the [VaporView waveform viewer](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) and the Python extension, as those are languages/tools you'll use a lot in this class. These are all installed in your Dev Container by default.
 
 I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
+
+### Running Docker directly
+
+Sometimes VS Code Dev Containers can be difficult to set up, or you may prefer to run the container directly to work with a different code editor. You can run our container directly instead of via VS Code. There is a lot of documentation on the web about how to use Docker but we offer a brief tutorial for the Docker command-line interface. Briefly, a Docker *container* is like a "virtual computer" running on your laptop, which has its own operating system and files, separate from those on your laptop. A *container image* is the initial "virtual hard drive" state for that virtual computer. You can't run an image directly, but instead run a container using an image.
+
+First, find the latest *version* of our container image [on DockerHub](https://hub.docker.com/u/cis5710) or in the [`.devcontainer.json`](.devcontainer.json) file. In all the commands below, replace `TODO-VERSION` with that latest version you found. This first command downloads the container image to your laptop:
+
+```
+docker pull cis5710/hw-base-gradescope:TODO-VERSION
+
+```
+
+Then, you should pick the *name* of your container (you can change it from `MY-CIS5710` in the `docker run` command below), which will make it easy to start, stop and distinguish from other containers you may be running.
+
+The container has its own filesystem, separate from the files on your laptop. However, you can select a directory that you want to share between your laptop and the container. **Files outside of this shared directory do not persist if the container is restarted.** You may need to restart the container if you need to reboot your laptop or if we update the container image during the semester. So your cloned git repo should live on your laptop, not solely inside the container. In the `docker run` command below, replace `/PATH/ON/YOUR/LAPTOP` with the path to the laptop directory where you cloned your private GitHub repo. This directory will appear inside the container at `/MYSTUFF`
+
+After editing this command appropriately, launch the container for the first time:
+```
+docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw-base-gradescope:TODO-VERSION /bin/bash
+```
+
+The Docker app offers a nice graphical interface to start/stop/delete containers and images. We discuss how to perform these common operations on the command-line below.
+
+Once you've launched the container, you can keep it running in the background. If you want to free up more resources, however, you can **stop** your container with this command (substituting the name you gave your container previously):
+
+```
+docker stop MY-CIS5710
+```
+
+Stopping your container will end your shell session, but not lose any of the files inside the container - it's like "powering off" the container "virtual computer". You can then start the container again and launch a new shell with:
+
+```
+docker start MY-CIS5710
+docker exec -it MY-CIS5710 /bin/bash
+```
+
+You can also *delete* the container to free up all its resources, which is like discarding the container "virtual computer" and all of its files:
+
+```
+docker rm MY-CIS5710
+```
 
 # Waveform Viewer
 

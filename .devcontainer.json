@@ -1,5 +1,5 @@
 {
-    "image": "cis5710/hw-base-gradescope:latest",
+    "image": "cis5710/hw-base-gradescope:v2",
 
     "customizations": {
     "vscode": {
