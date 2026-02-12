@@ -44,12 +44,20 @@ function automatic string rv_disasm (input bit [31:0] instruction);
                 endcase
             end else begin
                 case (funct3)
-                    3'd0: da_str = $sformatf("ADD x%0d, x%0d, x%0d", rd, rs1, rs2);
+                    3'd0: begin
+                        if (funct7 == 7'h00) da_str = $sformatf("ADD x%0d, x%0d, x%0d", rd, rs1, rs2);
+                        else if (funct7 == 7'h20) da_str = $sformatf("SUB x%0d, x%0d, x%0d", rd, rs1, rs2);
+                        else da_str = "Unknown R-type instruction";
+                    end
                     3'd1: da_str = $sformatf("SLL x%0d, x%0d, x%0d", rd, rs1, rs2);
                     3'd2: da_str = $sformatf("SLT x%0d, x%0d, x%0d", rd, rs1, rs2);
                     3'd3: da_str = $sformatf("SLTU x%0d, x%0d, x%0d", rd, rs1, rs2);
                     3'd4: da_str = $sformatf("XOR x%0d, x%0d, x%0d", rd, rs1, rs2);
-                    3'd5: da_str = $sformatf("SRL x%0d, x%0d, x%0d", rd, rs1, rs2);
+                    3'd5: begin
+                        if (funct7 == 7'h00) da_str = $sformatf("SRL x%0d, x%0d, x%0d", rd, rs1, rs2);
+                        else if (funct7 == 7'h20) da_str = $sformatf("SRA x%0d, x%0d, x%0d", rd, rs1, rs2);
+                        else da_str = "Unknown R-type instruction";
+                    end
                     3'd6: da_str = $sformatf("OR x%0d, x%0d, x%0d", rd, rs1, rs2);
                     3'd7: da_str = $sformatf("AND x%0d, x%0d, x%0d", rd, rs1, rs2);
                     default: da_str = "Unknown R-type instruction";
