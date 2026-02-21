@@ -47,9 +47,9 @@ module SystemResourceCheck (
       .store_we_to_dmem(mem_data_we),
       .load_data_from_dmem(mem_data_loaded_value),
       .halt(led[0]),
-      .trace_writeback_pc(trace_writeback_pc),
-      .trace_writeback_insn(trace_writeback_insn),
-      .trace_writeback_cycle_status(trace_writeback_cycle_status)
+      .trace_completed_pc(trace_writeback_pc),
+      .trace_completed_insn(trace_writeback_insn),
+      .trace_completed_cycle_status(trace_writeback_cycle_status)
   );
 
 endmodule
@@ -225,9 +225,9 @@ module SystemDemo(
       .store_we_to_dmem(mem_data_we),
       .load_data_from_dmem(mem_data_addr == MmapInput ? {24'd0, data2cpu_cpu} : mem_data_loaded_value),
       .halt(),
-      .trace_writeback_pc(trace_writeback_pc),
-      .trace_writeback_insn(trace_writeback_insn),
-      .trace_writeback_cycle_status(trace_writeback_cycle_status)
+      .trace_completed_pc(trace_writeback_pc),
+      .trace_completed_insn(trace_writeback_insn),
+      .trace_completed_cycle_status(trace_writeback_cycle_status)
   );
 
 endmodule
