@@ -38,7 +38,12 @@ async def test0(dut):
     dut.i_dividend.value = 4
     dut.i_divisor.value = 2
 
-    await ClockCycles(dut.clk, DIVIDER_STAGES)
+    # division not quite done yet
+    await ClockCycles(dut.clk, DIVIDER_STAGES-1)
+    assert 2 != dut.o_quotient.value
+    assertEquals(0, dut.o_remainder.value)
+    # now it's done
+    await ClockCycles(dut.clk, 1)
     assertEquals(2, dut.o_quotient.value)
     assertEquals(0, dut.o_remainder.value)
 
@@ -48,7 +53,11 @@ async def test1(dut):
     dut.i_dividend.value = 12
     dut.i_divisor.value = 3
 
-    await ClockCycles(dut.clk, DIVIDER_STAGES)
+    # division not quite done yet
+    await ClockCycles(dut.clk, DIVIDER_STAGES-1)
+    assert 4 != dut.o_quotient.value
+    assertEquals(0, dut.o_remainder.value)
+    await ClockCycles(dut.clk, 1)
     assertEquals(4, dut.o_quotient.value)
     assertEquals(0, dut.o_remainder.value)
 

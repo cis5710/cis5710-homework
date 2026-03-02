@@ -14,9 +14,9 @@ We have provided an initial set of divider tests for you in `pytest --exitfirst 
 
 After your divider is working, you will need to integrate it into your datapath. You can start by copying your HW3 datapath code into `DatapathMultiCycle.sv`. Note that the CLA code will be automatically pulled from the hw2b-cla/ directory. You may also need to update the paths in some `include` statements, e.g., you need to reference the `RvDisassembler.sv` file that lives in HW3 via `../hw3-singlecycle/RvDisassembler.sv` instead.
 
-Your datapath is almost entirely unchanged from HW3, except that `div`, `divu`, `rem` and `remu` instructions will take 8 cycles instead of one. We'll refer to these 4 kinds of instructions as "divide operations" for simplicity.
+Your datapath is almost entirely unchanged from HW3, except that `div`, `divu`, `rem` and `remu` instructions will take 9 cycles instead of one. We'll refer to these 4 kinds of instructions as "divide operations" for simplicity. Note that the divide operation takes 8 cycles to complete, and so is only available for writing to the register file in the 9th cycle. In the 10th cycle, the processor can proceed to the next insn.
 
-Your divider module is pipelined and so, theoretically, you could start back-to-back independent divide operations on consecutive cycles for improved performance. However, your datapath will not (yet) take advantage of this and so consecutive divide operations will take 8 cycles each. Thus, *k* consecutive divide operations will take *8k* cycles.
+Your divider module is pipelined and so, theoretically, you could start back-to-back independent divide operations on consecutive cycles for improved performance. However, your datapath will not (yet) take advantage of this and so consecutive divide operations will take 9 cycles each. Thus, *k* consecutive divide operations will take *9k* cycles.
 
 You can run the processor tests via `pytest --exitfirst --capture=no testbench.py -k runCocotbTestsProcessor`. These include some simple assembly test cases as well as all of the riscv-tests and dhrystone.
 
