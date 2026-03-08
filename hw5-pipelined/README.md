@@ -87,27 +87,30 @@ For this homework, you will again run `make resource-check` to see how pipelinin
 
 Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
 
-## HW5 Demo: Communication between PC and FPGA processor
+## HW5 Demo: Mystery Signal
 
-After you have finished your 5-stage pipelined datapath, you can start working on HW5 demo. In this demo, we will establish communication between your laptop and the FPGA. You can send a string of characters using the keyboard to your processor on the FPGA and the processor will send a reversed string back to your laptop. The code running on the CPU is [this small C program](uart-c/uart.c).
+After you have finished your 5-stage pipelined datapath, you can run the HW5 demo. In this demo, you will run a program on your processor that produces a mystery signal on one of the FPGA board's GPIO (General-Purpose Input/Output) pins.
 
-Run `make demo-code` first to generate the assmebly code running on your processor. And then run `make demo` to generate the bitstream. 
+Run `make demo-code` first to generate the assembly code running on your processor. And then run `make demo` to generate the bitstream and `make program` to program your design onto the FPGA. The FPGA must be running **before** you connect to the oscilloscope, otherwise there will be no signal for the oscilloscope to measure. The FPGA board will indicate the signal is being sent by flashing all the LEDs.
 
-### Windows
+### FPGA Board Connections
 
-Refer to hw2b demo on how to program your FPGA after successfully generating your bitstream. 
+![](../images/scope-board-connections.png)
 
-After programming your FPGA, you can use any application that supports serial communication. In this homework we use **Mobaxterm** as an example.
+Next, you will connect the oscilloscope to the FPGA board. Get a cable from the coat rack by the Africk Lab door (the one nearest the lobby), ensuring the cable has one red and one black lead on one end, and a black plug on the other end. Push on the red lead to extend the copper hook, and connect it to the leftmost (+) hole labeled `0` on the FPGA - this is GPIO positive pin 0. Connect the black lead to the rightmost `GND` hole on the right side of the board. This is your ground connection. When connected, it should look like the picture above.
 
-Click `Session -> Serial` and choose the valid serial port and set the baud rate to be **115200**. Then click `OK`.
+### Oscilloscope Instructions
 
-Type in 8 characters using your keyboard and you should see the reversed string being shown the serial terminal.
+![](../images/scope-buttons.png)
 
+Now you are ready to use the oscilloscope. Follow these steps, which are also numbered in pink the picture above:
 
-### Mac 
+1. Connect the black plug from the oscilloscope cable to the oscilloscope's port 1. The plug must first be inserted and then twisted into place - be sure not to force it!
+2. Turn the oscilloscope on.
+3. Press the `Auto Scale` button to have the oscilloscope automatically scale its output to match the voltages it senses from the FPGA board.
+4. The `Run | Stop` button should be red, indicating the oscilloscope is stopped and not recording any signals. If the button is green, press it once to stop the oscilloscope.
+5. Find the `Horizontal` knob.
+6. Adjust the `Horizontal` knob until you see `200.0ms/` on the oscilloscope's screen, indicating that each horizontal grid cell represents 200 ms of time.
+7. Press the `Run | Stop` button to start recording the signals. After a brief pause, you will see a yellow bar advance on the oscilloscope's screen from left to right. Once the bar reaches the right side of the screen, press `Run | Stop` again to end the recording. You can now use the `Horizontal` knob to zoom in on the signal. Use the `Navigate` buttons to scroll left, right and stop scrolling so that you can read the signal. 
 
-After programming your FPGA (run `make program` on your machine), open another local terminal and run `screen /dev/cu.usbserial-* 115200` to monitor the serial communication between your FPGA board and your Mac.
-
-Once connected, type 8 characters using your keyboard. You should see the string displayed in reverse order on the serial terminal.
-
-To exit the session, press: `Control + a + k`. Confirm the termination by selecting `y` when prompted.
+You will get credit for the demo just for viewing the mystery signal on the oscilloscope. If you manage to decode the mystery signal, however, tell a TA and they will be *extra* proud of you!!
