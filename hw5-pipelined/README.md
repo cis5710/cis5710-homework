@@ -111,6 +111,6 @@ Now you are ready to use the oscilloscope. Follow these steps, which are also nu
 4. The `Run | Stop` button should be red, indicating the oscilloscope is stopped and not recording any signals. If the button is green, press it once to stop the oscilloscope.
 5. Find the `Horizontal` knob.
 6. Adjust the `Horizontal` knob until you see `200.0ms/` on the oscilloscope's screen, indicating that each horizontal grid cell represents 200 ms of time.
-7. Press the `Run | Stop` button to start recording the signals. After a brief pause, you will see a yellow bar/waveform advance on the oscilloscope's screen from left to right. Once the bar reaches the right side of the screen, press `Run | Stop` again to end the recording. You can now use the `Horizontal` knob to zoom in on the signal. Use the `Navigate` buttons to scroll left and right so that you can read the signal. 
+7. Press the `Run | Stop` button to start recording the signals. After a brief pause, you will see a yellow bar/waveform advance on the oscilloscope's screen from left to right. Once the bar reaches the right side of the screen, press `Run | Stop` again to end the recording. You can now use the `Horizontal` knob to zoom in on the signal. Use the `Navigate` section's triangle and square buttons to scroll left and right so that you can read the signal.
 
 You will get credit for the demo just for viewing the mystery signal on the oscilloscope. If you manage to decode the mystery signal, however, tell a TA and they will be *extra* proud of you!!
