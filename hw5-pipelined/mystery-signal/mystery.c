@@ -20,7 +20,7 @@ void _start() {
     asm volatile ("li sp, 0xFFFFFFFC");
 
     int led = -1;
-    const int message = 53566;
+    const int message = 53366;
 
     while (1) {
         *LEDS = led;
