@@ -81,11 +81,11 @@ The testcases we have provided are relatively limited. Adding your own tests wil
 
 ## Check timing closure
 
-For this homework, you will again run `make resource-check` to see how pipelining improves frequency.
+For this homework, you will again use the `resource-check` configuration to see how pipelining improves frequency.
 
 ## Submitting
 
-Run `make resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
+Run `make demo-code resource-check` and then `make zip` and submit the `pipelined.zip` file on Gradescope. There is a resource leaderboard for this assignment, but it is strictly informational - no points are awarded based on the leaderboard results.
 
 ## HW5 Demo: Mystery Signal
 
