@@ -21,6 +21,6 @@ def objectIsLegal(filename, obj):
         return (False,True)
     return (True,True)
 
-if os.path.exists('DatapathPipelinedCache.sv'):
-    main_codecheck.runCodecheck(objectIsLegal, ['DatapathPipelinedCache.sv'])
+if os.path.exists('DatapathPipelinedAxil.sv'):
+    main_codecheck.runCodecheck(objectIsLegal, ['DatapathPipelinedAxil.sv'])
     pass

@@ -9,22 +9,32 @@
 
 `define RESP_OK 2'b00
 
+// enable 1280x720 HDMI output, instead of 640x480
+`define HDMI_1280
 
 `ifdef SYNTHESIS
 `include "MyClockGen.v"
 `endif
 
-`include "DatapathPipelinedCache.sv"
-`include "system/hdmi/hdmi_video.v"
-`include "system/hdmi/vga_video.v"
-`include "system/hdmi/vga2dvid.v"
-`include "system/hdmi/fake_differential.v"
-`include "system/hdmi/tmds_encoder.v"
+`include "DatapathPipelinedAxil.sv"
 `include "system/usb/usb_hid_host.v"
 `include "../hw3-singlecycle/system/debouncer.v"
 
-// FULL_SIZE_MEM means 32KB memory, FULL_SIZE_DISPLAY means 320x240 frame buffer
-// non-FULL_SIZE means 4KB memory and 40x30 frame buffer, respectively
+`ifdef HDMI_1280
+`include "system/hdmi_1280_720/dvi_generator.sv"
+`include "system/hdmi_1280_720/simple_720p.sv"
+`include "system/hdmi_1280_720/tmds_encoder_dvi.sv"
+`include "system/hdmi_1280_720/hdmi_video.sv"
+`else
+`include "system/hdmi_640_480/hdmi_video.v"
+`include "system/hdmi_640_480/vga_video.v"
+`include "system/hdmi_640_480/vga2dvid.v"
+`include "system/hdmi_640_480/fake_differential.v"
+`include "system/hdmi_640_480/tmds_encoder.v"
+`endif
+
+// FULL_SIZE_MEM means 16KB memory, FULL_SIZE_DISPLAY means 320x240 frame buffer
+// non-FULL_SIZE means 2KB memory and 40x30 frame buffer, respectively
 `define FULL_SIZE_MEM
 `define FULL_SIZE_DISPLAY
 
@@ -34,42 +44,42 @@ module SystemResourceCheck (
     output wire [7:0] led
 );
 
-wire clk, clk_locked;
+wire clk, clk_locked, ignore0, ignore1;
 MyClockGen clock_gen (
   .input_clk_25MHz(external_clk_25MHz),
+  .clk_125MHz(ignore0),
+  .clk_25MHz(ignore1),
   .clk_proc(clk),
   .locked(clk_locked)
 );
 wire rst = !clk_locked;
 
-axi_if axi_data_cache ();
 // memory is dual-ported, to connect to both datapath and D$
-axi_if axi_mem_ro ();
-axi_if axi_mem_rw ();
+axil_if axil_mem_ro ();
+axil_if axil_mem_rw ();
 
-AxilMemory #(.NUM_WORDS(128)) memory (
-  .ACLK(clk),
-  .ARESETn(~rst),
-  .port_ro(axi_mem_ro.subord),
-  .port_rw(axi_mem_rw.subord)
-);
+EasyAxilMemory #(
+	   .OPT_SKIDBUFFER(1),
+	   .OPT_LOWPOWER(0),
+     .NUM_WORDS(128)
+) memory (
+	      .ACLK(clk),
+	      .ARESETn(~rst),
+	      .port_rw(axil_mem_rw.subord),
+        .port_ro(axil_mem_ro.subord)
+	      );
 
-  AxilCache #(
-    .BLOCK_SIZE_BITS(32),
-    .NUM_SETS(8))
-    dcache (
-    .ACLK(clk),
-    .ARESETn(~rst),
-    .proc(axi_data_cache.subord),
-    .mem(axi_mem_rw.manager)
-  );
-
-  DatapathPipelinedCache datapath (
+  // NB: must connect all ports to avoid sv2v implicit net errors (due to `default_nettype none)
+  wire [`REG_SIZE] trace_completed_pc;
+  wire [`INSN_SIZE] trace_completed_insn;
+  cycle_status_e trace_completed_cycle_status;
+  DatapathPipelinedAxil datapath (
       .clk(clk),
       .rst(rst),
-      .icache(axi_mem_ro.manager),
-      .dcache(axi_data_cache.manager),
-      .halt(led[0])
+      .imem(axil_mem_ro.manager),
+      .dmem(axil_mem_rw.manager),
+      .halt(led[0]),
+      .*
   );
 endmodule
 
@@ -132,11 +142,80 @@ EHXPLLL #(
 	);
 endmodule
 
+module hdmi1280_clock_gen #(
+    parameter CLKI_DIV  = 1,     // input clock divider
+    parameter CLKFB_DIV = 1,     // feedback divider
+    parameter CLKOP_DIV = 1,     // primary output clock divider
+    parameter CLKOP_CPHASE = 0,  // primary output clock phase
+    parameter CLKOS_DIV = 1,     // secondary output clock divider
+    parameter CLKOS_CPHASE = 0   // secondary output clock phase
+    ) (
+    input  wire clk_in,      // input clock
+    output wire clk_5x_out,  // output 5x clock
+    output wire clk_out,     // output clock
+    output reg  clk_locked   // clock locked?
+    );
+
+    wire locked;  // unsynced lock signal
+
+    // HDL attributes (values are from Project Trellis)
+    (* ICP_CURRENT="12" *)
+    (* LPF_RESISTOR="8" *)
+    (* MFG_ENABLE_FILTEROPAMP="1" *)
+    (* MFG_GMCREF_SEL="2" *)
+
+    EHXPLLL #(
+        .PLLRST_ENA("DISABLED"),
+        .INTFB_WAKE("DISABLED"),
+        .STDBY_ENABLE("DISABLED"),
+        .DPHASE_SOURCE("DISABLED"),
+        .OUTDIVIDER_MUXA("DIVA"),
+        .OUTDIVIDER_MUXB("DIVB"),
+        .OUTDIVIDER_MUXC("DIVC"),
+        .OUTDIVIDER_MUXD("DIVD"),
+        .CLKI_DIV(CLKI_DIV),
+        .CLKOP_ENABLE("ENABLED"),
+        .CLKOP_DIV(CLKOP_DIV),
+        .CLKOP_CPHASE(CLKOP_CPHASE),
+        .CLKOP_FPHASE(0),
+        .CLKOS_ENABLE("ENABLED"),
+        .CLKOS_DIV(CLKOS_DIV),
+        .CLKOS_CPHASE(CLKOS_CPHASE),
+        .CLKOS_FPHASE(0),
+        .FEEDBK_PATH("CLKOP"),
+        .CLKFB_DIV(CLKFB_DIV)
+    ) pll_i (
+        .RST(1'b0),
+        .STDBY(1'b0),
+        .CLKI(clk_in),
+        .CLKOP(clk_5x_out),
+        .CLKOS(clk_out),
+        .CLKFB(clk_5x_out),
+        .CLKINTFB(),
+        .PHASESEL0(1'b0),
+        .PHASESEL1(1'b0),
+        .PHASEDIR(1'b1),
+        .PHASESTEP(1'b1),
+        .PHASELOADREG(1'b1),
+        .PLLWAKESYNC(1'b0),
+        .ENCLKOP(1'b0),
+        .LOCK(locked)
+    );
+
+    // ensure clock lock is synced with output clock
+    reg locked_sync;
+    always @(posedge clk_out) begin
+        locked_sync <= locked;
+        clk_locked <= locked_sync;
+    end
+endmodule
+
+
 module MemoryMap (
     input wire ACLK,
     input wire ARESETn,
-    axi_if.subord proc,
-    axi_if.manager cache,
+    axil_if.subord proc,
+    axil_if.manager cache,
     input wire clk_25MHz,
     input wire clk_125MHz,
     input wire clk_12MHz,
@@ -157,19 +236,31 @@ module MemoryMap (
   //localparam int MmapUartWrite    = 32'hFF00_3001;
   localparam int MmapUsb       = 32'hFF00_4000;
   localparam int MmapRng       = 32'hFF00_5000;
-  localparam int MmapHdmiStart = 32'hFF10_0000;
+  localparam int MmapDisplayStart = 32'hFF10_0000;
+
   `ifdef FULL_SIZE_DISPLAY
-  localparam bit[9:0] HdmiWidth = 320;
-  localparam bit[9:0] HdmiHeight = 240;
+  localparam bit[9:0] DisplayWidth = 320;
+  localparam bit[9:0] DisplayHeight = 240;
   `else
-  localparam bit[9:0] HdmiWidth = 40;
-  localparam bit[9:0] HdmiHeight = 30;
+  localparam bit[9:0] DisplayWidth = 40;
+  localparam bit[9:0] DisplayHeight = 30;
   `endif
-  localparam int HdmiPixels = HdmiHeight * HdmiWidth;
-  localparam int HdmiPixelSizeBits = 8;
-  localparam bit[9:0] HdmiFrameBufferScale = 640 / HdmiWidth;
-  localparam int HdmiFrameBufferScaleShift = $clog2(HdmiFrameBufferScale);
-  localparam int MmapHdmiEnd = MmapHdmiStart + (HdmiPixels * (HdmiPixelSizeBits / 8));
+
+  localparam int DisplayPixels = DisplayHeight * DisplayWidth;
+  localparam int DisplayPixelSizeBits = 8;
+
+  `ifdef HDMI_1280
+  localparam int HdmiWidth = 1280;
+  localparam int HdmiHeight = 720;
+  localparam int DisplayScaleFactor = (HdmiWidth / {22'd0, DisplayWidth}) / 2;
+  `else
+  localparam int HdmiWidth = 640;
+  localparam int HdmiHeight = 480;
+  localparam int DisplayScaleFactor = HdmiWidth / DisplayWidth;
+  `endif
+
+  localparam int DisplayFrameBufferScaleShift = $clog2(DisplayScaleFactor);
+  localparam int MmapDisplayEnd = MmapDisplayStart + (DisplayPixels * (DisplayPixelSizeBits / 8));
 
   localparam bit True = 1'b1;
   localparam bit False = 1'b0;
@@ -217,11 +308,11 @@ module MemoryMap (
 
   wire is_axi_write = proc.AWVALID && cache.AWREADY && proc.WVALID && cache.WREADY;
   wire is_led = is_axi_write && (proc.AWADDR == MmapLeds);
-  wire is_hdmi = is_axi_write && (MmapHdmiStart <= proc.AWADDR && proc.AWADDR < MmapHdmiEnd);
+  wire is_hdmi = is_axi_write && (MmapDisplayStart <= proc.AWADDR && proc.AWADDR < MmapDisplayEnd);
   wire is_write = is_led || is_hdmi;
   wire was_axi_write = last_awvalid && last_awready && last_wvalid && last_wready;
   wire was_led = was_axi_write && (last_awaddr == MmapLeds);
-  wire was_hdmi = was_axi_write && (MmapHdmiStart <= last_awaddr && last_awaddr < MmapHdmiEnd);
+  wire was_hdmi = was_axi_write && (MmapDisplayStart <= last_awaddr && last_awaddr < MmapDisplayEnd);
   wire was_write = was_led || was_hdmi;
 
   always_ff @(posedge ACLK) begin
@@ -326,16 +417,16 @@ module MemoryMap (
   );
 `endif
 
-  // HDMI frame buffer
+  // HDMI display frame buffer
 
 //   localparam bit [7:0] Black = 8'b000_000_00;
 //   localparam bit [7:0] Red   = 8'b111_000_00;
   localparam bit [7:0] White = 8'b111_111_11;
-//   localparam bit [7:0] Teal  = 8'b000_111_10;
+  // localparam bit [7:0] Teal  = 8'b000_111_10;
 
-  logic [HdmiPixelSizeBits-1:0] frame_buffer[HdmiWidth * HdmiHeight];
+  logic [DisplayPixelSizeBits-1:0] frame_buffer[DisplayWidth * DisplayHeight];
   initial begin
-    for (integer i = 0; i < HdmiPixels; i = i + 1) begin
+    for (integer i = 0; i < DisplayPixels; i = i + 1) begin
         frame_buffer[i] = White;
     end
   end
@@ -344,16 +435,16 @@ module MemoryMap (
       if (was_hdmi) begin
         case (last_wstrb)
         4'b0001: begin
-            frame_buffer[last_awaddr-MmapHdmiStart] <= last_wdata[7:0];
+            frame_buffer[last_awaddr-MmapDisplayStart] <= last_wdata[7:0];
         end
         4'b0010: begin
-            frame_buffer[(last_awaddr-MmapHdmiStart)+1] <= last_wdata[15:8];
+            frame_buffer[(last_awaddr-MmapDisplayStart)+1] <= last_wdata[15:8];
         end
         4'b0100: begin
-            frame_buffer[(last_awaddr-MmapHdmiStart)+2] <= last_wdata[23:16];
+            frame_buffer[(last_awaddr-MmapDisplayStart)+2] <= last_wdata[23:16];
         end
         4'b1000: begin
-            frame_buffer[(last_awaddr-MmapHdmiStart)+3] <= last_wdata[31:24];
+            frame_buffer[(last_awaddr-MmapDisplayStart)+3] <= last_wdata[31:24];
         end
         default: begin end
         endcase
@@ -361,21 +452,75 @@ module MemoryMap (
     end
   end
 
+`ifdef HDMI_1280
+  wire [11:0] raw_x, raw_y, raw_x_scaled, raw_y_scaled;
+  assign raw_x_scaled = raw_x >> DisplayFrameBufferScaleShift;
+  assign raw_y_scaled = raw_y >> DisplayFrameBufferScaleShift;
+  wire [9:0] x = raw_x_scaled < {2'd0, DisplayWidth} ? raw_x_scaled[9:0] : DisplayWidth - 1;
+  wire [8:0] y = raw_y_scaled < {2'd0, DisplayHeight} ? raw_y_scaled[8:0] : DisplayHeight - 1;
+`else
   wire [9:0] raw_x, raw_y, raw_x_scaled, raw_y_scaled;
-  assign raw_x_scaled = raw_x >> HdmiFrameBufferScaleShift[3:0];
-  assign raw_y_scaled = raw_y >> HdmiFrameBufferScaleShift[3:0];
-  wire [9:0] x = raw_x_scaled < HdmiWidth ? raw_x_scaled : HdmiWidth - 1;
-  wire [8:0] y = raw_y_scaled < HdmiHeight ? raw_y_scaled[8:0] : 9'd119;
+  assign raw_x_scaled = raw_x >> DisplayFrameBufferScaleShift;
+  assign raw_y_scaled = raw_y >> DisplayFrameBufferScaleShift;
+  wire [9:0] x = raw_x_scaled < DisplayWidth ? raw_x_scaled : DisplayWidth - 1;
+  wire [8:0] y = raw_y_scaled < DisplayHeight ? raw_y_scaled[8:0] : DisplayHeight - 1;
+`endif
 
 `ifdef FULL_SIZE_DISPLAY
   // NB: use this for 320x240 display
-  wire [16:0] fb_index = ({8'd0, y} * {7'd0, HdmiWidth}) + {7'd0, x};
+  wire [16:0] fb_index = ({8'd0, y} * {7'd0, DisplayWidth}) + {7'd0, x};
 `else
   // NB: use this for 40x30 display
-  wire [10:0] fb_index = ({2'd0, y} * {1'd0, HdmiWidth}) + {1'd0, x};
+  wire [10:0] fb_index = ({2'd0, y} * {1'd0, DisplayWidth}) + {1'd0, x};
 `endif
 
-  logic [HdmiPixelSizeBits-1:0] color8;
+  logic [DisplayPixelSizeBits-1:0] color8;
+  // scale from 8-bit color to 24-bit color
+  wire [7:0] red8   = {color8[7:5], color8[7:5], color8[7:6]};
+  wire [7:0] green8 = {color8[4:2], color8[4:2], color8[4:3]};
+  wire [7:0] blue8  = {color8[1:0], color8[1:0], color8[1:0], color8[1:0]};
+
+  wire [23:0] color24 = {red8, green8, blue8};
+`ifdef SYNTHESIS
+`ifdef HDMI_1280
+  // generate pixel clock
+    logic clk_pix;
+    logic clk_pix_5x;
+    logic clk_pix_locked;
+    hdmi1280_clock_gen #(  // 74 MHz (PLL can't do exact 74.25 MHz for 720p)
+        .CLKI_DIV(5),
+        .CLKFB_DIV(74),
+        .CLKOP_DIV(2),
+        .CLKOP_CPHASE(1),
+        .CLKOS_DIV(10),
+        .CLKOS_CPHASE(5)
+    ) hdmi_clock_gen_inst (
+       .clk_in(clk_25MHz),
+       .clk_5x_out(clk_pix_5x),
+       .clk_out(clk_pix),
+       .clk_locked(clk_pix_locked)
+    );
+
+  always_ff @(posedge clk_pix) begin
+    if (!ARESETn) begin
+      color8 <= 0;
+    end else begin
+      color8 <= frame_buffer[fb_index];
+    end
+  end
+
+    hdmi_video hdmi_video (
+      .clk_pix,
+      .clk_pix_5x,
+      .clk_pix_locked,
+      .gpdi_dp,
+      .sx(raw_x),
+      .sy(raw_y),
+      .pixel_r(red8),
+      .pixel_g(green8),
+      .pixel_b(blue8)
+    );
+`else
   always_ff @(posedge clk_25MHz) begin
     if (!ARESETn) begin
       color8 <= 0;
@@ -384,13 +529,6 @@ module MemoryMap (
     end
   end
 
-  // scale from 8-bit color to 24-bit color
-  wire [7:0] red24   = {color8[7:5], color8[7:5], color8[7:6]};
-  wire [7:0] green24 = {color8[4:2], color8[4:2], color8[4:3]};
-  wire [7:0] blue24  = {color8[1:0], color8[1:0], color8[1:0], color8[1:0]};
-
-  wire [23:0] color24 = {red24, green24, blue24};
-`ifdef SYNTHESIS
   hdmi_video hdmi_video (
       .clk_25MHz(clk_25MHz),
       .clk_125MHz(clk_125MHz),
@@ -402,6 +540,7 @@ module MemoryMap (
       .gpdi_dn(gpdi_dn)
   );
 `endif
+`endif
 
 endmodule
 
@@ -410,7 +549,9 @@ module SystemDemo (
     input wire [6:0] btn,
     output wire [7:0] led,
     output wire [3:0] gpdi_dp,
+`ifndef HDMI_1280
     output wire [3:0] gpdi_dn,
+`endif
     inout wire  usb_fpga_bd_dn,
     inout wire  usb_fpga_bd_dp,
     output wire ftdi_rxd, // from FPGA to host
@@ -443,7 +584,7 @@ module SystemDemo (
     .locked(clk_locked)
     );
 
-    DemoClockGen demo_clock_gen (
+  DemoClockGen demo_clock_gen (
     .input_clk_25MHz(external_clk_25MHz),
     .locked(demo_clocks_locked),
     .clk_125MHz(clk_125MHz),
@@ -458,17 +599,17 @@ module SystemDemo (
 `endif
   wire rst = !rst_n || !clk_locked || !demo_clocks_locked;
 
-  axi_if axi_data_cache ();
-  axi_if axi_data_mmap ();
-  axi_if axi_insn_cache ();
+  axil_if axi_data_cache ();
+  axil_if axi_data_mmap ();
+  axil_if axi_insn_cache ();
   // memory is dual-ported, to connect to both I$ and D$
-  axi_if axi_mem_a ();
-  axi_if axi_mem_b ();
+  axil_if axi_mem_a ();
+  axil_if axi_mem_b ();
 
 `ifdef FULL_SIZE_MEM
-  AxilMemory #(.NUM_WORDS(8192)) the_mem
+  AxilMemory #(.NUM_WORDS(4096)) the_mem
 `else
-  AxilMemory #(.NUM_WORDS(2048)) the_mem
+  AxilMemory #(.NUM_WORDS(512)) the_mem
 `endif
   (
       .ACLK(clk_proc),
@@ -477,12 +618,18 @@ module SystemDemo (
       .port_rw(axi_mem_b.subord)
   );
 
+`ifdef HDMI_1280
+  wire [3:0] gpdi_dn;
+`endif
+
   MemoryMap mmap (
       .ACLK(clk_proc),
       .ARESETn(~rst),
       .proc(axi_data_mmap.subord),
-      .cache(axi_data_cache.manager),
+      // .cache(axi_data_cache.manager),
+      .cache(axi_mem_b.manager),
       .clk_25MHz(clk_25MHz),
+      .clk_12MHz,
       .clk_125MHz(clk_125MHz),
       .clk_locked(clk_locked),
       .btn(btn),
@@ -493,24 +640,32 @@ module SystemDemo (
       .usb_fpga_bd_dp(usb_fpga_bd_dp)
   );
 
-  AxilCache #(
-      .BLOCK_SIZE_BITS(32),
-      .NUM_SETS(64)
-  ) dcache (
-      .ACLK(clk_proc),
-      .ARESETn(~rst),
-      .proc(axi_data_cache.subord),
-      .mem(axi_mem_b.manager)
-  );
+  // AxilCache #(
+  //     .BLOCK_SIZE_BITS(32),
+  //     .NUM_SETS(64)
+  //     // .BLOCKS_PER_WAY(8)
+  // ) dcache (
+  //     .ACLK(clk_proc),
+  //     .ARESETn(~rst),
+  //     .proc(axi_data_cache.subord),
+  //     .mem(axi_mem_b.manager)
+  // );
 
   wire halt;
+
+  wire [`REG_SIZE] ignore0;
+  wire [`INSN_SIZE] ignore1;
+  cycle_status_e ignore2;
 
   DatapathPipelinedCache datapath (
       .clk(clk_proc),
       .rst(rst),
       .icache(axi_mem_a.manager),
       .dcache(axi_data_mmap.manager),
-      .halt(halt)
+      .halt(halt),
+      .trace_writeback_pc(ignore0),
+      .trace_writeback_insn(ignore1),
+      .trace_writeback_cycle_status(ignore2)
   );
 
 endmodule
@@ -529,19 +684,20 @@ module SystemSim (
 
   localparam bit True = 1'b1;
 //   localparam bit False = 1'b0;
-  wire clk_25MHz, clk_125MHz, clk_proc, clk_locked;
+  wire clk_25MHz, clk_125MHz, clk_12MHz, clk_proc, clk_locked;
 
   assign clk_25MHz  = external_clk_25MHz;
+  assign clk_12MHz  = external_clk_25MHz;
   assign clk_proc   = external_clk_25MHz;
   assign clk_125MHz = external_clk_25MHz;
   assign clk_locked = True;
 
-  axi_if axi_data_cache ();
-  axi_if axi_data_mmap ();
-  axi_if axi_insn_cache ();
+  axil_if axi_data_cache ();
+  axil_if axi_data_mmap ();
+  axil_if axi_insn_cache ();
   // memory is dual-ported, to connect to both I$ and D$
-  axi_if axi_mem_a ();
-  axi_if axi_mem_b ();
+  axil_if axi_mem_a ();
+  axil_if axi_mem_b ();
 
   wire [7:0] fake_led, fake_led2;
 
@@ -563,6 +719,7 @@ module SystemSim (
       .proc(axi_data_mmap.subord),
       .cache(axi_data_cache.manager),
       .clk_25MHz(clk_25MHz),
+      .clk_12MHz,
       .clk_125MHz(clk_125MHz),
       .clk_locked(clk_locked),
       .btn(btn),
@@ -576,6 +733,7 @@ module SystemSim (
   AxilCache #(
       .BLOCK_SIZE_BITS(32),
       .NUM_SETS(16)
+      // .BLOCKS_PER_WAY(16)
   ) icache (
       .ACLK(clk_proc),
       .ARESETn(~rst),
@@ -586,6 +744,7 @@ module SystemSim (
   AxilCache #(
       .BLOCK_SIZE_BITS(32),
       .NUM_SETS(16)
+      // .BLOCKS_PER_WAY(16)
   ) dcache (
       .ACLK(clk_proc),
       .ARESETn(~rst),
@@ -604,24 +763,24 @@ module SystemSim (
   //localparam int MmapUartWrite    = 32'hFF00_3001;
   // localparam int MmapUsb       = 32'hFF00_4000;
   // localparam int MmapRng       = 32'hFF00_5000;
-  localparam int MmapHdmiStart = 32'hFF10_0000;
+  localparam int MmapDisplayStart = 32'hFF10_0000;
   `ifdef FULL_SIZE_DISPLAY
-  localparam bit[9:0] HdmiWidth = 320;
-  localparam bit[9:0] HdmiHeight = 240;
+  localparam bit[9:0] DisplayWidth = 320;
+  localparam bit[9:0] DisplayHeight = 240;
   `else
-  localparam bit[9:0] HdmiWidth = 40;
-  localparam bit[9:0] HdmiHeight = 30;
+  localparam bit[9:0] DisplayWidth = 40;
+  localparam bit[9:0] DisplayHeight = 30;
   `endif
-  localparam int HdmiPixels = HdmiHeight * HdmiWidth;
-  localparam int HdmiPixelSizeBits = 8;
-  // localparam bit[9:0] HdmiFrameBufferScale = 640 / HdmiWidth;
-  // localparam int HdmiFrameBufferScaleShift = $clog2(HdmiFrameBufferScale);
-  localparam int MmapHdmiEnd = MmapHdmiStart + (HdmiPixels * (HdmiPixelSizeBits / 8));
+  localparam int DisplayPixels = DisplayHeight * DisplayWidth;
+  localparam int DisplayPixelSizeBits = 8;
+  // localparam bit[9:0] DisplayFrameBufferScale = 640 / DisplayWidth;
+  // localparam int DisplayFrameBufferScaleShift = $clog2(DisplayFrameBufferScale);
+  localparam int MmapDisplayEnd = MmapDisplayStart + (DisplayPixels * (DisplayPixelSizeBits / 8));
 
   wire is_write_to_read_only = axi_data_cache.manager.AWVALID &&
         axi_data_cache.manager.AWADDR[14:0] <= 15'h6000 &&
         axi_data_cache.manager.AWADDR != MmapLeds &&
-        (axi_data_cache.manager.AWADDR < MmapHdmiStart || axi_data_cache.manager.AWADDR > MmapHdmiEnd);
+        (axi_data_cache.manager.AWADDR < MmapDisplayStart || axi_data_cache.manager.AWADDR > MmapDisplayEnd);
 
   DatapathPipelinedCache datapath (
       .clk(clk_proc),

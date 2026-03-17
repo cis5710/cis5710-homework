@@ -1,155 +1,96 @@
-# Homework 6: Pipelined Datapath with AXI-Lite Cache
+# Homework 6: Pipelined Datapath with AXI-Lite Memory
 
-In this homework you will build a cache that communicates via the AXI4-Lite protocol ("AXIL" for short). You will then use that cache as both the I$ and D$ with your pipelined datapath from HW5. There are several important simplifications/complications and tips below, so read through the whole Milestone A section before beginning.
+In this homework you will connect your pipelined datapath to a memory via the AXI4-Lite protocol ("AXIL" for short). There are several important simplifications/complications and tips below, so read through the whole document before beginning.
 
-## Milestone A: AXIL Cache
+## Step 1: AXIL Insn Memory
 
-First, you will need to build your AXIL cache, completing the starter code given in the `AxilCache` module in `AxilCache.sv`. The [official AXIL specification from ARM](https://www.arm.com/architecture/system-architectures/amba/amba-4) is a valuable and relatively accessible resource. Our designs, however, will have both simplifications and extensions which depart from the official AXIL specification, as noted below.
+First, you will replace the single-cycle memory with the EasyAxilMemory using the `port_ro` interface for the read-only interface to insn memory. The [official AXIL specification from ARM](https://www.arm.com/architecture/system-architectures/amba/amba-4) is a valuable and relatively accessible resource. Our designs, however, will have both simplifications and extensions which depart from the official AXIL specification, as noted below.
 
-You will build a **direct-mapped writeback cache with 4B blocks**. While the `BLOCK_SIZE_BITS` parameter will always be 32 for our cache, the number of sets in your cache is adjustable via the `NUM_SETS` parameter. We will run tests on both a *small* version of your cache (16B capacity, to simplify debugging) and also a *big* version (2KB capacity, which is what your processor will use in HW6B).
+Because AXIL transactions occur only on the positive edge, insn memory access can no longer be hidden entirely within the Decode stage. Instead, your pipeline will need a new stage, which we call **G** (as in **G**oing to Insn Memory), to account for the 1-cycle latency of sending a read request to the memory on one rising edge and getting the response back on the next rising edge.
 
-You should begin with the cache hit tests, which live in `testbench_dmcache_hit.py`. 
-```
-pytest -xs -k runCocotbTestsDmCacheHitSmall testbench.py
-```
-These tests will initialize the cache with some data, and then request that data to exercise the hit logic in your cache, without the complexity of handling misses. We recommend you work through the test cases in the order provided, tackling reads first and then moving on to writes. These cache-hit tests will require your cache to act as an AXIL *subordinate*, responding to requests from an external *manager*.
+The waveforms below illustrate the required timing for a fetching a single insn: ([WaveDrom source](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.......%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701......%27%7D%2C%0A%20%20%7Bname%3A%20%27insn%27%2Cwave%3A%20%2703333330%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x3x.....%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%27010.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701......%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.3x....%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.10....%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701......%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27one%20insn%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A))
 
-Once these small-cache hit tests are working, you can try with a larger cache:
-```
-pytest -xs -k runCocotbTestsDmCacheHitBig testbench.py
-```
+![](images/1insn.png)
 
-You can run all the cache-hit tests like this (the `-k` flag matches string prefixes):
-```
-pytest -xs -k runCocotbTestsDmCacheHit testbench.py
-```
+As a result, you can't disassemble the Fetch instruction anymore, because there are no instruction bits in Fetch to disassemble - we only have a PC. You can examine the results of `RDATA` in G or D.
 
-### Cache Misses
+The addition of the G stage increases the branch misprediction penalty. Now, 3 insns much be flushed: from F, G and D.
 
-Next, you should move on to handling cache misses in `testbench_dmcache_miss.py`. The testbench will connect your cache to an AXIL memory module implemented in Python (from [this nice AXI library for Cocotb](https://github.com/alexforencich/cocotbext-axi)). Your cache will forward miss requests to the  memory, which uses the AXIL protocol. When handling a miss, your cache will act as an AXIL *manager*, sending requests to the AXIL subordinate memory. You should start by handling read misses, and then move on to handling writes and writebacks.
+To keep up with the datapath, our insn memory needs to be able to handle a new insn fetch every cycle. We would like to avoid inserting bubbles unless the pipeline needs to stall for some other reason (e.g., load-use hazard). While the official AXIL spec does not mandate particular timing from the subordinate or manager (this is the whole point of a latency-*insensitive* interface, after all!), our datapath has tighter timing constraints.
 
-To handle misses, your cache will need to implement a state machine. We have a recommended set of states to use in the `cache_state_t` enum. You are free to depart from this and rename, add or remove states as you see fit.
+Here is the required timing for consecutive insn fetches: ([WaveDrom source](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.........%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701........%27%7D%2C%0A%20%20%7Bname%3A%20%27insn0%27%2C%20%20%20wave%3A%20%2703333330..%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27insn1%27%2C%20%20%20wave%3A%20%270.4444440.%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27insn2%27%2C%20%20%20wave%3A%20%270..5555550%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345x.....%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701..0.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701........%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.345x....%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1..0....%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701........%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27consecutive%20insns%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A))
 
-These miss tests can be run via:
-```
-pytest -xs -k runCocotbTestsDmCacheMissSmall testbench.py
-pytest -xs -k runCocotbTestsDmCacheMissBig testbench.py
-```
+![](images/3insns.png)
 
-The autograder will run all the cache tests via:
-```
-pytest -xs -k runCocotbTestsDmCache testbench.py
-```
+While integrating the insn memory, you can leave the data memory interface (`port_rw`) wires disconnected for simplicity, and run your datapath without talking to the data memory at all.
+
+In addition to supporting pipeline stalls as usual, matching up the PC from an AXIL request to its response is subtle, as AXIL itself does not provide any connection between `ARDATA` and `RDATA`. Requests are processed in FIFO order but the manager must keep track.
+
+Occasionally, you will need to send backpressure to the insn memory by lowering `RREADY`. E.g., when the datapath stalls it cannot accept new fetched insns, but a fetch request may already be in-flight. In the waveforms below, the yellow insn experiences a load-use dependency and needs to stall in D in cycle 3. This causes the orange insn following it to stall in G. Because the response from the insn memory is already present in cycle 3, we lower `RREADY` to cause the insn memory to retain the orange insn in `RDATA` for an extra cycle. As the blue insn remains in F for 2 cycles, we must also lower `ARVALID` in cycle 3 to avoid duplicating a request and fetching the blue insn twice. ([WaveDrom source](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p..........%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701.........%27%7D%2C%0A%20%20%7Bname%3A%20%27insn0%27%2C%20%20%20wave%3A%20%270333.3330..%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27insn1%27%2C%20%20%20wave%3A%20%270.44.44440.%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27insn2%27%2C%20%20%20wave%3A%20%270..5.555550%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345.x.....%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701.01......%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701.........%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.34.5x....%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1...0....%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701.01......%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27insn%20memory%20backpressure%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A))
+
+![](images/backpressure.png)
+
+Correctly implementing these changes requires a solid understanding of both AXIL signals and how your pipeline works. For all of these reasons, integrating the insn memory is significantly more challenging than integrating the data memory.
+
+> Our AXIL memory is borrowed from [the ZipCPU project](https://zipcpu.com/blog/2020/03/08/easyaxil.html), which also has a nice article on the [skid buffers](https://zipcpu.com/blog/2019/05/22/skidbuffer.html) needed to achieve full throughput (1 transaction/cycle in steady state) in an AXIL subordinate.
 
 ### Simplifications from Official AXIL
 
 You can make some simplifying assumptions compared to the regular AXIL protocol:
 
-> The ARPROT, RRESP, AWPROT and BRESP signals can be ignored. Our cache will never use protection types or encounter any error conditions.
+> The ARPROT, RRESP, AWPROT and BRESP signals can be ignored. Our memory never uses protection types or encounters any error conditions.
 
-> You can assume that AWADDR, WDATA and WSTRB always arrive in the same cycle. In regular AXIL, AWADDR may arrive before WDATA+WSTRB or vice-versa.
 
-> You can assume that a read request and a write request will never arrive in the same cycle. In regular AXIL, the read and write interfaces are independent so, if both ARREADY and AWREADY then a read and a write could arrive simultaneously.
+### Testing
 
-> When handling cache misses, you can assume that the memory will always be ready (ARREADY, AWREADY, WREADY) to receive requests from your cache.
-
-### Complications over Official AXIL
-
-To keep up with the datapath, our cache needs to be able to handle consecutive memory reads and writes: the datapath needs to be able to fetch a new insn each cycle, and a program may have consecutive load/store insns. We would like to avoid inserting bubbles in the common case of consecutive cache hits. While the official AXIL spec does not mandate particular timing from the subordinate or manager (this is the whole point of a latency-*insensitive* interface, after all!), we have tighter timing constraints. We illustrate the required timing in the diagrams below.
-
-Timing for 1 read hit: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.3x..%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.10..%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27one%20read%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
-
-![](images/1read.png)
-
-Timing for consecutive read hits: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.345x%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1..0%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27consecutive%20reads%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
-
-![](images/3reads.png)
-
-Timing for 1 write hit: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27AWADDR%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27AWVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27AWREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27WDATA%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xD%27%2C%270xE%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WSTRB%27%2C%20%20wave%3A%20%27x3x...%27%2C%20data%3A%20%5B%270xF%27%2C%270xF%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WVALID%27%2C%20wave%3A%20%27010...%27%7D%2C%0A%20%20%7Bname%3A%20%27WREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27BVALID%27%2C%20%20wave%3A%20%270.30..%27%7D%2C%0A%20%20%7Bname%3A%20%27BREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27one%20write%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
-
-![](images/1write.png)
-
-Timing for consecutive write hits: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27AWADDR%27%2C%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27AWVALID%27%2C%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27AWREADY%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27WDATA%27%2C%20%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270xD%27%2C%270xE%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WSTRB%27%2C%20%20%20wave%3A%20%27x345x.%27%2C%20data%3A%20%5B%270x1%27%2C%270x1%27%2C%270x1%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WVALID%27%2C%20%20wave%3A%20%2701..0.%27%7D%2C%0A%20%20%7Bname%3A%20%27WREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27BVALID%27%2C%20%20wave%3A%20%270.3450%27%7D%2C%0A%20%20%7Bname%3A%20%27BREADY%27%2C%20%20wave%3A%20%2701....%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27consecutive%20writes%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
-
-![](images/3writes.png)
-
-Buffering one request is required as the manager may not be initially ready to receive the response: [(source)](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p.....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x345..%27%2C%20data%3A%20%5B%270xA%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%2701....%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701.0..%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x.3...%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270.1...%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%27010...%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27read%20of%200xB%20must%20be%20buffered%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A)
-
-![](images/buffering-required.png)
-
-### Tips
-
-The [cocotbext-axi library](https://github.com/alexforencich/cocotbext-axi) (pre-installed in your Docker container) has nice support for generating AXIL read/write requests and checking the responses, making it easy to interact with your cache in a couple lines of Python instead of having to manually set the AXIL signals directly. See the cache tests for examples.
-
-We have provided a SV implementation of a simple AXIL memory in the `AxilMemory` module. You may find this helpful to consult while building your cache. When your design runs on the FPGAs for the HW6B demo, `AxilMemory` provides the memory that your caches connect to. `AxilMemory` has two AXIL interfaces, a read-only interface to support the I$ and a read-write interface for the D$. It has a 1-cycle response time and supports consecutive requests. We have simplified our implementation of `AxilMemory`, however, based on assumptions about how it is used with the datapath; see the code for more details.
-
-The waveforms only record what is happening in SV code. During miss testing, when your cache is connected to a memory from the cocotbext-axi Python library, you cannot examine the memory's internal state in the waveforms. You can, however, read/write the memory via Python: see the tests for examples.
-
-To give you a rough guide to the complexity of the cache, our reference cache implementation is about 250 lines of code.
-
-## Milestone B: Datapath Integration
-
-Now it is time to integrate the cache into your pipeline. As a first step, you will replace the `MemorySingleCycle` with the `AxilMemory` module we have provided. `AxilMemory` behaves like an `AxilCache` that always hits.
-
-The most significant change with `AxilMemory` over `MemorySingleCycle` is that `AxilMemory` runs on the positive edge, instead of running in the middle of each cycle on the negative edge. The ramification is that the Fetch stage is now responsible for calculating a PC and sending it to the imem (via `ARADDR` et al.), but the fetched instruction bits won't come back until the *next* positive edge and thus they are only accessible in the Decode stage (via `RDATA`). So, you can't disassemble the Fetch instruction anymore, because there are no instruction bits in Fetch to disassemble - we only have a PC.
-
-You will need to update your branch misprediction squash logic as well, to account for the fact that the mis-predicted Fetch instruction similarly arrives later, too. With HW5, that mispredicted Fetch instruction was already in the Fetch stage and so could be squashed when going into the registers at the start of the Decode stage. Now with `AxilMemory`, the mispredicted Fetch instruction arrives "directly" in the Decode stage (so it does not go into those Decode registers) and needs to be ignored accordingly. You will need to perform similar updates in the Memory stage, as load results now arrive in the Writeback stage.
-
-To prepare to handle variable-latency memory accesses once the cache is integrated, your design should stall load-dependent insns in Decode until the load is in Writeback and has a response from the memory. Here is the required timing:
-```
-lw x1,0(x2)   FDXMW
-addi x1,x1,x1  FD**XMW
-```
-
-We have updated the parent `Processor` module to allow for a configurable memory hierarchy. To start with, it will connect your datapath with `AxilMemory` acting as both the insn and data caches (since `AxilMemory` has both a read-only port and a read-write port). You can run the tests in this configuration via:
+To run the tests that require only the insn memory (the data memory can remain disconnected), use the following command:
 
 ```
-time pytest --exitfirst -k runCocotbTestsProcessorNoCache testbench.py
+RVTEST_ALUBR=1 pytest -xs testbench.py
 ```
 
-### Data Cache Integration
 
-Your next task is to integrate your `AxilCache` with the datapath as a data cache, with `AxilMemory` acting as both the insn memory and as the data memory behind your cache (see diagram below).
+## Step 2: AXIL Data Memory
 
-![](images/hw6b-memory-hierarchy.png)
+As with the insn memory, using the AXIL data memory requires rearranging some code within your pipeline. The load/store address should be sent to the data memory at the end of the X stage. The memory access occurs during the M stage, and the result from memory (e.g., `RDATA` for loads) is registered at the end of the M stage and available for processing in the W stage. We illustrate the required timing below for the data memory (for simplicity, insn memory signals are not shown). ([WaveDrom source](https://wavedrom.com/editor.html?%7Bsignal%3A%20%5B%0A%20%20%7Bname%3A%20%27ACLK%27%2C%20%20%20%20wave%3A%20%27p........%27%7D%2C%0A%20%20%7Bname%3A%20%27ARESETn%27%2C%20wave%3A%20%2701.......%27%7D%2C%0A%20%20%7Bname%3A%20%27lw%27%2C%20%20%20%20%20%20wave%3A%20%2703333330.%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27sw%27%2C%20%20%20%20%20%20wave%3A%20%270.4444440%27%2C%20data%3A%20%5B%27F%27%2C%27G%27%2C%27D%27%2C%27X%27%2C%27M%27%2C%27W%27%5D%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27ARADDR%27%2C%20%20wave%3A%20%27x...3x...%27%2C%20data%3A%20%5B%270x1%27%2C%270x2%27%2C%270x3%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27ARVALID%27%2C%20wave%3A%20%270...10...%27%7D%2C%0A%20%20%7Bname%3A%20%27ARREADY%27%2C%20wave%3A%20%2701.......%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27RDATA%27%2C%20%20%20wave%3A%20%27x....3x..%27%7D%2C%0A%20%20%7Bname%3A%20%27RVALID%27%2C%20%20wave%3A%20%270....10..%27%7D%2C%0A%20%20%7Bname%3A%20%27RREADY%27%2C%20%20wave%3A%20%2701.......%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27AWADDR%27%2C%20%20wave%3A%20%27x....4x..%27%2C%20data%3A%20%5B%270x2%27%2C%270xB%27%2C%270xC%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27AWVALID%27%2C%20wave%3A%20%270....10..%27%7D%2C%0A%20%20%7Bname%3A%20%27AWREADY%27%2C%20wave%3A%20%2701.......%27%7D%2C%0A%20%20%7Bname%3A%20%27WDATA%27%2C%20%20%20wave%3A%20%27x....4x..%27%2C%20data%3A%20%5B%270x3%27%2C%270xE%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WSTRB%27%2C%20%20%20wave%3A%20%27x....4x..%27%2C%20data%3A%20%5B%270xF%27%2C%270xF%27%2C%270xF%27%5D%7D%2C%0A%20%20%7Bname%3A%20%27WVALID%27%2C%20%20wave%3A%20%270....10..%27%7D%2C%0A%20%20%7Bname%3A%20%27WREADY%27%2C%20%20wave%3A%20%2701.......%27%7D%2C%0A%20%20%7B%7D%2C%0A%20%20%7Bname%3A%20%27BVALID%27%2C%20%20wave%3A%20%270.....40.%27%7D%2C%0A%20%20%7Bname%3A%20%27BREADY%27%2C%20%20wave%3A%20%2701.......%27%7D%2C%0A%5D%2C%0A%20%20head%3A%7B%0A%20%20%20text%3A%27load%20and%20store%27%2C%0A%20%20%20tick%3A0%2C%0A%20%7D%7D%0A))
 
-With a D$, loads and stores now have *variable* latency depending on whether they hit or miss in the cache (and additionally, whether a writeback was required or not).
+![](images/load-store.png)
 
-Here is the timing with a D$ clean (no writeback) miss. `m` indicates a cycle waiting for a D$ miss.
+
+Because stores are now sent to the data memory at the end of the X stage, there is no ability to leverage a WM bypass anymore, so you should remove that logic from your pipeline. The MX and WX bypasses remain important, however.
+
+Similarly to the insn memory, the data memory also needs to be able to process a new transaction every cycle in case there are consecutive memory insns. The data memory has skid buffers to enable this.
+
+The data memory integration is *much* simpler than the insn memory integration, because there are no stalls to contend with. Code must be moved out of the M stage, to either X or W, but not much else changes. Unfortunately, the insn memory integration must be completed first because the processor cannot run without an insn memory, while it can run non-memory insns without a data memory.
+
+### Simplifications from Official AXIL
+
+> You can assume that the data memory will always be ready (ARREADY, AWREADY, WREADY) to receive requests from your datapath.
+
+
+### Testing
+
+To run the full set of tests exercising both insn and data memory interfaces, run:
+
 ```
-lw x1,0(x2)   FDXMmmW
-addi x1,x1,x1  FD****XMW
+pytest -xs testbench.py
 ```
 
-For simplicity, a D$ miss should stall *all* prior stages of the pipeline. This includes any in-progress divisions in the divider pipeline, which should utilize the `stall` input on the `DividerUnsignedPipelined` module.
-```
-lw x1,0(x2)   FDXMmmW
-addi x3,x3,x3  FDX***MW
-lui x2,0        FD***XMW
-lui x4,0         F***DXMW
-```
+This is the same set of tests that the autograder will run.
 
-Here's how you run the tests with the D$ configuration:
-```
-time pytest --exitfirst -k runCocotbTestsProcessorDataCache testbench.py
-```
-
-The autograder runs all cache tests from HW6A as well as the processor tests in both the no-cache and D$ configurations, via `pytest testbench.py`.
 
 ## Tips
 
-This assignment does not require writing a lot of new code, but rather many small changes throughout your existing datapath.
+This assignment does not require writing much new code, but rather many small changes throughout your existing datapath. As a rough guide, for this assignment we added or changed about 700 lines of our HW5 processor. Most of the changes were moving large chunks of code around to support the data memory.
+
+## Disallowed SystemVerilog Operators
+
+You cannot use the `/` or `%` operators in your code (except as part of compile-time code like `for` loops). Run `make codecheck` to see if any illegal operators are present; the autograder performs this same check.
 
 ## Submitting
 
-For HW6A, submit your `AxilCache.sv` file on Gradescope.
+For HW6, run `make resource-check` and then `make zip` and submit the `axil.zip` file on Gradescope.
 
-For HW6B, run `make resource-check` and then `make zip` and submit the `cache.zip` file on Gradescope.
+There is a resource leaderboard for HW6, but it is strictly informational - no points are awarded based on the leaderboard results.
 
-There is a resource leaderboard for HW6B, but it is strictly informational - no points are awarded based on the leaderboard results.
-
-## Demo
-
-The demo for this homework is CandyCrvsh, a simplified version of the game for your processor. The Rust source code for the game [is provided](atarvi-native/src/bin/candycrvsh.rs). It is also pre-compiled into `mem_initial_contents.hex`, which Verilog's `readmemh()` function uses to initialize the `AxilMemory` in your design. This is coupled with some hardware devices for generating HDMI video and reading USB gamepad input to turn your processor into a small video game console.
-
-Run `make demo` to build the demo bitstream, then program the board as usual. If all goes well, you should see some candies waiting to be crushed! We've noticed that sometimes the USB gamepad does not work after initial programming, but resetting the design (B0/PWR button) helps. You can also use this button to reset the game if you reach a state without any possible matches.
+## Demo: TBD
