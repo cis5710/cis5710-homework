@@ -20,18 +20,18 @@
 `include "system/usb/usb_hid_host.v"
 `include "../hw3-singlecycle/system/debouncer.v"
 
-`ifdef HDMI_1280
-`include "system/hdmi_1280_720/dvi_generator.sv"
-`include "system/hdmi_1280_720/simple_720p.sv"
-`include "system/hdmi_1280_720/tmds_encoder_dvi.sv"
-`include "system/hdmi_1280_720/hdmi_video.sv"
-`else
-`include "system/hdmi_640_480/hdmi_video.v"
-`include "system/hdmi_640_480/vga_video.v"
-`include "system/hdmi_640_480/vga2dvid.v"
-`include "system/hdmi_640_480/fake_differential.v"
-`include "system/hdmi_640_480/tmds_encoder.v"
-`endif
+// `ifdef HDMI_1280
+// `include "system/hdmi_1280_720/dvi_generator.sv"
+// `include "system/hdmi_1280_720/simple_720p.sv"
+// `include "system/hdmi_1280_720/tmds_encoder_dvi.sv"
+// `include "system/hdmi_1280_720/hdmi_video.sv"
+// `else
+// `include "system/hdmi_640_480/hdmi_video.v"
+// `include "system/hdmi_640_480/vga_video.v"
+// `include "system/hdmi_640_480/vga2dvid.v"
+// `include "system/hdmi_640_480/fake_differential.v"
+// `include "system/hdmi_640_480/tmds_encoder.v"
+// `endif
 
 // FULL_SIZE_MEM means 16KB memory, FULL_SIZE_DISPLAY means 320x240 frame buffer
 // non-FULL_SIZE means 2KB memory and 40x30 frame buffer, respectively
