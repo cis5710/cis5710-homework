@@ -2,6 +2,8 @@
 
 In this homework you will connect your pipelined datapath to a memory via the AXI4-Lite protocol ("AXIL" for short). There are several important simplifications/complications and tips below, so read through the whole document before beginning.
 
+As in the previous homework, divide operations should proceed to the M stage after they complete the divider pipeline.
+
 ## Step 1: AXIL Insn Memory
 
 First, you will replace the single-cycle memory with the EasyAxilMemory using the `port_ro` interface for the read-only interface to insn memory. The [official AXIL specification from ARM](https://www.arm.com/architecture/system-architectures/amba/amba-4) is a valuable and relatively accessible resource. Our designs, however, will have both simplifications and extensions which depart from the official AXIL specification, as noted below.
