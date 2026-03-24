@@ -73,9 +73,7 @@ Lastly, run `fujprog.exe path\to\your\bitstream` to program your FPGA. If everyt
 
 On macOS, we use `openFPGALoader` to program the FPGA.
 
-First, open a terminal and run: `brew install openfpgaloader@1.0.0`. Note that newer versions (1.1.0 in particular) have a bug. See [this Ed post](https://edstem.org/us/courses/92118/discussion/7760449) for how to downgrade to a version that works better.
-
-Then, connect the FPGA to your Mac through the `us1` micro-USB connector on the board. See the picture below.
+First, open a terminal and run: `brew install openfpgaloader`. Then, connect the FPGA to your Mac through the `us1` micro-USB connector on the board. See the picture below.
 
 Ensure your ULX3S FPGA is recognized by your Mac: - Open **System Information** → **USB**, and check for a device named **ULX3S FPGA**. - Alternatively, run: `ls /dev/cu.*`. Look for a device with the pattern `/dev/cu.usbserial-*`.
 
