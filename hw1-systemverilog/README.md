@@ -38,7 +38,7 @@ Once your code passes all the tests, you are ready to submit your fixed `rca.sv`
 
 Now that your code works in simulation, you can run the FPGA board demo to see it run in real life!
 
-The demo code is in the `rca4_demo` module, and it uses your adder to add 2 to a 4-digit binary number represented by four of the board's buttons (B2, B5, B4, B6). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs D0-D5.
+The demo code is in the `rca4_demo` module, and it uses your adder to add 2 to a 4-digit binary number represented by four of the board's buttons (buttons B2, B5, B4, B6 as bits [3:0], respectively). When a button is not pressed, it represents a 0; pressing it changes that bit to a 1 instead. The resulting sum is displayed on LEDs D0-D5.
 
 
 ### Generating a bitstream
