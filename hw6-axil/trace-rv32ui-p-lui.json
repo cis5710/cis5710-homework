@@ -373,7 +373,7 @@
   },
   {
     "cycle": 62,
-    "trace_completed_pc": "0xe4",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },

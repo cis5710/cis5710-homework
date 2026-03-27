@@ -253,7 +253,7 @@
   },
   {
     "cycle": 42,
-    "trace_completed_pc": "0x94",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -277,7 +277,7 @@
   },
   {
     "cycle": 46,
-    "trace_completed_pc": "0xa0",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -301,7 +301,7 @@
   },
   {
     "cycle": 50,
-    "trace_completed_pc": "0x9c",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -343,7 +343,7 @@
   },
   {
     "cycle": 57,
-    "trace_completed_pc": "0xb4",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -367,7 +367,7 @@
   },
   {
     "cycle": 61,
-    "trace_completed_pc": "0xc0",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -391,7 +391,7 @@
   },
   {
     "cycle": 65,
-    "trace_completed_pc": "0xbc",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -433,7 +433,7 @@
   },
   {
     "cycle": 72,
-    "trace_completed_pc": "0xd4",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -457,7 +457,7 @@
   },
   {
     "cycle": 76,
-    "trace_completed_pc": "0xe0",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -481,7 +481,7 @@
   },
   {
     "cycle": 80,
-    "trace_completed_pc": "0xdc",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -529,7 +529,7 @@
   },
   {
     "cycle": 88,
-    "trace_completed_pc": "0xf8",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -583,7 +583,7 @@
   },
   {
     "cycle": 97,
-    "trace_completed_pc": "0x114",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -637,7 +637,7 @@
   },
   {
     "cycle": 106,
-    "trace_completed_pc": "0x130",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -691,7 +691,7 @@
   },
   {
     "cycle": 115,
-    "trace_completed_pc": "0x14c",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -763,7 +763,7 @@
   },
   {
     "cycle": 127,
-    "trace_completed_pc": "0x174",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -871,7 +871,7 @@
   },
   {
     "cycle": 145,
-    "trace_completed_pc": "0x198",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -991,7 +991,7 @@
   },
   {
     "cycle": 165,
-    "trace_completed_pc": "0x1c0",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1111,7 +1111,7 @@
   },
   {
     "cycle": 185,
-    "trace_completed_pc": "0x1e4",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1231,7 +1231,7 @@
   },
   {
     "cycle": 205,
-    "trace_completed_pc": "0x20c",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1357,7 +1357,7 @@
   },
   {
     "cycle": 226,
-    "trace_completed_pc": "0x234",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1471,7 +1471,7 @@
   },
   {
     "cycle": 245,
-    "trace_completed_pc": "0x254",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1579,7 +1579,7 @@
   },
   {
     "cycle": 263,
-    "trace_completed_pc": "0x278",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1699,7 +1699,7 @@
   },
   {
     "cycle": 283,
-    "trace_completed_pc": "0x2a0",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1819,7 +1819,7 @@
   },
   {
     "cycle": 303,
-    "trace_completed_pc": "0x2c4",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1939,7 +1939,7 @@
   },
   {
     "cycle": 323,
-    "trace_completed_pc": "0x2ec",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -2065,7 +2065,7 @@
   },
   {
     "cycle": 344,
-    "trace_completed_pc": "0x314",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -2149,7 +2149,7 @@
   },
   {
     "cycle": 358,
-    "trace_completed_pc": "0x320",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -2197,7 +2197,7 @@
   },
   {
     "cycle": 366,
-    "trace_completed_pc": "0x344",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },

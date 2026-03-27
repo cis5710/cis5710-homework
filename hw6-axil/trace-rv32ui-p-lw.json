@@ -835,7 +835,7 @@
   },
   {
     "cycle": 139,
-    "trace_completed_pc": "0x214",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -997,7 +997,7 @@
   },
   {
     "cycle": 166,
-    "trace_completed_pc": "0x248",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1165,7 +1165,7 @@
   },
   {
     "cycle": 194,
-    "trace_completed_pc": "0x280",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1321,7 +1321,7 @@
   },
   {
     "cycle": 220,
-    "trace_completed_pc": "0x2ac",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1465,7 +1465,7 @@
   },
   {
     "cycle": 244,
-    "trace_completed_pc": "0x2dc",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1621,7 +1621,7 @@
   },
   {
     "cycle": 270,
-    "trace_completed_pc": "0x310",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
@@ -1801,7 +1801,7 @@
   },
   {
     "cycle": 300,
-    "trace_completed_pc": "0x350",
+    "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
     "trace_completed_cycle_status": "CYCLE_TAKEN_BRANCH"
   },
