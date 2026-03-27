@@ -200,3 +200,11 @@ In GtkWave, with `Markers => Drop named marker` you can leave a mark at a partic
 **Make yourself at home**
 
 As you debug your design, you will spend a significant amount of time looking at waveforms to understand what your design is doing. It is worth exploring the features of your waveform viewer to become proficient with finding the signals you need, moving throughout the timeline and organizing signals in a useful way.
+
+# Acknowledgments
+
+The processors we build here leverage code from the following projects, especially for the demo components. While copyright headers are included on the relevant code, we also wanted to include shout-outs to these amazing open-source hardware projects:
+
+* [nand2mario's USB controller](https://github.com/nand2mario/usb_hid_host)
+* [Project F's HDMI video controller](https://github.com/projf/projf-explore)
+* [ZipCPU's AXI-Lite core](https://github.com/ZipCPU/wb2axip)
