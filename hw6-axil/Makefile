@@ -12,7 +12,7 @@ include ../common/make/fpga.mk
 
 
 ifndef CLOCK_FREQUENCY
-CLOCK_FREQUENCY=20
+CLOCK_FREQUENCY=16
 endif
 
 CLOCK_GEN_NAME=MyClockGen
