@@ -146,6 +146,11 @@ module  EasyAxilMemory #(
   localparam int AddrMsb = $clog2(NUM_WORDS) + AddrLsb - 1;
 `ifndef RISCV_FORMAL
   reg [31:0] mem_array[NUM_WORDS];
+`ifdef SYNTHESIS
+  initial begin
+    $readmemh("mem_initial_contents.hex", mem_array);
+  end
+`endif
 `endif
 
   // }}}
