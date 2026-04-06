@@ -1,6 +1,3 @@
-#define MAX_LEN 8
-#define INTERVAL_BETWEEN_WRITE 333 //Hand-tune result, 333 is the magic number
-
 // memory-mapped device addresses are volatile so the compiler doesn't register-allocate them
 volatile char* const GPIO    = (volatile char* const) 0xFF001000;
 volatile char* const LEDS    = (volatile char* const) 0xFF002000;
@@ -21,12 +18,14 @@ void _start() {
 
     int led = -1;
     const int message = 53366;
+    const int extra   = 4724;
 
     while (1) {
         *LEDS = led;
         led = ~led;
 
         int m = message;
+        int e = extra;
         for (int i = 0; i < 17; i++) {
             wait(10000);
             *GPIO = 1;
@@ -36,7 +35,11 @@ void _start() {
                 wait(10000);
             }
             *GPIO = 0;
+            if (e & 0x01) {
+              wait(30000);
+            }
             m >>= 1;
+            e >>= 1;
         }
         wait(200000);
     }
