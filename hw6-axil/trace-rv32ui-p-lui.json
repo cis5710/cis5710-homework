@@ -21,13 +21,13 @@
     "cycle": 3,
     "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
-    "trace_completed_cycle_status": "CYCLE_IMEM_WAIT"
+    "trace_completed_cycle_status": "CYCLE_RESET"
   },
   {
     "cycle": 4,
     "trace_completed_pc": "0x0",
     "trace_completed_insn": "0x00000000",
-    "trace_completed_cycle_status": "CYCLE_IMEM_WAIT"
+    "trace_completed_cycle_status": "CYCLE_RESET"
   },
   {
     "cycle": 5,
