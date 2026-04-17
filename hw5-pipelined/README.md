@@ -91,7 +91,9 @@ Run `make demo-code resource-check` and then `make zip` and submit the `pipeline
 
 After you have finished your 5-stage pipelined datapath, you can run the HW5 demo. In this demo, you will run a program on your processor that produces a mystery signal on one of the FPGA board's GPIO (General-Purpose Input/Output) pins.
 
-Run `make demo-code` first to generate the assembly code running on your processor. And then run `make demo` to generate the bitstream and `make program` to program your design onto the FPGA. The FPGA must be running **before** you connect to the oscilloscope, otherwise there will be no signal for the oscilloscope to measure. The FPGA board will indicate the signal is being sent by flashing all the LEDs.
+Run `make demo-code` first to generate the assembly code running on your processor, and then run `make demo` to generate the bitstream.
+
+Outside the container, program your design onto the FPGA as in prior labs (i.e., via `make program` on Mac/Linux or using `fujprog.exe` on Windows). The FPGA must be running **before** you connect to the oscilloscope, otherwise there will be no signal for the oscilloscope to measure. The FPGA board will indicate the signal is being sent by flashing all the LEDs.
 
 ### FPGA Board Connections
 
