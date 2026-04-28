@@ -166,6 +166,7 @@ module hdmi1280_clock_gen #(
     );
 
     wire locked;  // unsynced lock signal
+    wire ignore;
 
     // HDL attributes (values are from Project Trellis)
     (* ICP_CURRENT="12" *)
@@ -200,7 +201,7 @@ module hdmi1280_clock_gen #(
         .CLKOP(clk_5x_out),
         .CLKOS(clk_out),
         .CLKFB(clk_5x_out),
-        .CLKINTFB(),
+        .CLKINTFB(ignore),
         .PHASESEL0(1'b0),
         .PHASESEL1(1'b0),
         .PHASEDIR(1'b1),
@@ -296,12 +297,12 @@ module MemoryMap (
 
   // This module is a "bump on the wire", a (conceptually) combinational circuit between proc and cache.
 
-  localparam int MmapButtons   = 32'hFF00_1000;
-  localparam int MmapLeds      = 32'hFF00_2000;
-  //localparam int MmapUartRead    = 32'hFF00_3000;
-  //localparam int MmapUartWrite    = 32'hFF00_3001;
-  localparam int MmapUsb       = 32'hFF00_4000;
-  localparam int MmapRng       = 32'hFF00_5000;
+  localparam int MmapButtons      = 32'hFF00_1000;
+  localparam int MmapLeds         = 32'hFF00_2000;
+  //localparam int MmapUartRead   = 32'hFF00_3000;
+  //localparam int MmapUartWrite  = 32'hFF00_3001;
+  localparam int MmapUsb          = 32'hFF00_4000;
+  localparam int MmapRng          = 32'hFF00_5000;
   localparam int MmapDisplayStart = 32'hFF10_0000;
 
   `ifdef FULL_SIZE_FRAME_BUFFER
@@ -399,7 +400,7 @@ module MemoryMap (
       last_wdata   <= 0;
       last_wstrb   <= 0;
       last_wvalid  <= False;
-      last_wready <= False;
+      last_wready  <= False;
     end else begin
       last_araddr  <= proc.ARADDR;
       last_arvalid <= proc.ARVALID;
@@ -433,7 +434,7 @@ module MemoryMap (
   // LEDs
 
   logic [7:0] led_state;
-  assign led = led_state[7:0];
+  assign led = led_state;
   always_ff @(posedge ACLK) begin
     if (!ARESETn) begin
       led_state <= 0;
