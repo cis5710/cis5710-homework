@@ -32,7 +32,9 @@ clock-gen:
 
 # compile demo code and extract into mem_initial_contents.hex
 demo-code:
-#	cd atarvi-native && cargo build --release --bin candycrvsh
-	cd atarvi-native && cargo build --release --bin pong
 	cd atarvi-native && cargo build --release --bin basic
-	python3 make-mem-contents.py atarvi-native/target/riscv32im-unknown-none-elf/release/pong
+	cd atarvi-native && cargo build --release --bin pong
+	cd atarvi-native && cargo build --release --bin candycrvsh
+#	python3 make-mem-contents.py atarvi-native/target/riscv32im-unknown-none-elf/release/basic
+#	python3 make-mem-contents.py atarvi-native/target/riscv32im-unknown-none-elf/release/pong
+	python3 make-mem-contents.py atarvi-native/target/riscv32im-unknown-none-elf/release/candycrvsh
