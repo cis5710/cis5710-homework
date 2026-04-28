@@ -14,5 +14,6 @@ rustflags = [
     #"-C", "link-arg=-Tsmallmemory.x",
     "-C", "link-arg=-Tmemory.x",
     "-C", "no-redzone",
+    "-C", "opt-level=s",
     "-C", "llvm-args=-unroll-threshold=0",
 ]
