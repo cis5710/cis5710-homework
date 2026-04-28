@@ -12,7 +12,7 @@ linker = "rust-lld"
 rustflags = [
     #"-C", "link-arg=-Tsmallestmemory.x",
     #"-C", "link-arg=-Tsmallmemory.x",
-    "-C", "link-arg=-Tmemory.x",
+    "-C", "link-arg=-Tmemory-32KB.x",
     "-C", "no-redzone",
     "-C", "opt-level=s",
     "-C", "llvm-args=-unroll-threshold=0",

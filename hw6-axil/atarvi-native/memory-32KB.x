@@ -7,7 +7,8 @@ MEMORY
 {
     START : ORIGIN = 0x00000000, LENGTH = 32
     CODE : ORIGIN = 0x00000040, LENGTH = 11K
-    DATA : ORIGIN = 0x00003C00, LENGTH = 1K
+    DATA : ORIGIN = 0x00003C00, LENGTH = 9K
+    IGNORE : ORIGIN = 0x00006000, LENGTH = 4K
 }
 
 SECTIONS
@@ -17,4 +18,5 @@ SECTIONS
     .rodata : { *(.rodata*) } > DATA
     .bss : { *(.bss*) } > DATA
     .data : { *(.data*) } > DATA
+    .eh_frame : { *(.data*) } > IGNORE
 }
