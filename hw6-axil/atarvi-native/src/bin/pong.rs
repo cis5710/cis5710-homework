@@ -180,10 +180,10 @@ pub fn main() -> ! {
     loop {
         // move paddle
         let gamepad_now = UsbGamepadInput::from(unsafe { read_volatile(MMAP_USB) });
-        if gamepad_now.left() && paddle_start_x > 0 {
+        if gamepad_now.left() && paddle_start_x > PADDLE_MOVEMENT {
             new_paddle_start_x -= PADDLE_MOVEMENT;
         }
-        if gamepad_now.right() && paddle_start_x + PADDLE_WIDTH < SCREEN_WIDTH {
+        if gamepad_now.right() && paddle_start_x + PADDLE_MOVEMENT + PADDLE_WIDTH < SCREEN_WIDTH {
             new_paddle_start_x += PADDLE_MOVEMENT;
         }
 
@@ -254,8 +254,4 @@ fn draw_ball(color: u8, ball: &Ball, screen: &mut FrameBuffer) {
             }
         }
     }
-    // write_byte(color, &mut screen[ball.y as usize][ball.x as usize]);
-    // write_byte(color, &mut screen[ball.y as usize][ball.x + 1 as usize]);
-    // write_byte(color, &mut screen[ball.y + 1 as usize][ball.x as usize]);
-    // write_byte(color, &mut screen[ball.y + 1 as usize][ball.x + 1 as usize]);
 }
