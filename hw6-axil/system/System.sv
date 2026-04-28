@@ -42,9 +42,9 @@
 `include "system/hdmi_640_480/tmds_encoder.v"
 `endif
 
-// FULL_SIZE_MEM means 16KB memory, non-FULL_SIZE means 2KB memory
+// FULL_SIZE_MEM means 32KB memory, non-FULL_SIZE means 2KB memory
 `define FULL_SIZE_MEM
-// FULL_SIZE_FRAME_BUFFER means 320x240 frame buffer, non-FULL_SIZE means 40x30 frame buffer
+// FULL_SIZE_FRAME_BUFFER means 400x300 frame buffer, non-FULL_SIZE means 40x30 frame buffer
 `define FULL_SIZE_FRAME_BUFFER
 
 module SystemResourceCheck (
@@ -839,12 +839,15 @@ module SystemDemo (
   axil_if axi_mem_a ();
   axil_if axi_mem_b ();
 
+  EasyAxilMemory #(
+    .OPT_SKIDBUFFER(1),
+    .OPT_LOWPOWER(0),
 `ifdef FULL_SIZE_MEM
-  EasyAxilMemory #(.NUM_WORDS(4096)) the_mem
+    .NUM_WORDS(8192)
 `else
-  EasyAxilMemory #(.NUM_WORDS(512)) the_mem
+    .NUM_WORDS(512)
 `endif
-  (
+  ) the_mem (
       .ACLK(clk_proc),
       .ARESETn(~rst),
       .port_ro(axi_mem_a.subord),
