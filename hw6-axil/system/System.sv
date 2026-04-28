@@ -338,6 +338,31 @@ module MemoryMap (
   localparam bit True = 1'b1;
   localparam bit False = 1'b0;
 
+  // wire [7:0] fake_led;
+  // wire proc_led_write = proc.AWADDR == MmapLeds && proc.AWVALID && proc.WVALID && |proc.WSTRB && |proc.WDATA[7:0];
+  // wire [7:0] ewnz_trace = {
+  //   proc_led_write,
+  //   cache.AWREADY && cache.WREADY,
+  //   proc_led_write && cache.AWREADY,
+  //   proc_led_write && cache.WREADY,
+  //   proc_led_write && cache.AWREADY && cache.WREADY,
+  //   2'b11,
+  //   // was_axi_write,
+  //   // was_led,
+  //   // was_write,
+  //   // is_axi_write,
+  //   // is_led,
+  //   // is_write,
+  //   // was_led && (|last_wdata[7:0]),
+  //   1'b1
+  // };
+  // Ewnz wnz (
+  //   .clk(ACLK),
+  //   .rst(~ARESETn),
+  //   .signals(ewnz_trace),
+  //   .ewnz(fake_led)
+  // );
+
   assign cache.ARADDR = proc.ARADDR;
   assign cache.ARVALID = is_read ? False : proc.ARVALID;  // hide request from the cache
   assign cache.ARPROT = proc.ARPROT;
@@ -777,6 +802,359 @@ module SystemDemo_fbonly (
 `endif
 endmodule
 
+// TODO: parameterize scan chain size
+// module JtagScanChain (
+//   input wire jtag_tck,
+//   input wire jtag_tms,
+//   input wire jtag_tdi,
+//   output wire jtag_tdo,
+//   input logic [31:0] in0
+// );
+//   // JTAG Primitive Signals
+//   logic jtck, jtdi, jtdo1, jce1, jshift, jupdate;
+
+//   JTAGG jtag_inst (
+//     .TCK(jtag_tck),
+//     .TMS(jtag_tms),
+//     .TDI(jtag_tdi),
+//     .TDO(jtag_tdo),
+//     .JTDO1(jtdo1),    // input
+//     .JTCK(jtck),      // output
+//     .JTDI(jtdi),      // output
+//     .JCE1(jce1),      // output
+//     .JSHIFT(jshift),  // output
+//     .JUPDATE(jupdate) // output
+//   );
+
+//   // The Scan Chain
+//   logic [31:0] scan_chain_reg;
+
+//   always_ff @(posedge jtck) begin
+//     if (jce1) begin
+//       if (jupdate) begin
+//         // CAPTURE: Snap both registers into the chain at once
+//         scan_chain_reg <= in0;
+//       end
+//     else if (jshift) begin
+//       // SHIFT: Move everything toward TDO
+//       // Input new data from TDI (allows writing while reading!)
+//       scan_chain_reg <= {jtdi, scan_chain_reg[31:1]};
+//     end
+//     end
+//   end
+
+//   // Connect the end of the chain to the JTAG TDO pin
+//   assign jtdo1 = scan_chain_reg[0];
+
+// endmodule
+
+/** shows on the LEDs whether each bit of `signals` Ever Was Non-Zero */
+module Ewnz (
+    input wire clk,
+    input wire rst,
+    input wire [7:0] signals,
+    output wire [7:0] ewnz
+);
+  localparam bit True = 1'b1;
+
+  logic [7:0] sticky_bits;
+  assign ewnz = sticky_bits;
+
+  always_ff @(posedge clk) begin
+    if (rst) begin
+        sticky_bits <= 0;
+    end else /*if (init_done)*/ begin
+        if (signals[0]) sticky_bits[0] <= True;
+        if (signals[1]) sticky_bits[1] <= True;
+        if (signals[2]) sticky_bits[2] <= True;
+        if (signals[3]) sticky_bits[3] <= True;
+        if (signals[4]) sticky_bits[4] <= True;
+        if (signals[5]) sticky_bits[5] <= True;
+        if (signals[6]) sticky_bits[6] <= True;
+        if (signals[7]) sticky_bits[7] <= True;
+    end
+  end
+endmodule
+
+module ila_uart #(
+    parameter WIDTH = 32,
+    parameter DEPTH = 16,
+    parameter CLK_FREQ = 50_000_000,
+    parameter BAUD = 115200
+)(
+    input  logic              clk,
+    input  logic              rst,
+
+    input  logic [WIDTH-1:0]  signal_in,
+    input  logic              trigger,
+
+    output logic              uart_tx,
+    output logic              busy
+);
+
+    // ----------------------------
+    // Capture buffer
+    // ----------------------------
+    logic [WIDTH-1:0] buffer [0:DEPTH-1];
+    logic [$clog2(DEPTH):0] wr_ptr;
+    logic capturing, captured;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            wr_ptr    <= 0;
+            capturing <= 0;
+            captured  <= 0;
+        end else begin
+            if (trigger && !capturing && !captured) begin
+                capturing <= 1;
+                wr_ptr    <= 0;
+            end
+
+            if (capturing) begin
+                buffer[wr_ptr] <= signal_in;
+                wr_ptr <= wr_ptr + 1;
+
+                if (wr_ptr == DEPTH-1) begin
+                    capturing <= 0;
+                    captured  <= 1;
+                end
+            end
+        end
+    end
+
+    // ----------------------------
+    // UART transmit FSM
+    // ----------------------------
+    typedef enum logic [3:0] {
+        IDLE,
+        SYNC1,
+        SYNC1_WAIT,
+        SYNC2,
+        SYNC2_WAIT,
+        LOAD_WORD,
+        SEND_BYTE,
+        WAIT_TX,
+        NEXT_WORD,
+        DONE
+    } state_t;
+
+    state_t state;
+
+    logic [$clog2(DEPTH):0] rd_ptr;
+    logic [WIDTH-1:0] current_word;
+    logic [$clog2(WIDTH/8)-1:0] byte_idx;
+
+    logic [7:0] uart_data;
+    logic       uart_start;
+    logic       uart_ready;
+
+    assign busy = (state != IDLE);
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state       <= IDLE;
+            rd_ptr      <= 0;
+            byte_idx    <= 0;
+            uart_start  <= 0;
+        end else begin
+            uart_start <= 0; // default (pulse)
+
+            case (state)
+                //--------------------------------------------------
+                // IDLE
+                //--------------------------------------------------
+                IDLE: begin
+                    if (captured) begin
+                        state <= SYNC1;
+                    end
+                end
+
+                //--------------------------------------------------
+                // Send sync word: 0xAA 0x55
+                //--------------------------------------------------
+                SYNC1: begin
+                    if (uart_ready) begin
+                        uart_data  <= 8'hAA;
+                        uart_start <= 1;
+                        state      <= SYNC1_WAIT;
+                    end
+                end
+
+                SYNC1_WAIT: begin
+                    if (uart_ready) begin
+                        state <= SYNC2;
+                    end
+                end
+
+                SYNC2: begin
+                    if (uart_ready) begin
+                        uart_data  <= 8'h55;
+                        uart_start <= 1;
+                        state      <= SYNC2_WAIT;
+                    end
+                end
+
+                SYNC2_WAIT: begin
+                    if (uart_ready) begin
+                        rd_ptr <= 0;
+                        state  <= LOAD_WORD;
+                    end
+                end
+
+                //--------------------------------------------------
+                // Send captured data
+                //--------------------------------------------------
+                LOAD_WORD: begin
+                    current_word <= buffer[rd_ptr];
+                    byte_idx     <= 0;
+                    state        <= SEND_BYTE;
+                end
+
+                SEND_BYTE: begin
+                    if (uart_ready) begin
+                        uart_data   <= current_word[7:0]; // LSB first
+                        current_word <= current_word >> 8;
+                        uart_start  <= 1;
+                        state       <= WAIT_TX;
+                    end
+                end
+
+                WAIT_TX: begin
+                    if (uart_ready) begin
+                        if (byte_idx == (WIDTH/8 - 1)) begin
+                            state <= NEXT_WORD;
+                        end else begin
+                            byte_idx <= byte_idx + 1;
+                            state    <= SEND_BYTE;
+                        end
+                    end
+                end
+
+                NEXT_WORD: begin
+                    if (rd_ptr == DEPTH-1) begin
+                        state <= DONE;
+                    end else begin
+                        rd_ptr <= rd_ptr + 1;
+                        state  <= LOAD_WORD;
+                    end
+                end
+
+                DONE: begin
+                    // optional: clear captured to allow retrigger
+                    // captured <= 0;  (move to sequential block if desired)
+                    state <= IDLE;
+                end
+            endcase
+        end
+    end
+
+    // ----------------------------
+    // UART TX
+    // ----------------------------
+    uart_tx #(
+        .CLK_FREQ(CLK_FREQ),
+        .BAUD(BAUD)
+    ) uart_inst (
+        .clk(clk),
+        .rst(rst),
+        .data(uart_data),
+        .start(uart_start),
+        .tx(uart_tx),
+        .ready(uart_ready)
+    );
+
+endmodule
+
+module uart_tx #(
+    parameter CLK_FREQ = 50_000_000,
+    parameter BAUD     = 115200
+)(
+    input  logic       clk,
+    input  logic       rst,
+
+    input  logic [7:0] data,
+    input  logic       start,
+
+    output logic       tx,
+    output logic       ready
+);
+
+    localparam CLKS_PER_BIT = CLK_FREQ / BAUD;
+
+    typedef enum logic [2:0] {
+        IDLE,
+        START_BIT,
+        DATA_BITS,
+        STOP_BIT
+    } state_t;
+
+    state_t state;
+
+    logic [15:0] clk_cnt;
+    logic [2:0]  bit_idx;
+    logic [7:0]  data_reg;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state   <= IDLE;
+            tx      <= 1;
+            ready   <= 1;
+            clk_cnt <= 0;
+            bit_idx <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    tx    <= 1;
+                    ready <= 1;
+                    if (start) begin
+                        ready   <= 0;
+                        data_reg <= data;
+                        clk_cnt <= 0;
+                        state   <= START_BIT;
+                    end
+                end
+
+                START_BIT: begin
+                    tx <= 0;
+                    if (clk_cnt == CLKS_PER_BIT-1) begin
+                        clk_cnt <= 0;
+                        state   <= DATA_BITS;
+                        bit_idx <= 0;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                DATA_BITS: begin
+                    tx <= data_reg[bit_idx];
+                    if (clk_cnt == CLKS_PER_BIT-1) begin
+                        clk_cnt <= 0;
+                        if (bit_idx == 7) begin
+                            state <= STOP_BIT;
+                        end else begin
+                            bit_idx <= bit_idx + 1;
+                        end
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                STOP_BIT: begin
+                    tx <= 1;
+                    if (clk_cnt == CLKS_PER_BIT-1) begin
+                        state   <= IDLE;
+                        ready   <= 1;
+                        clk_cnt <= 0;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+            endcase
+        end
+    end
+
+endmodule
+
 module SystemDemo (
     input wire external_clk_25MHz,
     input wire [6:0] btn,
@@ -790,7 +1168,14 @@ module SystemDemo (
     output wire ftdi_rxd, // from FPGA to host
     inout wire gpdi_sda,
     output wire gpdi_scl
+
+    // input wire jtag_tck,
+    // input wire jtag_tms,
+    // input wire jtag_tdi,
+    // output wire jtag_tdo
 );
+
+  // JtagScanChain jtag (.jtag_tck, .jtag_tms, .jtag_tdi, .jtag_tdo, .in0(32'hABCD));
 
   // NB: btn[0] is active-low: it sends 1 when not pressed, and 0 when pressed
   wire rst_n;
@@ -839,6 +1224,42 @@ module SystemDemo (
   axil_if axi_mem_a ();
   axil_if axi_mem_b ();
 
+//   wire ila_busy;
+//   // NB: must be declared after axi_data_mmap SV interface
+//   wire [95:0] trace_data = {
+//     axi_data_mmap.subord.AWADDR,
+//     axi_data_mmap.subord.WDATA,
+
+//     4'b1011,
+//     axi_data_mmap.subord.AWVALID,
+//     axi_data_mmap.subord.AWREADY,
+//     axi_data_mmap.subord.WVALID,
+//     axi_data_mmap.subord.WREADY,
+//     axi_data_mmap.subord.WSTRB,
+//     axi_data_mmap.subord.BREADY,
+//     axi_data_mmap.subord.BVALID,
+//     4'b1101,
+
+//     14'd0 // padding to 32b
+//   };
+//   ila_uart #(
+//     .WIDTH(96),
+//     .DEPTH(64),
+//     .CLK_FREQ(16_030_000),
+//     .BAUD(115200)
+// ) ila (
+//     .clk(clk_proc),
+//     .rst(rst),
+
+//     .signal_in(trace_data),
+
+//     // optional trigger (start capture)
+//     .trigger(~rst),
+
+//     .uart_tx(ftdi_rxd),
+//     .busy(ila_busy)
+// );
+
   EasyAxilMemory #(
     .OPT_SKIDBUFFER(1),
     .OPT_LOWPOWER(0),
@@ -880,8 +1301,8 @@ module SystemDemo (
 
   wire halt;
 
-  wire [`REG_SIZE] ignore0;
-  wire [`INSN_SIZE] ignore1;
+  wire [`REG_SIZE] trace_pc;
+  wire [`INSN_SIZE] trace_insn;
   cycle_status_e ignore2;
 
   DatapathPipelinedAxil datapath (
@@ -890,8 +1311,8 @@ module SystemDemo (
       .imem(axi_mem_a.manager),
       .dmem(axi_data_mmap.manager),
       .halt(halt),
-      .trace_completed_pc(ignore0),
-      .trace_completed_insn(ignore1),
+      .trace_completed_pc(trace_pc),
+      .trace_completed_insn(trace_insn),
       .trace_completed_cycle_status(ignore2)
   );
 
