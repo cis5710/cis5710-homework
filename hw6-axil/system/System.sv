@@ -324,7 +324,7 @@ module MemoryMap (
   `ifdef HDMI_800
   localparam int HdmiWidth = 800;
   localparam int HdmiHeight = 600;
-  localparam int DisplayScaleFactor = (HdmiWidth / {22'd0, DisplayWidth}) / 2;
+  localparam int DisplayScaleFactor = HdmiWidth / DisplayWidth;
   `endif
   `ifdef HDMI_640
   localparam int HdmiWidth = 640;
