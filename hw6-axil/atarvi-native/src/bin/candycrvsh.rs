@@ -219,10 +219,12 @@ pub fn main() -> ! {
             grid[y][x] = Tile::random(above, left);
         }
     }
+    let mut first_run: bool = true;
 
     let mut gamepad_prior = UsbGamepadInput::from(0);
     loop {
         let mut gamepad = UsbGamepadInput::from(0);
+        let mut button_pressed: bool = false;
 
         // check for gamepad button presses
         let gamepad_now = UsbGamepadInput::from(unsafe {read_volatile(MMAP_USB)});
@@ -231,49 +233,61 @@ pub fn main() -> ! {
         } else if gamepad_prior.up() && !gamepad_now.up() {
             gamepad_prior.set_up(false);
             gamepad.set_up(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.down() && gamepad_now.down() {
             gamepad_prior.set_down(true);
         } else if gamepad_prior.down() && !gamepad_now.down() {
             gamepad_prior.set_down(false);
             gamepad.set_down(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.left() && gamepad_now.left() {
             gamepad_prior.set_left(true);
         } else if gamepad_prior.left() && !gamepad_now.left() {
             gamepad_prior.set_left(false);
             gamepad.set_left(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.right() && gamepad_now.right() {
             gamepad_prior.set_right(true);
         } else if gamepad_prior.right() && !gamepad_now.right() {
             gamepad_prior.set_right(false);
             gamepad.set_right(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.x() && gamepad_now.x() {
             gamepad_prior.set_x(true);
         } else if gamepad_prior.x() && !gamepad_now.x() {
             gamepad_prior.set_x(false);
             gamepad.set_x(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.y() && gamepad_now.y() {
             gamepad_prior.set_y(true);
         } else if gamepad_prior.y() && !gamepad_now.y() {
             gamepad_prior.set_y(false);
             gamepad.set_y(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.a() && gamepad_now.a() {
             gamepad_prior.set_a(true);
         } else if gamepad_prior.a() && !gamepad_now.a() {
             gamepad_prior.set_a(false);
             gamepad.set_a(true); // record button press event
+            button_pressed = true;
         }
         if !gamepad_prior.b() && gamepad_now.b() {
             gamepad_prior.set_b(true);
         } else if gamepad_prior.b() && !gamepad_now.b() {
             gamepad_prior.set_b(false);
             gamepad.set_b(true); // record button press event
+            button_pressed = true;
         }
+        if !button_pressed && !first_run {
+            continue;
+        }
+        first_run = false;
 
         // move cursor
         if gamepad.left() && selected_x > 0 {
