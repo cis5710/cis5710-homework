@@ -134,7 +134,10 @@ const WHITE: u8 = 0xFF;
 const RED: u8 = 0b110_000_00;
 const BG_COLOR: u8 = 0b101_110_11; // light blue
 
-const PADDLE_ROW: usize = SCREEN_HEIGHT - 2;
+const PADDLE_ROW: usize = SCREEN_HEIGHT - 10;
+const BALL_DIAMETER: usize = 8;
+const PADDLE_WIDTH: usize = 32;
+const PADDLE_MOVEMENT: usize = 3;
 
 type FrameBuffer = [[u8; SCREEN_WIDTH]; SCREEN_HEIGHT];
 
@@ -166,9 +169,8 @@ pub fn main() -> ! {
     // game data structures
     let mut paddle_start_x = 2;
     let mut new_paddle_start_x = paddle_start_x;
-    const PADDLE_WIDTH: usize = 16;
 
-    let mut ball = Ball::new(10, 10, 1, -1);
+    let mut ball = Ball::new(10, 10, 2, -2);
     let mut ball_color: u8 = BLACK;
 
     for i in paddle_start_x..paddle_start_x + PADDLE_WIDTH {
@@ -179,68 +181,58 @@ pub fn main() -> ! {
         // move paddle
         let gamepad_now = UsbGamepadInput::from(unsafe { read_volatile(MMAP_USB) });
         if gamepad_now.left() && paddle_start_x > 0 {
-            new_paddle_start_x -= 3;
+            new_paddle_start_x -= PADDLE_MOVEMENT;
         }
         if gamepad_now.right() && paddle_start_x + PADDLE_WIDTH < SCREEN_WIDTH {
-            new_paddle_start_x += 3;
+            new_paddle_start_x += PADDLE_MOVEMENT;
         }
 
         // draw the paddle
         if new_paddle_start_x < paddle_start_x {
             // moved left
-            write_byte(BLACK, &mut screen[PADDLE_ROW][new_paddle_start_x]);
-            write_byte(
-                BG_COLOR,
-                &mut screen[PADDLE_ROW][paddle_start_x + PADDLE_WIDTH - 1],
-            );
+            for i in 0..PADDLE_MOVEMENT {
+                write_byte(BLACK, &mut screen[PADDLE_ROW][new_paddle_start_x + i]);
+                write_byte(
+                    BG_COLOR,
+                    &mut screen[PADDLE_ROW][paddle_start_x + PADDLE_WIDTH - 1 + i],
+                );
+            }
         } else if new_paddle_start_x > paddle_start_x {
             // moved right
-            write_byte(
-                BLACK,
-                &mut screen[PADDLE_ROW][new_paddle_start_x + PADDLE_WIDTH - 1],
-            );
-            write_byte(BG_COLOR, &mut screen[PADDLE_ROW][paddle_start_x]);
+            for i in 0..PADDLE_MOVEMENT {
+                write_byte(
+                    BLACK,
+                    &mut screen[PADDLE_ROW][new_paddle_start_x + PADDLE_WIDTH - 1 + i],
+                );
+                write_byte(BG_COLOR, &mut screen[PADDLE_ROW][paddle_start_x + i]);
+            }
         }
         paddle_start_x = new_paddle_start_x;
 
         // erase ball
-        if ball.dx != -1 || ball.dy != -1 {
-            write_byte(BG_COLOR, &mut screen[ball.y as usize][ball.x as usize]);
-        }
-        if ball.dx != 1 || ball.dy != -1 {
-            write_byte(BG_COLOR, &mut screen[ball.y as usize][ball.x + 1 as usize]);
-        }
-        if ball.dx != -1 || ball.dy != 1 {
-            write_byte(BG_COLOR, &mut screen[ball.y + 1 as usize][ball.x as usize]);
-        }
-        if ball.dx != 1 || ball.dy != 1 {
-            write_byte(
-                BG_COLOR,
-                &mut screen[ball.y + 1 as usize][ball.x + 1 as usize],
-            );
-        }
+        draw_ball(BG_COLOR, &ball, screen);
 
         // move ball
         ball.x = (ball.x as isize + ball.dx) as usize;
         ball.y = (ball.y as isize + ball.dy) as usize;
 
         // Check for collisions with the walls and reverse direction if needed
-        if ball.x == 0 || ball.x + 2 >= SCREEN_WIDTH {
+        if ball.x == 0 || ball.x + BALL_DIAMETER >= SCREEN_WIDTH {
             ball.dx = -ball.dx;
             ball_color = unsafe { read_volatile(MMAP_RNG) } as u8;
         }
         let hit_paddle = ball.x + 1 >= paddle_start_x
             && ball.x <= paddle_start_x + PADDLE_WIDTH
-            && ball.y + 2 == PADDLE_ROW;
+            && ball.y + BALL_DIAMETER == PADDLE_ROW;
         if ball.y == 0 || hit_paddle {
             ball.dy = -ball.dy;
             ball_color = unsafe { read_volatile(MMAP_RNG) } as u8;
         }
 
-        // draw ball
+        // draw new ball position
         draw_ball(ball_color, &ball, screen);
 
-        if ball.y + 2 >= SCREEN_HEIGHT {
+        if ball.y + BALL_DIAMETER >= SCREEN_HEIGHT {
             // ball hit the ground, we lost
             draw_ball(RED, &ball, screen);
             panic!();
@@ -253,8 +245,17 @@ pub fn main() -> ! {
 fn draw_ball(color: u8, ball: &Ball, screen: &mut FrameBuffer) {
     stack_check();
 
-    write_byte(color, &mut screen[ball.y as usize][ball.x as usize]);
-    write_byte(color, &mut screen[ball.y as usize][ball.x + 1 as usize]);
-    write_byte(color, &mut screen[ball.y + 1 as usize][ball.x as usize]);
-    write_byte(color, &mut screen[ball.y + 1 as usize][ball.x + 1 as usize]);
+    for i in 0..BALL_DIAMETER {
+        for j in 0..BALL_DIAMETER {
+            let x = ball.x + i;
+            let y = ball.y + j;
+            if x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT {
+                write_byte(color, &mut screen[y as usize][x as usize]);
+            }
+        }
+    }
+    // write_byte(color, &mut screen[ball.y as usize][ball.x as usize]);
+    // write_byte(color, &mut screen[ball.y as usize][ball.x + 1 as usize]);
+    // write_byte(color, &mut screen[ball.y + 1 as usize][ball.x as usize]);
+    // write_byte(color, &mut screen[ball.y + 1 as usize][ball.x + 1 as usize]);
 }
