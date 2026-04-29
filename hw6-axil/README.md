@@ -97,7 +97,10 @@ There is a resource leaderboard for HW6, but it is strictly informational - no p
 
 ## Demo: CandyCrvsh
 
-Once your HW6 datapath is working, you can run the demo. This demo connects your datapath to a 32KB AXIL memory and some memory-mapped devices like HDMI video output and USB gamepad input. Connect your FPGA board as shown below to your laptop, an HDMI monitor in the lab, and a gamepad (via a micro-USB to USB-A adapter). Gamepads and their USB adapters are in the lab at each FPGA board.
+Once your HW6 datapath is working, you can run the demo. This demo connects your datapath to a 32KB AXIL memory and some memory-mapped devices like HDMI video output and USB gamepad input to turn your processor into a simple video game console. Connect your FPGA board as shown below to:
+* your laptop (via the board's `US1` micro USB port)
+* an HDMI monitor in the lab
+* a gamepad (via the `US2` port and a micro-USB to USB-A adapter). Gamepads and their USB adapters are in the lab at each FPGA board.
 
 ![](images/hw6-demo-cable-connections.png)
 
