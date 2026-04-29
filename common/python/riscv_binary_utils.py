@@ -81,7 +81,7 @@ def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxAddress=0):
     
     sectionInfo = getSectionInfo(binaryPath)
     # print(sectionInfo)
-    sectionsToLoad = ['.start', '.text', '.rodata', '.srodata', '.sdata', '.eh_frame']
+    sectionsToLoad = ['.start', '.text', '.rodata', '.srodata', '.sdata']
 
     with open(hexfilePath,'w') as fd:
         micByteOffset = 0
@@ -101,8 +101,12 @@ def loadBinaryIntoHexFile(binaryPath, hexfilePath, maxAddress=0):
                 print(f"code reaches address {memBaseAddr + (len(words)*4)} but we can only handle up to {maxAddress}")
                 sys.exit(1)
 
-            if memBaseAddr > 0 and memBaseAddr != micByteOffset:
-                fd.write(f'@{memBaseAddr:x}\n')
+            if memBaseAddr > 0 and memBaseAddr > micByteOffset:
+                # NB: `@40` target address syntax doesn't work in my yosys/nextpnr...
+                while micByteOffset < memBaseAddr:
+                    fd.write('00000013\n') # addi x0,x0,x0 - the official RV NOP
+                    micByteOffset += 4
+                    pass
                 pass
             for i in range(len(words)):
                 fd.write(f'{words[i]:08x}\n')
