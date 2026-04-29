@@ -95,4 +95,16 @@ For HW6, run `make resource-check` and then `make zip` and submit the `axil.zip`
 
 There is a resource leaderboard for HW6, but it is strictly informational - no points are awarded based on the leaderboard results.
 
-## Demo: TBD
+## Demo: CandyCrvsh
+
+Once your HW6 datapath is working, you can run the demo. This demo connects your datapath to a 32KB AXIL memory and some memory-mapped devices like HDMI video output and USB gamepad input. Connect your FPGA board as shown below to your laptop, an HDMI monitor in the lab, and a gamepad (via a micro-USB to USB-A adapter). Gamepads and their USB adapters are in the lab at each FPGA board.
+
+![](images/hw6-demo-cable-connections.png)
+
+Next, build your bitstream via `make demo-hw6`. The build takes about 2-3 minutes for our reference design.
+
+Finally, outside the container, program your design onto the FPGA as in prior labs (i.e., via `make program` on Mac/Linux or using `fujprog.exe` on Windows). Once it loads, you should be able to crush some candies!
+
+To play the game, use the gamepad's D-pad to move the black square cursor, and use the blue, yellow, green and red buttons to swap the candy under the cursor with the one to the north, south, east or west, respectively.
+
+We have pre-compiled the machine code for CandyCrvsh in `mem_initial_contents.hex`, which is automatically included when you run `make demo-hw6`. The game's source code (in Rust) [also lives in this repo](atarvi-native/src/bin/candycrvsh.rs).
