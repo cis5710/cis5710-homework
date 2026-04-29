@@ -285,6 +285,7 @@ pub fn main() -> ! {
             button_pressed = true;
         }
         if !button_pressed && !first_run {
+            wait_for_millis(30);
             continue;
         }
         first_run = false;
