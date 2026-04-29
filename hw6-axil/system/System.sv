@@ -523,9 +523,6 @@ module MemoryMap (
   // localparam bit [7:0] Teal  = 8'b000_111_10; // 8'h1E
 
   logic [DisplayPixelSizeBits-1:0] frame_buffer[DisplayWidth * DisplayHeight];
-  initial begin
-    $readmemh("frame_buffer_initial_contents.hex", frame_buffer);
-  end
 
   logic [proc.ADDR_WIDTH-1:0] fb_write_addr;
   logic [DisplayPixelSizeBits-1:0] fb_write_data;
