@@ -108,6 +108,6 @@ Next, build your bitstream via `make demo-hw6`. The build takes about 2-3 minute
 
 Finally, outside the container, program your design onto the FPGA as in prior labs (i.e., via `make program` on Mac/Linux or using `fujprog.exe` on Windows). Once it loads, you should be able to crush some candies!
 
-To play the game, use the gamepad's D-pad to move the black square cursor, and use the blue, yellow, green and red buttons to swap the candy under the cursor with the one to the north, south, east or west, respectively.
+To play the game, use the gamepad's D-pad to move the black square cursor, and use the blue, yellow, green and red buttons to swap the candy under the cursor with the one to the north, south, east or west, respectively. Sometimes the gamepad doesn't work at first (likely some bug in the USB module or how we're using it); you can reset the design via the `B0`/`PWR` button at the top right and then it usually works!
 
 We have pre-compiled the machine code for CandyCrvsh in `mem_initial_contents.hex`, which is automatically included when you run `make demo-hw6`. The game's source code (in Rust) [also lives in this repo](atarvi-native/src/bin/candycrvsh.rs).
