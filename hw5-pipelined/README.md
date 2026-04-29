@@ -105,7 +105,7 @@ Next, you will connect the oscilloscope to the FPGA board. Get a cable from the 
 
 ![](../images/scope-buttons.png)
 
-Now you are ready to use the oscilloscope. Follow these steps, which are also numbered in pink the picture above:
+Now you are ready to use the oscilloscope. Follow these steps, which are also numbered in pink in the picture above:
 
 1. Connect the black plug from the oscilloscope cable to the oscilloscope's port 1. The plug must be aligned properly so that it can be inserted and then twisted clockwise into place - be sure not to force it!
 2. Turn the oscilloscope on.
