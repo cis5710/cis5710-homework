@@ -1,9 +1,9 @@
 {
-    "image": "cis5710/hw-base-gradescope:v2",
+    "image": "cis5710/hw1-gem5-gradescope:v1",
 
     "customizations": {
     "vscode": {
-        "extensions": ["mshr-h.veriloghdl", "lramseyer.vaporview", "ms-python.python"]
+        "extensions": ["ms-python.python"]
     }
   }
 }

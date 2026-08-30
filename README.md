@@ -1,9 +1,9 @@
 
-This repository contains the documentation and starter code for the homework assignments in [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/). NOTE: these instructions are currently stale and under active development for the Fall 2026 semester.
+This repository contains the documentation and starter code for the homework assignments in [CIS 4710/5710: Computer Organization & Design](http://cis.upenn.edu/~cis5710/).
 
 # Git
   
-We'll use git to distribute the code and instructions for the homeworks. Here's our recommended git setup so that you can have a private repo you can share with your group partner, and that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. In these instructions, we'll use github and git terminal commands, but you can adapt these to other git hosting services or other git clients.
+We'll use git to distribute the code and instructions for the homeworks. Here's our recommended git setup so that you can have a private repo where you can commit your code, that also allows you to receive updates we make to [the `cis5710-homework` repo](https://github.com/cis5710/cis5710-homework), which we will also refer to as *upstream*. In these instructions, we'll use github and git terminal commands, but you can adapt these to other git hosting services or other git clients.
 
 > **Do not fork this repo** on GitHub unless you are submitting a Pull Request to fix something here. For doing your homework, you should start from a new private GitHub repo instead.
 
@@ -17,7 +17,7 @@ Don't type in your password every time you push/pull from your repo. [Setup an S
 
 ### Setup your repo
 
-First, one group member creates a new, empty private repo. **Do not initialize** the repo with a README, a `.gitignore` file, or a license.
+First, create a new, empty private repo. **Do not initialize** the repo with a README, a `.gitignore` file, or a license.
 
 Then, run the following commands on the command-line on your laptop. Substitute your GH username and the name of the repo you created for `YOURUSERNAME` and `YOURREPO`, respectively.
 
@@ -31,37 +31,29 @@ Then, add a connection called `upstream` to the upstream CIS 5710 repo and get t
 git remote add upstream https://github.com/cis5710/cis5710-homework.git
 git fetch upstream
 ```
-Now, merge those changes with the `main` branch in your repo:
+Now, merge those changes with the `gem5` branch in your repo:
 ```
-git merge upstream/main
+git merge upstream/gem5
 ```
 Then, push those changes back to your private Github repo:
 ```
 git push
 ```
-Finally, you must initialize the git submodules that this repo uses, with:
-```
-git submodule update --init --recursive riscv-tests/
-```
 
-> You may also have noticed the *solutions* submodule. This is a private repo so you'll get an error if you try to update it, either directly or by trying to update all submodules.
-
-You now have a private repo that is linked with the upstream CIS 5710 repo. Next, [grant your group partner access](https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/inviting-collaborators-to-a-personal-repository) and then you're ready to go!
+You now have a private repo that is linked with the upstream CIS 5710 repo. You're ready to go!
 
 ### Pulling changes from upstream
 
 To get the latest changes from the upstream CIS 5710 repo, run:
 ```
 git fetch upstream
-git merge upstream/main
+git merge upstream/gem5
 ```
-
-You can pull in submodule changes via `git submodule update --recursive riscv-tests/`.
 
 
 # Development Environment
 
-The recommended way to work on your code is to use Visual Studio Code with the Dev Container we provide. The Dev Container automatically sets up VS Code with some useful extensions for working with System Verilog, and connects you to a Linux Docker container which has both your homework files and the required hardware simulators and compilers pre-installed.
+The recommended way to work on your code is to use Visual Studio Code with the Dev Container we provide. The Dev Container automatically sets up VS Code and connects you to a Linux Docker container which has both your homework files and gem5 pre-installed.
 
 The first step is to visit the [VS Code Dev Containers tutorial](https://code.visualstudio.com/docs/devcontainers/tutorial). Follow the first part of the tutorial to:
 
@@ -79,23 +71,10 @@ For reference, our Docker image is [hosted on Docker Hub](https://hub.docker.com
 
 ### Updating your Dev Container
 
-Occasionally, we will ship an update to the Dev Container image. You will pull the updated [`.devcontainer.json`](.devcontainer.json) file from our `upstream` GitHub repo, and then need to rebuild your Dev Container. With the Dev Container running in VS Code, open the Command Palette (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on Mac), type `Rebuild` and select the `Dev Containers: Rebuild Container` option (see screenshot below). This will fetch the new image and re-launch your container.
+Occasionally, we may need to ship an update to the Dev Container image. You will pull the updated [`.devcontainer.json`](.devcontainer.json) file from our `upstream` GitHub repo, and then need to rebuild your Dev Container. With the Dev Container running in VS Code, open the Command Palette (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on Mac), type `Rebuild` and select the `Dev Containers: Rebuild Container` option (see screenshot below). This will fetch the new image and re-launch your container.
 
 ![](images/rebuild-devcontainer.png)
 
-### Apple Silicon
-
-The `hw-base-gradescope` image is an x86 (Intel/AMD) image. If you are running on Apple Silicon, there is some overhead from translating x86 instructions to ARM instructions on-the-fly. You may want to switch to our ARM container image instead, though it is in "beta" status and not as well-tested as the x86 container. Please do let us know about your experience using it, however, so we can improve it.
-
-To switch, simply edit the [`.devcontainer.json`](.devcontainer.json) file to reference the `cis5710/hw-base-arm:TODO-VERSION` image instead of the `cis5710/hw-base-gradescope:TODO-VERSION` image. Note that `TODO-VERSION` is a placeholder, you should check [our account on DockerHub](https://hub.docker.com/u/cis5710) to see what the latest ARM image version is. Then, follow the instructions above for *Updating your Dev Container* to switch to the ARM image.
-
-It is also possible to install the various tools you need for this course directly on your laptop. You can follow our [Dockerfile](docker/Dockerfile.gradescope) for guidance.
-
-### VS Code notes
-
-We've found that VS Code has decent support for SystemVerilog. I like the [Verilog-HDL/SystemVerilog/Bluespec SystemVerilog extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL), the [VaporView waveform viewer](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) and the Python extension, as those are languages/tools you'll use a lot in this class. These are all installed in your Dev Container by default.
-
-I also installed [verible](https://github.com/chipsalliance/verible) and enabled `verible-verilog-ls` for code navigation and `verible-verilog-format` for code formatting.
 
 ### Running Docker directly
 
@@ -104,7 +83,7 @@ Sometimes VS Code Dev Containers can be difficult to set up, or you may prefer t
 First, find the latest *version* of our container image [on DockerHub](https://hub.docker.com/u/cis5710) or in the [`.devcontainer.json`](.devcontainer.json) file. In all the commands below, replace `TODO-VERSION` with that latest version you found. This first command downloads the container image to your laptop:
 
 ```
-docker pull cis5710/hw-base-gradescope:TODO-VERSION
+docker pull cis5710/gem5-hw-base-gradescope:TODO-VERSION
 
 ```
 
@@ -114,7 +93,7 @@ The container has its own filesystem, separate from the files on your laptop. Ho
 
 After editing this command appropriately, launch the container for the first time:
 ```
-docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw-base-gradescope:TODO-VERSION /bin/bash
+docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/gem5-hw-base-gradescope:TODO-VERSION /bin/bash
 ```
 
 The Docker app offers a nice graphical interface to start/stop/delete containers and images. We discuss how to perform these common operations on the command-line below.
