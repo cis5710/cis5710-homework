@@ -83,7 +83,7 @@ Sometimes VS Code Dev Containers can be difficult to set up, or you may prefer t
 First, find the latest *version* of our container image [on DockerHub](https://hub.docker.com/u/cis5710) or in the [`.devcontainer.json`](.devcontainer.json) file. In all the commands below, replace `TODO-VERSION` with that latest version you found. This first command downloads the container image to your laptop:
 
 ```
-docker pull cis5710/gem5-hw-base-gradescope:TODO-VERSION
+docker pull cis5710/hw1-gem5-gradescope:TODO-VERSION
 
 ```
 
@@ -93,7 +93,7 @@ The container has its own filesystem, separate from the files on your laptop. Ho
 
 After editing this command appropriately, launch the container for the first time:
 ```
-docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/gem5-hw-base-gradescope:TODO-VERSION /bin/bash
+docker run --name MY-CIS5710 --interactive --tty --mount type=bind,source="/PATH/ON/YOUR/LAPTOP",target=/MYSTUFF cis5710/hw1-gem5-gradescope:TODO-VERSION /bin/bash
 ```
 
 The Docker app offers a nice graphical interface to start/stop/delete containers and images. We discuss how to perform these common operations on the command-line below.
