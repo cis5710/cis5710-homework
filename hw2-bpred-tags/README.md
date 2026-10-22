@@ -25,6 +25,8 @@ cd /gem5
 scons --limit-ld-memory-usage --linker=gold build/RISCV/gem5.opt
 ```
 
+For reference, our Docker image uses gem5 commit `f5c5a6e390f55dd5984977815bf9d0bd05da6945`.
+
 ### Run experiments
 
 To run gem5, run the following commands from inside the Dev Container:
@@ -48,3 +50,5 @@ You can use these numbers to help debug your implementation.
 ### Submit to Gradescope
 
 Submit your modified `2bit_local.hh`, `2bit_local.cc` and `BranchPredictor.py` files on Gradescope. The autograder will build and run your code with `qsort` to validate IPC and MPKI. Tag (mis)matches are not compared.
+
+We're seeing the autograder take at least 20 minutes to compile and run your code, so please budget your time accordingly.
