@@ -12,7 +12,7 @@ Review the code for a bimodal branch predictor in `/gem5/src/cpu/pred/2bit_local
 
 **Training** When the predictor is updated, if the tag matches the PC of the current branch, then update the counter as normal. If the tag does *not* match, set the counter to the weakly-not-taken or weakly-taken state (to avoid being biased by the behavior of the prior branch at the counter) based on the true branch direction, and set the tag to the PC of the current branch. Nothing needs to be done if `squashed` is true, as LocalBP does not update state on wrong-path execution.
 
-You should also add a new boolean configuration parameter `tagMatching` to `/gem5/src/cpu/pred/BranchPredictor.py`, which enables/disables the tag behavior. When `tagMatching == False` (the default), `LocalBP` should retain the original bimodal predictor behavior. When `tagMatching == True`, your tagging logic should be activated. Having a configuration parameter allows you to easily toggle the tagging on/off without rebuilding gem5.
+You must also add a new boolean configuration parameter `tagMatching` to `/gem5/src/cpu/pred/BranchPredictor.py`, which enables/disables the tag behavior. When `tagMatching == False` (the default), `LocalBP` should retain the original bimodal predictor behavior. When `tagMatching == True`, your tagging logic should be activated. Having a configuration parameter allows you to easily toggle the tagging on/off without rebuilding gem5.
 
 We also recommend you implement some statistics to track the behavior of your tagged predictor, e.g., counting the number of times tags were matched or mismatched. This can help you debug your implementation, and also provides insight into why the predictor performs the way it does. gem5 tracks many stats, which are written to `m5out/stats.txt` at the end of the simulation. See `/gem5/src/cpu/pred/bpred_unit.hh` and `bpred_unit.cc` for examples of how to work with stats in gem5. 
 
@@ -31,7 +31,7 @@ To run gem5, run the following commands from inside the Dev Container:
 
 ```
 cd /workspaces/gem5-cis5710-homework/hw2-bpred-tags
-/gem5/build/RISCV/gem5.opt hw2.gem5.py --hello
+/gem5/build/RISCV/gem5.opt hw2.gem5.py hello
 ```
 
 This will run a simple `hello-world` program on your processor. Note that `hw2.gem5.py` reports IPC and MPKI (mispredictions per kilo-instructions) at the end of the simulation.
@@ -47,4 +47,4 @@ You can use these numbers to help debug your implementation.
 
 ### Submit to Gradescope
 
-Submit your modified `2bit_local.hh` and `2bit_local.cc` files on Gradescope. The autograder will build and run your code with qsort to validate IPC and MPKI. Tag (mis)matches are not compared.
+Submit your modified `2bit_local.hh`, `2bit_local.cc` and `BranchPredictor.py` files on Gradescope. The autograder will build and run your code with `qsort` to validate IPC and MPKI. Tag (mis)matches are not compared.
