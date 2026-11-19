@@ -25,8 +25,10 @@ riscv64-linux-gnu-gcc -nostdlib -static -o probe template.s
 
 Next, run that binary on a simulator. It will report hits and misses.
 ```
-./gem5-mystery0 probe
+./gem5-amd64-mystery0 probe
 ```
+
+> If you are using the ARM version of the class container, you can use the arm64 binary instead via `gem5-arm64-mystery0 probe`.
 
 Based on the program you wrote and the report, try to infer how the cache is organized. You will need to write and run several different programs to precisely identify the cache organization.
 
